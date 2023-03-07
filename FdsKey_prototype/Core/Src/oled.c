@@ -258,6 +258,7 @@ void oled_draw_text_cropped(const DotMatrixFont *font, char *text, int x, int y,
 	uint64_t char_data_casted; // unboxed character data
 	uint8_t char_width; // current character width
 	uint8_t spacing; // space between characters
+  uint8_t size_offset = font->font_type;
 	while (*text) {
 		char ch = *text;
 		// replace unknown characters with underscore
@@ -267,33 +268,38 @@ void oled_draw_text_cropped(const DotMatrixFont *font, char *text, int x, int y,
 		// get character length
 		if (font->char_height <= 8)
 			char_data = &((uint8_t*) font->font_data)[(ch - font->start_char)
-					* (font->char_width + 1)];
+					* (font->char_width + size_offset)];
 		else if (font->char_height <= 16)
 			char_data = &((uint8_t*) font->font_data)[(ch - font->start_char)
-					* (font->char_width * sizeof(uint16_t) + 1)];
+					* (font->char_width * sizeof(uint16_t) + size_offset)];
 		else if (font->char_height <= 24)
 			char_data = &((uint8_t*) font->font_data)[(ch - font->start_char)
-					* (font->char_width * 3 + 1)];
+					* (font->char_width * 3 + size_offset)];
 		else if (font->char_height <= 32)
 			char_data = &((uint8_t*) font->font_data)[(ch - font->start_char)
-					* (font->char_width * sizeof(uint32_t) + 1)];
+					* (font->char_width * sizeof(uint32_t) + size_offset)];
 		else if (font->char_height <= 40)
 			char_data = &((uint8_t*) font->font_data)[(ch - font->start_char)
-					* (font->char_width * 5 + 1)];
+					* (font->char_width * 5 + size_offset)];
 		else if (font->char_height <= 48)
 			char_data = &((uint8_t*) font->font_data)[(ch - font->start_char)
-					* (font->char_width * 6 + 1)];
+					* (font->char_width * 6 + size_offset)];
 		else if (font->char_height <= 56)
 			char_data = &((uint8_t*) font->font_data)[(ch - font->start_char)
-					* (font->char_width * 7 + 1)];
+					* (font->char_width * 7 + size_offset)];
 		else
 			char_data = &((uint8_t*) font->font_data)[(ch - font->start_char)
-					* (font->char_width * sizeof(uint64_t) + 1)];
+					* (font->char_width * sizeof(uint64_t) + size_offset)];
 
 		// resize spaces if need
-		char_width =
-				(ch != ' ' || !font->space_length) ?
-						char_data[0] : font->space_length;
+		if (font->font_type == 0) // monospaced
+		{
+		  char_width = font->char_width;
+		} else {
+      char_width =
+          (ch != ' ' || !font->space_length) ?
+              char_data[0] : font->space_length;
+		}
 
 		// for every column of character
 		for (c = 0; c < char_width; c++) {
@@ -308,32 +314,32 @@ void oled_draw_text_cropped(const DotMatrixFont *font, char *text, int x, int y,
 
 			// unbox character data
 			if (font->char_height <= 8)
-				char_data_casted = *((uint8_t*) (char_data + c + 1));
+				char_data_casted = *((uint8_t*) (char_data + c + size_offset));
 			else if (font->char_height <= 16)
 				char_data_casted = *((uint16_t*) (char_data
-						+ c * sizeof(uint16_t) + 1));
+						+ c * sizeof(uint16_t) + size_offset));
 			else if (font->char_height <= 24)
-				char_data_casted = *((uint32_t*) (char_data + c * 3 + 1))
+				char_data_casted = *((uint32_t*) (char_data + c * 3 + size_offset))
 						& 0xFFFFFFUL;
 			else if (font->char_height <= 32)
 				char_data_casted = *((uint32_t*) (char_data
-						+ c * sizeof(uint32_t) + 1));
+						+ c * sizeof(uint32_t) + size_offset));
 			else if (font->char_height <= 40) {
-				uint32_t l = *((uint32_t*) (char_data + c * 5 + 1));
-				uint32_t h = *((uint32_t*) (char_data + c * 5 + 1 + 4));
+				uint32_t l = *((uint32_t*) (char_data + c * 5 + size_offset));
+				uint32_t h = *((uint32_t*) (char_data + c * 5 + size_offset + 4));
 				char_data_casted = (h & 0xFFULL) << 32 | l;
 			} else if (font->char_height <= 48) {
-				uint32_t l = *((uint32_t*) (char_data + c * 6 + 1));
-				uint32_t h = *((uint32_t*) (char_data + c * 6 + 1 + 4));
+				uint32_t l = *((uint32_t*) (char_data + c * 6 + size_offset));
+				uint32_t h = *((uint32_t*) (char_data + c * 6 + size_offset + 4));
 				char_data_casted = (h & 0xFFFFULL) << 32 | l;
 			} else if (font->char_height <= 56) {
-				uint32_t l = *((uint32_t*) (char_data + c * 7 + 1));
-				uint32_t h = *((uint32_t*) (char_data + c * 7 + 1 + 4));
+				uint32_t l = *((uint32_t*) (char_data + c * 7 + size_offset));
+				uint32_t h = *((uint32_t*) (char_data + c * 7 + size_offset + 4));
 				char_data_casted = (h & 0xFFFFFFULL) << 32 | l;
 			} else {
 				uint32_t l =
-						*((uint32_t*) (char_data + c * sizeof(uint64_t) + 1));
-				uint32_t h = *((uint32_t*) (char_data + c * sizeof(uint64_t) + 1
+						*((uint32_t*) (char_data + c * sizeof(uint64_t) + size_offset));
+				uint32_t h = *((uint32_t*) (char_data + c * sizeof(uint64_t) + size_offset
 						+ 4));
 				char_data_casted = (uint64_t) h << 32 | l;
 			}

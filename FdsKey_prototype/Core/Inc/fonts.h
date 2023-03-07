@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 typedef struct DotMatrixFont {
+  const uint8_t font_type;
 	const uint8_t start_char;
 	const uint8_t font_length;
 	const uint8_t char_width;

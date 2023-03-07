@@ -30,17 +30,18 @@ static uint8_t fds_config_fast_rewind = 1;
 static void fds_stop_reading();
 
 // debug dumping
-void fds_dump(char* filename)
+void fds_dump(char *filename)
 {
   FIL fp;
   unsigned int l;
 
   f_open(&fp, filename, FA_CREATE_ALWAYS | FA_WRITE);
-  f_write(&fp, (uint8_t*)fds_raw_data, FDS_MAX_SIDE_SIZE, &l);
+  f_write(&fp, (uint8_t*) fds_raw_data, FDS_MAX_SIDE_SIZE, &l);
   f_close(&fp);
 }
 
-static uint16_t fds_crc(uint8_t* data, unsigned size) {
+static uint16_t fds_crc(uint8_t *data, unsigned size)
+{
   //Do not include any existing checksum, not even the blank checksums 00 00 or FF FF.
   //The formula will automatically count 2 0x00 bytes without the programmer adding them manually.
   //Also, do not include the gap terminator (0x80) in the data.
@@ -50,13 +51,16 @@ static uint16_t fds_crc(uint8_t* data, unsigned size) {
   uint8_t bit_index;
   uint8_t byte;
 
-  for (byte_index = 0; byte_index < size + 2; byte_index++) {
+  for (byte_index = 0; byte_index < size + 2; byte_index++)
+  {
     byte = byte_index < size ? data[byte_index] : 0x00;
-    for (bit_index = 0; bit_index < 8; bit_index++) {
+    for (bit_index = 0; bit_index < 8; bit_index++)
+    {
       uint8_t bit = (byte >> bit_index) & 1;
       uint8_t carry = sum & 1;
       sum = (sum >> 1) | (bit << 15);
-      if (carry) sum ^= 0x8408;
+      if (carry)
+        sum ^= 0x8408;
     }
   }
   return sum;
@@ -65,15 +69,15 @@ static uint16_t fds_crc(uint8_t* data, unsigned size) {
 // returns block size without gap but with crc
 static uint16_t fds_get_block_size(int i, uint8_t include_gap, uint8_t include_crc)
 {
-  if (i == 0) return (include_gap ? FDS_FIRST_GAP_READ_BITS / 8 : 0) + 56 + (include_crc ? 2: 0); // disk info block
-  if (i == 1) return (include_gap ? FDS_NEXT_GAPS_READ_BITS / 8 : 0) + 2 + (include_crc ? 2: 0);  // file amount block
-  if (i % 2 == 0) return (include_gap ? FDS_NEXT_GAPS_READ_BITS / 8 : 0) + 16 + (include_crc ? 2: 0); // file header block
+  if (i == 0)
+    return (include_gap ? FDS_FIRST_GAP_READ_BITS / 8 : 0) + 56 + (include_crc ? 2 : 0); // disk info block
+  if (i == 1)
+    return (include_gap ? FDS_NEXT_GAPS_READ_BITS / 8 : 0) + 2 + (include_crc ? 2 : 0);  // file amount block
+  if (i % 2 == 0)
+    return (include_gap ? FDS_NEXT_GAPS_READ_BITS / 8 : 0) + 16 + (include_crc ? 2 : 0); // file header block
   // file data block - size stored in previous block
-  return (include_gap ? FDS_NEXT_GAPS_READ_BITS / 8 : 0)
-      + 1
-      + (fds_raw_data[fds_block_offsets[i - 1] + FDS_NEXT_GAPS_READ_BITS / 8 + 0x0D]
-      | (fds_raw_data[fds_block_offsets[i - 1] + FDS_NEXT_GAPS_READ_BITS / 8 + 0x0E] << 8))
-      + (include_crc ? 2: 0);
+  return (include_gap ? FDS_NEXT_GAPS_READ_BITS / 8 : 0) + 1
+      + (fds_raw_data[fds_block_offsets[i - 1] + FDS_NEXT_GAPS_READ_BITS / 8 + 0x0D] | (fds_raw_data[fds_block_offsets[i - 1] + FDS_NEXT_GAPS_READ_BITS / 8 + 0x0E] << 8)) + (include_crc ? 2 : 0);
 }
 
 static void fds_dma_fill_buffer(int pos, int length)
@@ -136,10 +140,8 @@ static void fds_start_reading()
   fds_current_bit = 0;
   FDS_READ_DMA.XferHalfCpltCallback = fds_dma_half_callback;
   FDS_READ_DMA.XferCpltCallback = fds_dma_full_callback;
-  HAL_DMA_Start_IT(&FDS_READ_DMA,
-      (uint32_t)fds_read_buffer,
-      (uint32_t)&FDS_READ_PWM_TIMER.Instance->FDS_READ_PWM_TIMER_CHANNEL_REG,
-      FDS_READ_BUFFER_SIZE);
+  HAL_DMA_Start_IT(&FDS_READ_DMA, (uint32_t) fds_read_buffer, (uint32_t) &FDS_READ_PWM_TIMER.Instance->FDS_READ_PWM_TIMER_CHANNEL_REG,
+  FDS_READ_BUFFER_SIZE);
   __HAL_TIM_ENABLE_DMA(&FDS_READ_PWM_TIMER, TIM_DMA_UPDATE);
   fds_dma_fill_buffer(0, FDS_READ_BUFFER_SIZE);
   FDS_READ_PWM_TIMER.Instance->ARR = FDS_READ_IMPULSE_LENGTH * 10 - 1;
@@ -160,7 +162,7 @@ static void fds_start_writing()
   int fds_current_block = 0;
 
   // calculate current block
-  for (i = 0; ; i++)
+  for (i = 0;; i++)
   {
     if (i >= fds_block_count)
     {
@@ -186,7 +188,8 @@ static void fds_start_writing()
   fds_current_byte = fds_block_offsets[fds_current_block];
   gap_length = fds_current_block == 0 ? FDS_FIRST_GAP_READ_BITS / 8 : FDS_NEXT_GAPS_READ_BITS / 8;
   fds_current_block_end = (fds_current_byte + gap_length + fds_get_block_size(fds_current_block, 0, 1)) % FDS_MAX_SIDE_SIZE;
-  if (fds_current_block_end < fds_current_byte) {
+  if (fds_current_block_end < fds_current_byte)
+  {
     // seems like "end of head" meet
     HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_SET);
     return;
@@ -196,7 +199,7 @@ static void fds_start_writing()
     // oops, next block overwrited or disaligned
     // trimming and erasing
     fds_block_count = fds_current_block + 1;
-    memset((uint8_t*)fds_raw_data + fds_block_offsets[fds_current_block + 1], 0, FDS_SIDE_SIZE - fds_block_offsets[fds_current_block + 1]);
+    memset((uint8_t*) fds_raw_data + fds_block_offsets[fds_current_block + 1], 0, FDS_SIDE_SIZE - fds_block_offsets[fds_current_block + 1]);
   }
   // gap before data
   for (i = 0; i < gap_length - 1; i++)
@@ -205,13 +208,13 @@ static void fds_start_writing()
   fds_write_gap_skip = 0;
   fds_changed = 1; // flag that ROM changed
 
-   // start and reset timer
+  // start and reset timer
   HAL_TIM_Base_Start(&FDS_WRITE_TIMER);
   FDS_WRITE_TIMER.Instance->CNT = 0;
 
   // enable interrupt on write data
   HAL_GPIO_DeInit(FDS_WRITE_DATA_GPIO_Port, FDS_WRITE_DATA_Pin);
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  GPIO_InitTypeDef GPIO_InitStruct = { 0 };
   GPIO_InitStruct.Pin = FDS_WRITE_DATA_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
@@ -223,7 +226,7 @@ static void fds_stop_writing()
 {
   // disable interrupt on write data
   HAL_GPIO_DeInit(FDS_WRITE_DATA_GPIO_Port, FDS_WRITE_DATA_Pin);
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  GPIO_InitTypeDef GPIO_InitStruct = { 0 };
   GPIO_InitStruct.Pin = FDS_WRITE_DATA_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
@@ -266,12 +269,12 @@ void fds_write_impulse()
   FDS_WRITE_TIMER.Instance->CNT = 0;
   switch (fds_state)
   {
-    case FDS_WRITING_GAP:
-    case FDS_WRITING:
-      break;
-    default:
-      fds_stop_writing();
-      return;
+  case FDS_WRITING_GAP:
+  case FDS_WRITING:
+    break;
+  default:
+    fds_stop_writing();
+    return;
   }
   if (fds_state == FDS_WRITING_GAP)
   {
@@ -332,7 +335,8 @@ void fds_check_pins()
     HAL_GPIO_WritePin(FDS_MOTOR_ON_GPIO_Port, FDS_MOTOR_ON_Pin, GPIO_PIN_RESET); // do i really need this?
     if (fds_state != FDS_IDLE)
       fds_stop();
-  } else {
+  } else
+  {
     HAL_GPIO_WritePin(FDS_MOTOR_ON_GPIO_Port, FDS_MOTOR_ON_Pin, GPIO_PIN_SET);
     if (HAL_GPIO_ReadPin(FDS_WRITE_GPIO_Port, FDS_WRITE_Pin))
     {
@@ -346,7 +350,8 @@ void fds_check_pins()
           fds_reset();
           fds_not_ready_time = HAL_GetTick();
           fds_state = FDS_READ_WAIT_READY_TIMER;
-        } else {
+        } else
+        {
           fds_state = FDS_READ_WAIT_READY;
         }
         break;
@@ -358,7 +363,8 @@ void fds_check_pins()
       default:
         break;
       }
-    } else {
+    } else
+    {
       // writing
       switch (fds_state)
       {
@@ -378,8 +384,10 @@ void fds_check_pins()
 
 void fds_tick_100ms() // call every ~100ms, low priority task
 {
-  if (fds_state == FDS_OFF) return;
-  if (fds_state == FDS_SAVING) return;
+  if (fds_state == FDS_OFF)
+    return;
+  if (fds_state == FDS_SAVING)
+    return;
   if (fds_state == FDS_READ_WAIT_READY_TIMER)
   {
     if (fds_not_ready_time + FDS_NOT_READY_TIME < HAL_GetTick())
@@ -418,27 +426,30 @@ FRESULT fds_load_side(char *filename, uint8_t side)
   fds_side = side;
 
   fr = f_stat(filename, &fno);
-  if (fr != FR_OK) return fr;
+  if (fr != FR_OK)
+    return fr;
   fr = f_open(&fp, filename, FA_READ);
-  if (fr != FR_OK) return fr;
+  if (fr != FR_OK)
+    return fr;
   if (fno.fsize % FDS_SIDE_SIZE != 0 && fno.fsize % FDS_SIDE_SIZE != 16)
     return FR_INVALID_OBJECT;
   fr = f_lseek(&fp, ((fno.fsize % FDS_SIDE_SIZE == FDS_HEADER_SIZE) ? FDS_HEADER_SIZE : 0) + side * FDS_SIDE_SIZE);
-  if (fr != FR_OK) return fr;
+  if (fr != FR_OK)
+    return fr;
 
-  while(1)
+  while (1)
   {
     fds_block_offsets[fds_block_count] = fds_used_space;
     gap_length = fds_block_count == 0 ? FDS_FIRST_GAP_READ_BITS / 8 : FDS_NEXT_GAPS_READ_BITS / 8;
     // gap before data
     for (i = 0; i < gap_length - 1; i++)
     {
-     fds_raw_data[fds_used_space++] = 0;
-     if (fds_used_space - 1 >= sizeof(fds_raw_data))
-     {
-       fds_used_space -= i;
-       break;
-     }
+      fds_raw_data[fds_used_space++] = 0;
+      if (fds_used_space - 1 >= sizeof(fds_raw_data))
+      {
+        fds_used_space -= i;
+        break;
+      }
     }
     fds_raw_data[fds_used_space++] = 0x80; // gap terminator
 
@@ -447,59 +458,58 @@ FRESULT fds_load_side(char *filename, uint8_t side)
       // disk info block
       block_type = 1;
       block_size = 56;
-    }
-    else if (fds_block_count == 1)
+    } else if (fds_block_count == 1)
     {
       // file amount block
       block_type = 2;
       block_size = 2;
-    }
-    else if (fds_block_count % 2 == 0)
+    } else if (fds_block_count % 2 == 0)
     {
       // file header block
       block_type = 3;
       block_size = 16;
-    }
-    else {
+    } else
+    {
       // file data block
       block_type = 4;
       block_size = next_file_size + 1;
     }
 
-    if (fds_used_space + block_size + 2 /*CRC*/ > FDS_SIDE_SIZE)
+    if (fds_used_space + block_size + 2 /*CRC*/> FDS_SIDE_SIZE)
     {
       fds_used_space -= gap_length; // rollback last gap
       break;
     }
 
     // reading
-    fr = f_read(&fp, (uint8_t*)fds_raw_data + fds_used_space, block_size, &br);
+    fr = f_read(&fp, (uint8_t*) fds_raw_data + fds_used_space, block_size, &br);
     if (fr != FR_OK)
     {
-     // SD card error?
-     f_close(&fp);
-     fds_close(0, 0);
-     return fr;
+      // SD card error?
+      f_close(&fp);
+      fds_close(0, 0);
+      return fr;
     }
-    if (br != block_size) {
-     // end of file?
-     fds_used_space -= gap_length; // rollback last gap
-     break;
+    if (br != block_size)
+    {
+      // end of file?
+      fds_used_space -= gap_length; // rollback last gap
+      break;
     }
     if (fds_raw_data[fds_used_space] != block_type)
     {
-     // invalid block?
-     fds_used_space -= gap_length; // rollback last gap
-     break;
+      // invalid block?
+      fds_used_space -= gap_length; // rollback last gap
+      break;
     }
     if (block_type == 3) // file header block - parse file size
-     next_file_size = fds_raw_data[fds_used_space + 0x0D] | (fds_raw_data[fds_used_space + 0x0E] << 8);
-    crc = fds_crc((uint8_t*)fds_raw_data + fds_used_space, block_size);
+      next_file_size = fds_raw_data[fds_used_space + 0x0D] | (fds_raw_data[fds_used_space + 0x0E] << 8);
+    crc = fds_crc((uint8_t*) fds_raw_data + fds_used_space, block_size);
     fds_block_sizes[fds_block_count] = block_size + 2; // block + crc
     fds_used_space += block_size;
     fds_raw_data[fds_used_space++] = crc & 0xFF;
     fds_raw_data[fds_used_space++] = (crc >> 8) & 0xFF;
-     fds_block_count++;
+    fds_block_count++;
   }
   f_close(&fp);
 
@@ -507,10 +517,11 @@ FRESULT fds_load_side(char *filename, uint8_t side)
   {
     fds_start_reading();
     HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_RESET);
-  } else {
+  } else
+  {
     fds_state = FDS_IDLE;
   }
- 
+
   return FR_OK;
 }
 
@@ -523,8 +534,10 @@ FRESULT fds_save(uint8_t backup_original)
   UINT br, bw;
   int i;
 
-  if (!fds_changed) return FR_NOT_ENABLED;
-  while (fds_state != FDS_IDLE) ; // wait for idle state
+  if (!fds_changed)
+    return FR_NOT_ENABLED;
+  while (fds_state != FDS_IDLE)
+    ; // wait for idle state
   fds_state = FDS_SAVING;
 
   // TODO: check CRC?
@@ -541,18 +554,22 @@ FRESULT fds_save(uint8_t backup_original)
     {
       // need to create backup
       fr = f_open(&fp, fds_filename, FA_READ);
-      if (fr != FR_OK) return fr;
+      if (fr != FR_OK)
+        return fr;
       fr = f_open(&fp_backup, backup_filename, FA_CREATE_NEW | FA_WRITE);
-      if (fr != FR_OK) {
+      if (fr != FR_OK)
+      {
         f_close(&fp);
         return fr;
       }
       do
       {
         fr = f_read(&fp, buff, sizeof(buff), &br);
-        if (fr != FR_OK) return fr;
+        if (fr != FR_OK)
+          return fr;
         fr = f_write(&fp_backup, buff, br, &bw);
-        if (bw != br) {
+        if (bw != br)
+        {
           f_close(&fp);
           f_close(&fp_backup);
           return FR_DENIED;
@@ -560,23 +577,26 @@ FRESULT fds_save(uint8_t backup_original)
       } while (br > 0);
       f_close(&fp);
       fr = f_close(&fp_backup);
-      if (fr != FR_OK) return fr;
+      if (fr != FR_OK)
+        return fr;
     }
   }
 
   // we need to set fisk side offset
   fr = f_stat(fds_filename, &fno);
-  if (fr != FR_OK) return fr;
+  if (fr != FR_OK)
+    return fr;
   int header_offset = fno.fsize % FDS_SIDE_SIZE;
   fr = f_open(&fp, fds_filename, FA_READ | FA_WRITE);
-  if (fr != FR_OK) return fr;
+  if (fr != FR_OK)
+    return fr;
   fr = f_lseek(&fp, header_offset + fds_side * FDS_SIDE_SIZE);
   if (fr != FR_OK)
     return fr;
   // save every block
   for (i = 0; i < fds_block_count; i++)
   {
-    fr = f_write(&fp, (uint8_t*)fds_raw_data + fds_block_offsets[i] + (i == 0 ? FDS_FIRST_GAP_READ_BITS : FDS_NEXT_GAPS_READ_BITS) / 8, fds_get_block_size(i, 0, 0), &bw);
+    fr = f_write(&fp, (uint8_t*) fds_raw_data + fds_block_offsets[i] + (i == 0 ? FDS_FIRST_GAP_READ_BITS : FDS_NEXT_GAPS_READ_BITS) / 8, fds_get_block_size(i, 0, 0), &bw);
     if (fr != FR_OK)
       return fr;
     if (bw != fds_get_block_size(i, 0, 0))
@@ -628,7 +648,8 @@ FRESULT fds_get_sides_count(char *filename, uint8_t *count)
   FRESULT fr;
 
   fr = f_stat(filename, &fno);
-  if (fr != FR_OK) return fr;
+  if (fr != FR_OK)
+    return fr;
   if (fno.fsize % FDS_SIDE_SIZE == FDS_HEADER_SIZE)
     fno.fsize -= FDS_HEADER_SIZE;
   if (fno.fsize % FDS_SIDE_SIZE != 0)

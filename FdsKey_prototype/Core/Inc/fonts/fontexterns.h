@@ -9,6 +9,7 @@ extern const DotMatrixFont FONT_DISKUN_22_BOLD;
 extern const DotMatrixFont FONT_DISKUN_28_BOLD;
 extern const DotMatrixFont FONT_DISKUN_22;
 extern const DotMatrixFont FONT_DISKUN_28;
+extern const DotMatrixFont FONT_GAMEGIRL_CLASSIC_6;
 extern const DotMatrixFont FONT_HAETTENSCHWEILER_18;
 extern const DotMatrixFont FONT_HAETTENSCHWEILER_23;
 extern const DotMatrixFont FONT_HAETTENSCHWEILER_28;
