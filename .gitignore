@@ -1,0 +1,12 @@
+﻿.mxproject
+*.bak
+.settings/
+Debug/
+Release/
+.metadata/
+incremental_db/
+db/
+output_files/
+*.qws
+*.launch
+~*~
