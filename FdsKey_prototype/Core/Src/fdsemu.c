@@ -25,7 +25,7 @@ static volatile uint16_t fds_current_block_end = 0;
 static volatile uint16_t fds_write_gap_skip = 0;
 static volatile uint8_t fds_changed = 0;
 
-static uint8_t fds_config_fast_rewind = 0;
+static uint8_t fds_config_fast_rewind = 1;
 
 static void fds_stop_reading();
 
@@ -36,7 +36,7 @@ void fds_dump(char* filename)
   unsigned int l;
 
   f_open(&fp, filename, FA_CREATE_ALWAYS | FA_WRITE);
-  f_write(&fp, (uint8_t*)fds_raw_data, sizeof(fds_raw_data), &l);
+  f_write(&fp, (uint8_t*)fds_raw_data, FDS_MAX_SIDE_SIZE, &l);
   f_close(&fp);
 }
 
@@ -196,7 +196,7 @@ static void fds_start_writing()
     // oops, next block overwrited or disaligned
     // trimming and erasing
     fds_block_count = fds_current_block + 1;
-    memset((uint8_t*)fds_raw_data + fds_block_offsets[fds_current_block + 1], 0, FDS_SIDE_LENGTH - fds_block_offsets[fds_current_block + 1]);
+    memset((uint8_t*)fds_raw_data + fds_block_offsets[fds_current_block + 1], 0, FDS_SIDE_SIZE - fds_block_offsets[fds_current_block + 1]);
   }
   // gap before data
   for (i = 0; i < gap_length - 1; i++)
@@ -236,21 +236,6 @@ static void fds_stop()
   fds_stop_writing();
   HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_SET);
   fds_state = FDS_IDLE;
-}
-
-FRESULT fds_get_sides_count(char *filename, uint8_t *count)
-{
-  FILINFO fno;
-  FRESULT fr;
-
-  fr = f_stat(filename, &fno);
-  if (fr != FR_OK) return fr;
-  if (fno.fsize % FDS_SIDE_LENGTH == FDS_HEADER_SIZE)
-    fno.fsize -= FDS_HEADER_SIZE;
-  if (fno.fsize % FDS_SIDE_LENGTH != 0)
-    return FR_INVALID_OBJECT;
-  *count = fno.fsize / FDS_SIDE_LENGTH;
-  return fr;
 }
 
 void fds_reset()
@@ -394,6 +379,7 @@ void fds_check_pins()
 void fds_tick_100ms() // call every ~100ms, low priority task
 {
   if (fds_state == FDS_OFF) return;
+  if (fds_state == FDS_SAVING) return;
   if (fds_state == FDS_READ_WAIT_READY_TIMER)
   {
     if (fds_not_ready_time + FDS_NOT_READY_TIME < HAL_GetTick())
@@ -435,9 +421,9 @@ FRESULT fds_load_side(char *filename, uint8_t side)
   if (fr != FR_OK) return fr;
   fr = f_open(&fp, filename, FA_READ);
   if (fr != FR_OK) return fr;
-  if (fno.fsize % FDS_SIDE_LENGTH != 0 && fno.fsize % FDS_SIDE_LENGTH != 16)
+  if (fno.fsize % FDS_SIDE_SIZE != 0 && fno.fsize % FDS_SIDE_SIZE != 16)
     return FR_INVALID_OBJECT;
-  fr = f_lseek(&fp, ((fno.fsize % FDS_SIDE_LENGTH == FDS_HEADER_SIZE) ? FDS_HEADER_SIZE : 0) + side * FDS_SIDE_LENGTH);
+  fr = f_lseek(&fp, ((fno.fsize % FDS_SIDE_SIZE == FDS_HEADER_SIZE) ? FDS_HEADER_SIZE : 0) + side * FDS_SIDE_SIZE);
   if (fr != FR_OK) return fr;
 
   while(1)
@@ -480,7 +466,7 @@ FRESULT fds_load_side(char *filename, uint8_t side)
       block_size = next_file_size + 1;
     }
 
-    if (fds_used_space + block_size + 2 /*CRC*/ > FDS_SIDE_LENGTH)
+    if (fds_used_space + block_size + 2 /*CRC*/ > FDS_SIDE_SIZE)
     {
       fds_used_space -= gap_length; // rollback last gap
       break;
@@ -528,15 +514,20 @@ FRESULT fds_load_side(char *filename, uint8_t side)
   return FR_OK;
 }
 
-void fds_save(uint8_t backup_original)
+FRESULT fds_save(uint8_t backup_original)
 {
   FRESULT fr;
-  FIL fp;
+  FIL fp, fp_backup;
   FILINFO fno;
+  uint8_t buff[256];
+  UINT br, bw;
+  int i;
 
-  if (fds_state == FDS_OFF) return;
+  if (fds_state == FDS_OFF || !fds_changed) return FR_NOT_ENABLED;
   while (fds_state != FDS_IDLE) ; // wait for idle state
   fds_state = FDS_SAVING;
+
+  // TODO: check CRC?
 
   if (backup_original)
   {
@@ -546,19 +537,61 @@ void fds_save(uint8_t backup_original)
     strcat(backup_filename, ".bak");
     // check if exists
     fr = f_stat(backup_filename, &fno);
-    if (fr != FR_OK) return fr;
-    /*
-    if (fno.fsize % FDS_SIDE_LENGTH == FDS_HEADER_SIZE)
-      fno.fsize -= FDS_HEADER_SIZE;
-    if (fno.fsize % FDS_SIDE_LENGTH != 0)
-      return FR_INVALID_OBJECT;
-    */
+    if (fr == FR_NO_FILE)
+    {
+      // need to create backup
+      fr = f_open(&fp, fds_filename, FA_READ);
+      if (fr != FR_OK) return fr;
+      fr = f_open(&fp_backup, backup_filename, FA_CREATE_NEW | FA_WRITE);
+      if (fr != FR_OK) {
+        f_close(&fp);
+        return fr;
+      }
+      do
+      {
+        fr = f_read(&fp, buff, sizeof(buff), &br);
+        if (fr != FR_OK) return fr;
+        fr = f_write(&fp_backup, buff, br, &bw);
+        if (bw != br) {
+          f_close(&fp);
+          f_close(&fp_backup);
+          return FR_DENIED;
+        }
+      } while (br > 0);
+      f_close(&fp);
+      fr = f_close(&fp_backup);
+      if (fr != FR_OK) return fr;
+    }
   }
 
+  // we need to set fisk side offset
+  fr = f_stat(fds_filename, &fno);
+  if (fr != FR_OK) return fr;
+  int header_offset = fno.fsize % FDS_SIDE_SIZE;
+  fr = f_open(&fp, fds_filename, FA_READ | FA_WRITE);
+  if (fr != FR_OK) return fr;
+  fr = f_lseek(&fp, header_offset + fds_side * FDS_SIDE_SIZE);
+  if (fr != FR_OK)
+    return fr;
+  // save every block
+  for (i = 0; i < fds_block_count; i++)
+  {
+    fr = f_write(&fp, (uint8_t*)fds_raw_data + fds_block_offsets[i] + (i == 0 ? FDS_FIRST_GAP_READ_BITS : FDS_NEXT_GAPS_READ_BITS) / 8, fds_get_block_size(i, 0, 0), &bw);
+    if (fr != FR_OK)
+      return fr;
+    if (bw != fds_get_block_size(i, 0, 0))
+      return FR_DISK_ERR;
+  }
+  fr = f_close(&fp);
+  if (fr != FR_OK)
+    return fr;
+
+  fds_changed = 0;
   // resume idle state
   fds_state = FDS_IDLE;
   // but start reading/writing if need
   fds_check_pins();
+  return FR_OK;
 }
 
 void fds_close()
@@ -573,4 +606,29 @@ void fds_close()
   fds_used_space = 0;
   fds_block_count = 0;
   fds_changed = 0;
+}
+
+uint8_t fds_is_changed()
+{
+  return fds_changed;
+}
+
+FDS_STATE fds_get_state()
+{
+  return fds_state;
+}
+
+FRESULT fds_get_sides_count(char *filename, uint8_t *count)
+{
+  FILINFO fno;
+  FRESULT fr;
+
+  fr = f_stat(filename, &fno);
+  if (fr != FR_OK) return fr;
+  if (fno.fsize % FDS_SIDE_SIZE == FDS_HEADER_SIZE)
+    fno.fsize -= FDS_HEADER_SIZE;
+  if (fno.fsize % FDS_SIDE_SIZE != 0)
+    return FR_INVALID_OBJECT;
+  *count = fno.fsize / FDS_SIDE_SIZE;
+  return fr;
 }

@@ -162,7 +162,6 @@ int main(void)
   else
     print("sd card error");
 
-//  char *filename = "Metroid (Japan) (v1.2) (eng).fds";
   FATFS FatFs;
   FRESULT fr;
   fr = f_mount(&FatFs, "", 1);
@@ -174,7 +173,8 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim1);
 
   //HAL_StatusTypeDef r = HAL_SD_ReadBlocks(&hsd2, buff, 0, sizeof(buff), 1000);
-  char *filename = "Super Mario Brothers (Japan).fds";
+  char *filename = "Metroid (Japan) (v1.2) (eng).fds";
+  //char *filename = "Super Mario Brothers (Japan).fds";
   fr = f_mount(&FatFs, "", 1);
   if (fr == FR_OK)
     print("sd card ok");
@@ -198,7 +198,6 @@ int main(void)
 //  fds_dump("bad.bin");
 //  print("dumped.");
 
-  fds_save(1);
 
   /* USER CODE END 2 */
 
@@ -206,6 +205,16 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    if (fds_is_changed() && fds_get_state() == FDS_IDLE)
+    {
+      print("saving");
+      fr = fds_save(1);
+      if (fr == FR_OK)
+        print("saved.");
+      else
+        print("error :(");
+    }
+    HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

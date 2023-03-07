@@ -196,7 +196,7 @@ DRESULT USER_ioctl (
 )
 {
   /* USER CODE BEGIN IOCTL */
-    DRESULT res = RES_ERROR;
+    DRESULT res = RES_OK;
     return res;
   /* USER CODE END IOCTL */
 }

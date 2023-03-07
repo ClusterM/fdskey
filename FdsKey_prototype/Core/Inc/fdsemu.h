@@ -21,12 +21,12 @@
 #define FDS_WRITE_GAP_SKIP_BITS 4
 #define FDS_THRESHOLD_1 960
 #define FDS_THRESHOLD_2 1120
-#define FDS_NOT_READY_TIME 500 // milliseconds
+#define FDS_NOT_READY_TIME 1000 // milliseconds
 #define FDS_NOT_READY_BYTES 4096
 
 // do not touch it
 #define FDS_HEADER_SIZE 16    // heade in ROM
-#define FDS_SIDE_LENGTH 65500 // disk side size in ROM
+#define FDS_SIDE_SIZE 65500 // disk side size in ROM
 
 // special subdefines
 #define FDS_GLUE(a, b) a##b
@@ -46,9 +46,10 @@ typedef enum {
   FDS_SAVING
 } FDS_STATE;
 
-FRESULT fds_get_sides_count(char *filename, uint8_t *count);
 FRESULT fds_load_side(char *filename, uint8_t side);
 void fds_close();
+FRESULT fds_save(uint8_t backup_original);
+FRESULT fds_get_sides_count(char *filename, uint8_t *count);
 void fds_write_impulse();
 void fds_check_pins();
 void fds_tick_100ms();
