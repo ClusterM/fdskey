@@ -198,6 +198,8 @@ int main(void)
 //  fds_dump("bad.bin");
 //  print("dumped.");
 
+  fds_save(1);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */

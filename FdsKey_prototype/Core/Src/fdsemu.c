@@ -407,9 +407,9 @@ void fds_tick_100ms() // call every ~100ms, low priority task
 FRESULT fds_load_side(char *filename, uint8_t side)
 {
   int i;
-  FILINFO fno;
-  FIL fp;
   FRESULT fr;
+  FIL fp;
+  FILINFO fno;
   int gap_length;
   int block_size;
   uint8_t block_type;
@@ -428,6 +428,7 @@ FRESULT fds_load_side(char *filename, uint8_t side)
   HAL_GPIO_WritePin(FDS_WRITABLE_MEDIA_GPIO_Port, FDS_WRITABLE_MEDIA_Pin, GPIO_PIN_RESET);
 
   strncpy(fds_filename, filename, sizeof(fds_filename));
+  filename[sizeof(fds_filename) - 1] = 0;
   fds_side = side;
 
   fr = f_stat(filename, &fno);
@@ -525,6 +526,39 @@ FRESULT fds_load_side(char *filename, uint8_t side)
   }
  
   return FR_OK;
+}
+
+void fds_save(uint8_t backup_original)
+{
+  FRESULT fr;
+  FIL fp;
+  FILINFO fno;
+
+  if (fds_state == FDS_OFF) return;
+  while (fds_state != FDS_IDLE) ; // wait for idle state
+  fds_state = FDS_SAVING;
+
+  if (backup_original)
+  {
+    // combine backup filename
+    char backup_filename[FDS_MAX_FILE_PATH_LENGHT + 4];
+    strcpy(backup_filename, fds_filename);
+    strcat(backup_filename, ".bak");
+    // check if exists
+    fr = f_stat(backup_filename, &fno);
+    if (fr != FR_OK) return fr;
+    /*
+    if (fno.fsize % FDS_SIDE_LENGTH == FDS_HEADER_SIZE)
+      fno.fsize -= FDS_HEADER_SIZE;
+    if (fno.fsize % FDS_SIDE_LENGTH != 0)
+      return FR_INVALID_OBJECT;
+    */
+  }
+
+  // resume idle state
+  fds_state = FDS_IDLE;
+  // but start reading/writing if need
+  fds_check_pins();
 }
 
 void fds_close()

@@ -11,7 +11,7 @@
 #define FDS_WRITE_TIMER htim2
 
 // FDS emulation settings
-#define FDS_MAX_SIDE_SIZE (100 * 1024) // 65000 + some space for gaps and crcs
+#define FDS_MAX_SIDE_SIZE (80 * 1024) // 65000 + some space for gaps and crcs
 #define FDS_MAX_FILE_PATH_LENGHT 4096
 #define FDS_MAX_BLOCKS 256
 #define FDS_MAX_BLOCK_SIZE FDS_MAX_SIDE_SIZE
@@ -42,7 +42,8 @@ typedef enum {
   FDS_READ_WAIT_READY_TIMER,
   FDS_READING,
   FDS_WRITING_GAP,
-  FDS_WRITING
+  FDS_WRITING,
+  FDS_SAVING
 } FDS_STATE;
 
 FRESULT fds_get_sides_count(char *filename, uint8_t *count);
