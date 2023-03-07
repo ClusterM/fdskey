@@ -11,14 +11,14 @@
 #define FDS_WRITE_TIMER htim2
 
 // FDS emulation settings
-#define FDS_MAX_SIDE_SIZE (72 * 1024) // 65000 + some space for gaps and crcs
+#define FDS_MAX_SIDE_SIZE (100 * 1024) // 65000 + some space for gaps and crcs
 #define FDS_MAX_FILE_PATH_LENGHT 4096
 #define FDS_MAX_BLOCKS 256
 #define FDS_MAX_BLOCK_SIZE FDS_MAX_SIDE_SIZE
-#define FDS_READ_BUFFER_SIZE 64 // bits
+#define FDS_READ_BUFFER_SIZE 128 // bits
 #define FDS_FIRST_GAP_READ_BITS 28300
 #define FDS_NEXT_GAPS_READ_BITS 976
-#define FDS_WRITE_GAP_SKIP_BITS 64
+#define FDS_WRITE_GAP_SKIP_BITS 4
 #define FDS_THRESHOLD_1 960
 #define FDS_THRESHOLD_2 1120
 #define FDS_NOT_READY_TIME 500 // milliseconds

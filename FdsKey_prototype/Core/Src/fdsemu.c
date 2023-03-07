@@ -25,7 +25,7 @@ static volatile uint16_t fds_current_block_end = 0;
 static volatile uint16_t fds_write_gap_skip = 0;
 static volatile uint8_t fds_changed = 0;
 
-static uint8_t fds_config_fast_rewind = 1;
+static uint8_t fds_config_fast_rewind = 0;
 
 static void fds_stop_reading();
 
@@ -203,6 +203,7 @@ static void fds_start_writing()
     fds_raw_data[fds_current_byte++] = 0;
   fds_raw_data[fds_current_byte++] = 0x80; // gap terminator
   fds_write_gap_skip = 0;
+  fds_changed = 1; // flag that ROM changed
 
    // start and reset timer
   HAL_TIM_Base_Start(&FDS_WRITE_TIMER);
@@ -216,7 +217,6 @@ static void fds_start_writing()
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(FDS_WRITE_DATA_GPIO_Port, &GPIO_InitStruct);
   fds_state = FDS_WRITING_GAP;
-
 }
 
 static void fds_stop_writing()
@@ -515,9 +515,6 @@ FRESULT fds_load_side(char *filename, uint8_t side)
      fds_block_count++;
   }
   f_close(&fp);
-
-//  memset((uint8_t*)fds_raw_data, 0, sizeof(fds_raw_data));
-//  fds_block_count = 0;
 
   if (!HAL_GPIO_ReadPin(FDS_SCAN_MEDIA_GPIO_Port, FDS_SCAN_MEDIA_Pin))
   {
