@@ -269,7 +269,6 @@ void fds_write_bit(uint8_t bit)
   fds_current_bit++;
   if (fds_current_bit > 7)
   {
-    uint8_t data = fds_raw_data[fds_current_byte];
     fds_current_bit = 0;
     fds_current_byte = (fds_current_byte + 1) % FDS_MAX_SIDE_SIZE;
   }
@@ -517,8 +516,8 @@ FRESULT fds_load_side(char *filename, uint8_t side)
   }
   f_close(&fp);
 
-  memset((uint8_t*)fds_raw_data, 0, sizeof(fds_raw_data));
-  fds_block_count = 0;
+//  memset((uint8_t*)fds_raw_data, 0, sizeof(fds_raw_data));
+//  fds_block_count = 0;
 
   if (!HAL_GPIO_ReadPin(FDS_SCAN_MEDIA_GPIO_Port, FDS_SCAN_MEDIA_Pin))
   {
