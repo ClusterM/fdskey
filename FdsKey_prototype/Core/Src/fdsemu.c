@@ -403,7 +403,7 @@ FRESULT fds_load_side(char *filename, uint8_t side)
   UINT br;
   uint16_t crc;
 
-  fds_close();
+  fds_close(0, 0);
   fds_reset();
 
   // not ready yet
@@ -478,7 +478,7 @@ FRESULT fds_load_side(char *filename, uint8_t side)
     {
      // SD card error?
      f_close(&fp);
-     fds_close();
+     fds_close(0, 0);
      return fr;
     }
     if (br != block_size) {
@@ -523,7 +523,7 @@ FRESULT fds_save(uint8_t backup_original)
   UINT br, bw;
   int i;
 
-  if (fds_state == FDS_OFF || !fds_changed) return FR_NOT_ENABLED;
+  if (!fds_changed) return FR_NOT_ENABLED;
   while (fds_state != FDS_IDLE) ; // wait for idle state
   fds_state = FDS_SAVING;
 
@@ -594,11 +594,10 @@ FRESULT fds_save(uint8_t backup_original)
   return FR_OK;
 }
 
-void fds_close()
+FRESULT fds_close(uint8_t save, uint8_t backup_original)
 {
   fds_stop();
   fds_state = FDS_OFF;
-
   // remove disk
   HAL_GPIO_WritePin(FDS_MEDIA_SET_GPIO_Port, FDS_MEDIA_SET_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_SET);
@@ -606,6 +605,11 @@ void fds_close()
   fds_used_space = 0;
   fds_block_count = 0;
   fds_changed = 0;
+
+  if (save)
+    return fds_save(backup_original);
+  else
+    return FR_OK;
 }
 
 uint8_t fds_is_changed()

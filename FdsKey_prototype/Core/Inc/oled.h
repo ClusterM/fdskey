@@ -56,8 +56,8 @@ HAL_StatusTypeDef oled_update_invisible();
 HAL_StatusTypeDef oled_set_line(int y);
 uint8_t oled_get_line();
 
-void oled_draw_rectangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t fill, uint8_t value);
-void oled_draw_line(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t value);
+void oled_draw_rectangle(int x1, int y1, int x2, int y2, uint8_t fill, uint8_t value);
+void oled_draw_line(int x1, int y1, int x2, int y2, uint8_t value);
 void oled_copy_to_invisible();
 void oled_switch_to_invisible();
 void oled_draw_text(const DotMatrixFont *font, char* text, int x, int y, uint8_t replace, uint8_t invert);

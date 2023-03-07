@@ -47,7 +47,7 @@ typedef enum {
 } FDS_STATE;
 
 FRESULT fds_load_side(char *filename, uint8_t side);
-void fds_close();
+FRESULT fds_close(uint8_t save, uint8_t backup_original);
 FRESULT fds_save(uint8_t backup_original);
 FRESULT fds_get_sides_count(char *filename, uint8_t *count);
 void fds_write_impulse();

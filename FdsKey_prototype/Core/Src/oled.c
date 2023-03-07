@@ -169,7 +169,7 @@ void oled_scroll_right() {
 	free(target_img);
 }
 
-void oled_draw_rectangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2,
+void oled_draw_rectangle(int x1, int y1, int x2, int y2,
 		uint8_t fill, uint8_t value) {
 	uint8_t x, y;
 
@@ -183,14 +183,6 @@ void oled_draw_rectangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2,
 		y1 = y2;
 		y2 = y;
 	}
-	if (x1 > OLED_WIDTH - 1)
-		x1 = OLED_WIDTH - 1;
-	if (x2 > OLED_WIDTH - 1)
-		x2 = OLED_WIDTH - 1;
-	if (y1 > OLED_HEIGHT - 1)
-		y1 = OLED_HEIGHT - 1;
-	if (y2 > OLED_HEIGHT - 1)
-		y2 = OLED_HEIGHT - 1;
 
 	for (y = y1; y <= y2; y++) {
 		if (fill || y == y1 || y == y2) {
@@ -203,18 +195,9 @@ void oled_draw_rectangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2,
 	}
 }
 
-void oled_draw_line(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2,
+void oled_draw_line(int x1, int y1, int x2, int y2,
 		uint8_t value) {
 	int x, y;
-
-	if (x1 > OLED_WIDTH - 1)
-		x1 = OLED_WIDTH - 1;
-	if (x2 > OLED_WIDTH - 1)
-		x2 = OLED_WIDTH - 1;
-	if (y1 > OLED_HEIGHT - 1)
-		y1 = OLED_HEIGHT - 1;
-	if (y2 > OLED_HEIGHT - 1)
-		y2 = OLED_HEIGHT - 1;
 
 	if (x1 == x2 || y1 == y2) {
 		oled_draw_rectangle(x1, y1, x2, y2, 0, value);
