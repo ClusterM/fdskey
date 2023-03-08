@@ -582,7 +582,7 @@ FRESULT fds_save(uint8_t backup_original)
     }
   }
 
-  // we need to set fisk side offset
+  // we need to set disk side offset
   fr = f_stat(fds_filename, &fno);
   if (fr != FR_OK)
     return fr;
@@ -616,20 +616,22 @@ FRESULT fds_save(uint8_t backup_original)
 
 FRESULT fds_close(uint8_t save, uint8_t backup_original)
 {
+  FRESULT fr = FR_OK;
+
   fds_stop();
   fds_state = FDS_OFF;
   // remove disk
   HAL_GPIO_WritePin(FDS_MEDIA_SET_GPIO_Port, FDS_MEDIA_SET_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_SET);
 
+  if (save)
+    fr = fds_save(backup_original);
+
   fds_used_space = 0;
   fds_block_count = 0;
   fds_changed = 0;
 
-  if (save)
-    return fds_save(backup_original);
-  else
-    return FR_OK;
+  return fr;
 }
 
 uint8_t fds_is_changed()

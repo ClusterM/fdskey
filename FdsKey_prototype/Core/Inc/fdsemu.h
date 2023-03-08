@@ -53,6 +53,8 @@ FRESULT fds_get_sides_count(char *filename, uint8_t *count);
 void fds_write_impulse();
 void fds_check_pins();
 void fds_tick_100ms();
+uint8_t fds_is_changed();
+FDS_STATE fds_get_state();
 
 extern TIM_HandleTypeDef FDS_READ_PWM_TIMER;
 extern DMA_HandleTypeDef FDS_READ_DMA;
