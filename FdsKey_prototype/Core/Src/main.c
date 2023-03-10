@@ -72,7 +72,7 @@ int line = 0;
 void print(char *text)
 {
   oled_draw_rectangle(0, line * 8, OLED_WIDTH - 1, line * 8 + 7, 1, 0);
-  oled_draw_text_cropped(&FONT_SLIMFONT_8, text,
+  oled_draw_text_cropped(&FONT_ULTRASLIMFONT_8, text,
       0, line * 8,
       0, OLED_WIDTH,
       0, 0,
@@ -175,13 +175,12 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim1);
 
   //HAL_StatusTypeDef r = HAL_SD_ReadBlocks(&hsd2, buff, 0, sizeof(buff), 1000);
-  char *filename = "Metroid (Japan) (v1.2) (eng).fds";
-  //char *filename = "Super Mario Brothers (Japan).fds";
-  fr = f_mount(&FatFs, "", 1);
-  if (fr == FR_OK)
-    print("sd card ok");
-  else
-    print("sd card error");
+  //char *filename = "Metroid (Japan) (v1.2) (eng).fds";
+  char *filename = "Super Mario Brothers (Japan).fds";
+
+//  browser_load_dir("/", 0);
+//  while(1);
+
   uint8_t sides;
   fr = fds_get_sides_count(filename, &sides);
   if (fr != FR_OK) print("fds file size failed");

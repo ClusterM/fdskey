@@ -171,7 +171,7 @@ void oled_scroll_right() {
 
 void oled_draw_rectangle(int x1, int y1, int x2, int y2,
 		uint8_t fill, uint8_t value) {
-	uint8_t x, y;
+	int x, y;
 
 	if (x2 < x1) {
 		x = x1;

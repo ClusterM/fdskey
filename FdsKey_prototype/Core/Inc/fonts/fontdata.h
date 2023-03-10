@@ -23,6 +23,7 @@
 #include "slimfont_8_font.h"
 #include "standard_12_font.h"
 #include "standard_6_font.h"
+#include "ultraslimfont_8_font.h"
 #include "verdana_14_bold_font.h"
 #include "verdana_14_font.h"
 #include "verdana_16_bold_font.h"
@@ -168,7 +169,7 @@ const DotMatrixFont FONT_GAMEGIRL_CLASSIC_6 = {
   .font_length = FONT_GAMEGIRL_CLASSIC_6_LENGTH,
   .char_width = FONT_GAMEGIRL_CLASSIC_6_CHAR_WIDTH,
   .char_height = FONT_GAMEGIRL_CLASSIC_6_CHAR_HEIGHT,
-  .spacing = 0,
+  .spacing = 1,
   .space_length = 0,
   .font_data = font_gamegirl_classic_6
 };
@@ -314,6 +315,17 @@ const DotMatrixFont FONT_STANDARD_6 = {
   .spacing = 1,
   .space_length = 0,
   .font_data = font_standard_6
+};
+
+const DotMatrixFont FONT_ULTRASLIMFONT_8 = {
+  .font_type = FONT_ULTRASLIMFONT_8_FONT_TYPE,
+  .start_char = FONT_ULTRASLIMFONT_8_START_CHAR,
+  .font_length = FONT_ULTRASLIMFONT_8_LENGTH,
+  .char_width = FONT_ULTRASLIMFONT_8_CHAR_WIDTH,
+  .char_height = FONT_ULTRASLIMFONT_8_CHAR_HEIGHT,
+  .spacing = 1,
+  .space_length = 3,
+  .font_data = font_ultraslimfont_8
 };
 
 const DotMatrixFont FONT_VERDANA_14_BOLD = {
