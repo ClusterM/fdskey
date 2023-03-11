@@ -3,7 +3,7 @@
 #include "fdsemu.h"
 #include "fatfs.h"
 
-static char fds_filename[FDS_MAX_FILE_PATH_LENGHT];
+static char fds_filename[FDS_MAX_FILE_PATH_LENGTH];
 static uint8_t fds_side;
 // loaded FDS data
 static volatile uint8_t fds_raw_data[FDS_MAX_SIDE_SIZE];
@@ -12,6 +12,7 @@ static volatile int fds_used_space = 0;
 static volatile int fds_block_count = 0;
 static volatile int fds_block_offsets[FDS_MAX_BLOCKS];
 static volatile int fds_block_sizes[FDS_MAX_BLOCKS];
+static volatile uint16_t fds_write_buffer[FDS_WRITE_BUFFER_SIZE];
 
 // state machine variables
 static volatile FDS_STATE fds_state = FDS_OFF;
@@ -19,15 +20,19 @@ static volatile uint8_t fds_clock = 0;
 static volatile int fds_current_byte = 0;
 static volatile uint8_t fds_current_bit = 0;
 static volatile uint8_t fds_last_value = 0;
-static volatile uint8_t fds_write_carrier = 0;
 static volatile uint32_t fds_not_ready_time = 0;
+static volatile uint8_t fds_write_carrier = 0;
+static volatile uint16_t fds_last_write_impulse = 0;
 static volatile uint16_t fds_current_block_end = 0;
 static volatile uint16_t fds_write_gap_skip = 0;
 static volatile uint8_t fds_changed = 0;
 
 static uint8_t fds_config_fast_rewind = 1;
 
+static void fds_start_reading();
+static void fds_start_writing();
 static void fds_stop_reading();
+static void fds_stop_writing();
 
 // debug dumping
 void fds_dump(char *filename)
@@ -66,7 +71,7 @@ static uint16_t fds_crc(uint8_t *data, unsigned size)
   return sum;
 }
 
-// returns block size without gap but with crc
+// returns block size
 static uint16_t fds_get_block_size(int i, uint8_t include_gap, uint8_t include_crc)
 {
   if (i == 0)
@@ -80,7 +85,7 @@ static uint16_t fds_get_block_size(int i, uint8_t include_gap, uint8_t include_c
       + (fds_raw_data[fds_block_offsets[i - 1] + FDS_NEXT_GAPS_READ_BITS / 8 + 0x0D] | (fds_raw_data[fds_block_offsets[i - 1] + FDS_NEXT_GAPS_READ_BITS / 8 + 0x0E] << 8)) + (include_crc ? 2 : 0);
 }
 
-static void fds_dma_fill_buffer(int pos, int length)
+static void fds_dma_fill_read_buffer(int pos, int length)
 {
   // filling PWM DMA buffer with data
   uint8_t bit, value;
@@ -125,26 +130,137 @@ static void fds_dma_fill_buffer(int pos, int length)
   }
 }
 
-static void fds_dma_half_callback(DMA_HandleTypeDef *hdma)
+static void fds_dma_read_half_callback(DMA_HandleTypeDef *hdma)
 {
-  fds_dma_fill_buffer(0, FDS_READ_BUFFER_SIZE / 2);
+  fds_dma_fill_read_buffer(0, FDS_READ_BUFFER_SIZE / 2);
 }
 
-static void fds_dma_full_callback(DMA_HandleTypeDef *hdma)
+static void fds_dma_read_full_callback(DMA_HandleTypeDef *hdma)
 {
-  fds_dma_fill_buffer(FDS_READ_BUFFER_SIZE / 2, FDS_READ_BUFFER_SIZE / 2);
+  fds_dma_fill_read_buffer(FDS_READ_BUFFER_SIZE / 2, FDS_READ_BUFFER_SIZE / 2);
+}
+
+static void fds_write_bit(uint8_t bit)
+{
+  fds_raw_data[fds_current_byte] = (fds_raw_data[fds_current_byte] >> 1) | (bit << 7);
+  fds_current_bit++;
+  if (fds_current_bit > 7)
+  {
+    fds_current_bit = 0;
+    fds_current_byte = (fds_current_byte + 1) % FDS_MAX_SIDE_SIZE;
+
+    if (fds_current_byte > fds_current_block_end)
+    {
+      // end of block
+      fds_stop_writing();
+      if (!HAL_GPIO_ReadPin(FDS_SCAN_MEDIA_GPIO_Port, FDS_SCAN_MEDIA_Pin))
+      {
+        // still spinning disk
+        if (HAL_GPIO_ReadPin(FDS_WRITE_GPIO_Port, FDS_WRITE_Pin))
+          fds_start_reading(); // not writing anymore
+        else
+          fds_state = FDS_WRITING_STOPPING; // still writing but garbage data
+      } else {
+        fds_state = FDS_IDLE;
+      }
+    }
+  }
+}
+
+static void fds_write_impulse(uint16_t pulse)
+{
+  //if (time < 512) return; // filter
+  switch (fds_state)
+  {
+  case FDS_WRITING_GAP:
+  case FDS_WRITING:
+    break;
+  default:
+    fds_stop_writing();
+    return;
+  }
+  if (fds_state == FDS_WRITING_GAP)
+  {
+    if (fds_write_gap_skip < FDS_WRITE_GAP_SKIP_BITS)
+      fds_write_gap_skip++;
+    else if (pulse >= FDS_THRESHOLD_1)
+    {
+      // start '1' bit
+      fds_write_carrier = 0;
+      fds_current_bit = 0;
+      fds_state = FDS_WRITING;
+    }
+  } else if (fds_state == FDS_WRITING)
+  {
+    uint8_t l = fds_write_carrier;
+    if (pulse < FDS_THRESHOLD_1)
+      l |= 2;
+    else if (pulse < FDS_THRESHOLD_2)
+      l |= 3;
+    else
+      l |= 4;
+    switch (l)
+    {
+    case 0x82:
+      fds_write_bit(0);
+      fds_write_carrier = 0x80;
+      break;
+    case 0x83:
+      fds_write_bit(1);
+      fds_write_carrier = 0;
+      break;
+    case 0x84:
+      // invalid state
+      break;
+    case 0x02:
+      fds_write_bit(1);
+      fds_write_carrier = 0;
+      break;
+    case 0x03:
+      fds_write_bit(0);
+      fds_write_bit(0);
+      fds_write_carrier = 0x80;
+      break;
+    case 0x04:
+      fds_write_bit(0);
+      fds_write_bit(1);
+      fds_write_carrier = 0;
+      break;
+    }
+  }
+}
+
+static void fds_dma_parse_write_buffer(int pos, int length)
+{
+  uint16_t pulse;
+  while (length)
+  {
+    pulse = fds_write_buffer[pos] - fds_last_write_impulse;
+    fds_write_impulse(pulse);
+    fds_last_write_impulse = fds_write_buffer[pos];
+    length--;
+    pos++;
+  }
+}
+
+static void fds_dma_write_half_callback(DMA_HandleTypeDef *hdma)
+{
+  fds_dma_parse_write_buffer(0, FDS_WRITE_BUFFER_SIZE / 2);
+}
+
+static void fds_dma_write_full_callback(DMA_HandleTypeDef *hdma)
+{
+  fds_dma_parse_write_buffer(FDS_WRITE_BUFFER_SIZE / 2, FDS_WRITE_BUFFER_SIZE / 2);
 }
 
 static void fds_start_reading()
 {
   fds_current_bit = 0;
-  FDS_READ_DMA.XferHalfCpltCallback = fds_dma_half_callback;
-  FDS_READ_DMA.XferCpltCallback = fds_dma_full_callback;
-  HAL_DMA_Start_IT(&FDS_READ_DMA, (uint32_t) fds_read_buffer, (uint32_t) &FDS_READ_PWM_TIMER.Instance->FDS_READ_PWM_TIMER_CHANNEL_REG,
-  FDS_READ_BUFFER_SIZE);
+  fds_dma_fill_read_buffer(0, FDS_READ_BUFFER_SIZE);
+  HAL_DMA_RegisterCallback(&FDS_READ_DMA, HAL_DMA_XFER_HALFCPLT_CB_ID, fds_dma_read_half_callback);
+  HAL_DMA_RegisterCallback(&FDS_READ_DMA, HAL_DMA_XFER_CPLT_CB_ID, fds_dma_read_full_callback);
   __HAL_TIM_ENABLE_DMA(&FDS_READ_PWM_TIMER, TIM_DMA_UPDATE);
-  fds_dma_fill_buffer(0, FDS_READ_BUFFER_SIZE);
-  FDS_READ_PWM_TIMER.Instance->ARR = FDS_READ_IMPULSE_LENGTH * 10 - 1;
+  HAL_DMA_Start_IT(&FDS_READ_DMA, (uint32_t)&fds_read_buffer, (uint32_t)&FDS_READ_PWM_TIMER.Instance->FDS_READ_PWM_TIMER_CHANNEL_REG, FDS_READ_BUFFER_SIZE);
   HAL_TIM_PWM_Start(&FDS_READ_PWM_TIMER, FDS_READ_PWM_TIMER_CHANNEL_CONST);
   fds_state = FDS_READING;
 }
@@ -209,28 +325,18 @@ static void fds_start_writing()
   fds_changed = 1; // flag that ROM changed
 
   // start and reset timer
-  HAL_TIM_Base_Start(&FDS_WRITE_TIMER);
-  FDS_WRITE_TIMER.Instance->CNT = 0;
-
-  // enable interrupt on write data
-  HAL_GPIO_DeInit(FDS_WRITE_DATA_GPIO_Port, FDS_WRITE_DATA_Pin);
-  GPIO_InitTypeDef GPIO_InitStruct = { 0 };
-  GPIO_InitStruct.Pin = FDS_WRITE_DATA_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  HAL_GPIO_Init(FDS_WRITE_DATA_GPIO_Port, &GPIO_InitStruct);
   fds_state = FDS_WRITING_GAP;
+  HAL_DMA_RegisterCallback(&hdma_tim15_ch1, HAL_DMA_XFER_HALFCPLT_CB_ID, fds_dma_write_half_callback);
+  HAL_DMA_RegisterCallback(&hdma_tim15_ch1, HAL_DMA_XFER_CPLT_CB_ID, fds_dma_write_full_callback);
+  __HAL_TIM_ENABLE_DMA(&htim15, TIM_DMA_CC1);
+  HAL_DMA_Start_IT(&hdma_tim15_ch1, (uint32_t)&(htim15.Instance->CCR1), (uint32_t)&fds_write_buffer, FDS_WRITE_BUFFER_SIZE);
+  HAL_TIM_IC_Start_IT(&htim15, TIM_CHANNEL_1);
 }
 
 static void fds_stop_writing()
 {
-  // disable interrupt on write data
-  HAL_GPIO_DeInit(FDS_WRITE_DATA_GPIO_Port, FDS_WRITE_DATA_Pin);
-  GPIO_InitTypeDef GPIO_InitStruct = { 0 };
-  GPIO_InitStruct.Pin = FDS_WRITE_DATA_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  HAL_GPIO_Init(FDS_WRITE_DATA_GPIO_Port, &GPIO_InitStruct);
+  HAL_DMA_Abort_IT(&hdma_tim15_ch1);
+  HAL_TIM_IC_Stop_IT(&htim15, TIM_CHANNEL_1);
 }
 
 static void fds_stop()
@@ -250,91 +356,21 @@ void fds_reset()
   fds_last_value = 0;
 }
 
-void fds_write_bit(uint8_t bit)
-{
-  if (fds_current_byte < fds_current_block_end)
-    fds_raw_data[fds_current_byte] = (fds_raw_data[fds_current_byte] >> 1) | (bit << 7);
-  fds_current_bit++;
-  if (fds_current_bit > 7)
-  {
-    fds_current_bit = 0;
-    fds_current_byte = (fds_current_byte + 1) % FDS_MAX_SIDE_SIZE;
-  }
-}
-
-void fds_write_impulse()
-{
-  uint32_t time = FDS_WRITE_TIMER.Instance->CNT;
-  //if (time < 512) return; // filter
-  FDS_WRITE_TIMER.Instance->CNT = 0;
-  switch (fds_state)
-  {
-  case FDS_WRITING_GAP:
-  case FDS_WRITING:
-    break;
-  default:
-    fds_stop_writing();
-    return;
-  }
-  if (fds_state == FDS_WRITING_GAP)
-  {
-    if (fds_write_gap_skip < FDS_WRITE_GAP_SKIP_BITS)
-      fds_write_gap_skip++;
-    else if (time >= FDS_THRESHOLD_1)
-    {
-      // start '1' bit
-      fds_write_carrier = 0;
-      fds_current_bit = 0;
-      fds_state = FDS_WRITING;
-    }
-  } else if (fds_state == FDS_WRITING)
-  {
-    uint8_t l = fds_write_carrier;
-    if (time < FDS_THRESHOLD_1)
-      l |= 2;
-    else if (time < FDS_THRESHOLD_2)
-      l |= 3;
-    else
-      l |= 4;
-    switch (l)
-    {
-    case 0x82:
-      fds_write_bit(0);
-      fds_write_carrier = 0x80;
-      break;
-    case 0x83:
-      fds_write_bit(1);
-      fds_write_carrier = 0;
-      break;
-    case 0x84:
-      // invalid state
-      break;
-    case 0x02:
-      fds_write_bit(1);
-      fds_write_carrier = 0;
-      break;
-    case 0x03:
-      fds_write_bit(0);
-      fds_write_bit(0);
-      fds_write_carrier = 0x80;
-      break;
-    case 0x04:
-      fds_write_bit(0);
-      fds_write_bit(1);
-      fds_write_carrier = 0;
-      break;
-    }
-  }
-}
-
 void fds_check_pins()
 {
   if (HAL_GPIO_ReadPin(FDS_SCAN_MEDIA_GPIO_Port, FDS_SCAN_MEDIA_Pin))
   {
     // motor stop
     HAL_GPIO_WritePin(FDS_MOTOR_ON_GPIO_Port, FDS_MOTOR_ON_Pin, GPIO_PIN_RESET); // do i really need this?
-    if (fds_state != FDS_IDLE)
+    switch (fds_state)
+    {
+    case FDS_OFF:
+    case FDS_IDLE:
+    case FDS_WRITING: // waiting for FDS_WRITING_STOPPING (until buffer written by DMA)
+      break;
+    default:
       fds_stop();
+    }
   } else
   {
     HAL_GPIO_WritePin(FDS_MOTOR_ON_GPIO_Port, FDS_MOTOR_ON_Pin, GPIO_PIN_SET);
@@ -344,6 +380,7 @@ void fds_check_pins()
       switch (fds_state)
       {
       case FDS_IDLE:
+      case FDS_WRITING_STOPPING:
         fds_start_reading();
         if (fds_config_fast_rewind || fds_current_byte == 0)
         {
@@ -355,12 +392,8 @@ void fds_check_pins()
           fds_state = FDS_READ_WAIT_READY;
         }
         break;
-      case FDS_WRITING:
-      case FDS_WRITING_GAP:
-        fds_stop_writing();
-        fds_start_reading();
-        break;
       default:
+        // ignore any other state
         break;
       }
     } else
@@ -545,7 +578,7 @@ FRESULT fds_save(uint8_t backup_original)
   if (backup_original)
   {
     // combine backup filename
-    char backup_filename[FDS_MAX_FILE_PATH_LENGHT + 4];
+    char backup_filename[FDS_MAX_FILE_PATH_LENGTH + 4];
     strcpy(backup_filename, fds_filename);
     strcat(backup_filename, ".bak");
     // check if exists

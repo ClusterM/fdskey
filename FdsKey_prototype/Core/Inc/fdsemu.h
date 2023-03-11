@@ -8,25 +8,29 @@
 #define FDS_READ_PWM_TIMER_CHANNEL 2
 #define FDS_READ_DMA hdma_tim3_up
 #define FDS_READ_IMPULSE_LENGTH 32
-#define FDS_WRITE_TIMER htim2
+
+#define FDS_WRITE_CAPTURE_TIMER htim5
+#define FDS_WRITE_CAPTURE_TIMER_CHANNEL 3
+#define FDS_WRITE_DMA hdma_tim5_ch3
+#define FDS_THRESHOLD_1 960
+#define FDS_THRESHOLD_2 1120
 
 // FDS emulation settings
 #define FDS_MAX_SIDE_SIZE (80 * 1024) // 65000 + some space for gaps and crcs
-#define FDS_MAX_FILE_PATH_LENGHT 4096
+#define FDS_MAX_FILE_PATH_LENGTH 4096
 #define FDS_MAX_BLOCKS 256
 #define FDS_MAX_BLOCK_SIZE FDS_MAX_SIDE_SIZE
-#define FDS_READ_BUFFER_SIZE 128 // bits
-#define FDS_FIRST_GAP_READ_BITS 28300
-#define FDS_NEXT_GAPS_READ_BITS 976
-#define FDS_WRITE_GAP_SKIP_BITS 4
-#define FDS_THRESHOLD_1 960
-#define FDS_THRESHOLD_2 1120
-#define FDS_NOT_READY_TIME 1000 // milliseconds
-#define FDS_NOT_READY_BYTES 4096
+#define FDS_READ_BUFFER_SIZE 128      // bits
+#define FDS_WRITE_BUFFER_SIZE 128     // impulses
+#define FDS_FIRST_GAP_READ_BITS 28300 // first gap size, bits
+#define FDS_NEXT_GAPS_READ_BITS 976   // next gap size, bits
+#define FDS_WRITE_GAP_SKIP_BITS 8     // dispose bits before writing
+#define FDS_NOT_READY_TIME 1000       // disk rewind time, milliseconds (for fast rewind)
+#define FDS_NOT_READY_BYTES 4096      // disk rewind time, bytes (for slow rewind)
 
 // do not touch it
-#define FDS_HEADER_SIZE 16    // heade in ROM
-#define FDS_SIDE_SIZE 65500 // disk side size in ROM
+#define FDS_HEADER_SIZE 16    // header in ROM
+#define FDS_SIDE_SIZE 65500   // disk side size in ROM
 
 // special subdefines
 #define FDS_GLUE(a, b) a##b
@@ -43,6 +47,7 @@ typedef enum {
   FDS_READING,
   FDS_WRITING_GAP,
   FDS_WRITING,
+  FDS_WRITING_STOPPING,
   FDS_SAVING
 } FDS_STATE;
 
@@ -50,7 +55,6 @@ FRESULT fds_load_side(char *filename, uint8_t side);
 FRESULT fds_close(uint8_t save, uint8_t backup_original);
 FRESULT fds_save(uint8_t backup_original);
 FRESULT fds_get_sides_count(char *filename, uint8_t *count);
-void fds_write_impulse();
 void fds_check_pins();
 void fds_tick_100ms();
 uint8_t fds_is_changed();
@@ -59,5 +63,8 @@ FDS_STATE fds_get_state();
 extern TIM_HandleTypeDef FDS_READ_PWM_TIMER;
 extern DMA_HandleTypeDef FDS_READ_DMA;
 extern TIM_HandleTypeDef FDS_WRITE_TIMER;
+
+extern DMA_HandleTypeDef hdma_tim15_ch1;
+extern TIM_HandleTypeDef htim15;
 
 #endif /* INC_FDSEMU_H_ */

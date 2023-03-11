@@ -73,9 +73,6 @@ void Error_Handler(void);
 #define FDS_MOTOR_ON_GPIO_Port GPIOB
 #define FDS_STOP_MOTOR_Pin GPIO_PIN_1
 #define FDS_STOP_MOTOR_GPIO_Port GPIOB
-#define FDS_WRITE_DATA_Pin GPIO_PIN_2
-#define FDS_WRITE_DATA_GPIO_Port GPIOB
-#define FDS_WRITE_DATA_EXTI_IRQn EXTI2_IRQn
 #define FDS_SCAN_MEDIA_Pin GPIO_PIN_10
 #define FDS_SCAN_MEDIA_GPIO_Port GPIOB
 #define FDS_SCAN_MEDIA_EXTI_IRQn EXTI15_10_IRQn
@@ -90,6 +87,8 @@ void Error_Handler(void);
 #define SD_DTCT_GPIO_Port GPIOA
 #define SD_CS_Pin GPIO_PIN_4
 #define SD_CS_GPIO_Port GPIOB
+#define BUTTON1_Pin GPIO_PIN_9
+#define BUTTON1_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

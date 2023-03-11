@@ -47,7 +47,9 @@ I2C_HandleTypeDef hi2c1;
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim15;
 DMA_HandleTypeDef hdma_tim3_up;
+DMA_HandleTypeDef hdma_tim15_ch1;
 
 /* USER CODE BEGIN PV */
 
@@ -59,8 +61,9 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_TIM3_Init(void);
-static void MX_TIM1_Init(void);
 static void MX_TIM2_Init(void);
+static void MX_TIM1_Init(void);
+static void MX_TIM15_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -83,7 +86,7 @@ void print(char *text)
     int i;
     for (i = 0; i < 8; i++) {
       oled_set_line(oled_get_line() + 1);
-      HAL_Delay(5);
+      //HAL_Delay(5);
     }
   }
   line++;
@@ -102,12 +105,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-  if (GPIO_Pin == FDS_WRITE_DATA_Pin)
-    fds_write_impulse();
-  else
+//  if (GPIO_Pin == FDS_WRITE_DATA_Pin)
+//    fds_write_impulse();
+//  else
     fds_check_pins();
 }
-
 
 /* USER CODE END 0 */
 
@@ -143,8 +145,9 @@ int main(void)
   MX_I2C1_Init();
   MX_FATFS_Init();
   MX_TIM3_Init();
-  MX_TIM1_Init();
   MX_TIM2_Init();
+  MX_TIM1_Init();
+  MX_TIM15_Init();
   /* USER CODE BEGIN 2 */
 
   HAL_Delay(100);
@@ -177,6 +180,7 @@ int main(void)
   //HAL_StatusTypeDef r = HAL_SD_ReadBlocks(&hsd2, buff, 0, sizeof(buff), 1000);
   //char *filename = "Metroid (Japan) (v1.2) (eng).fds";
   char *filename = "Super Mario Brothers (Japan).fds";
+  //char *filename = "metroid_my.fds";
 
 //  browser_load_dir("/", 0);
 //  while(1);
@@ -193,11 +197,15 @@ int main(void)
     print("fds file loaded");
   else
     print("fds load failed");
+  print("dumping good...");
+  fds_dump("good.bin");
+  print("dumped.");
 
-//  HAL_Delay(60000);
-//  print("dumping...");
-//  fds_dump("bad.bin");
-//  print("dumped.");
+  while(HAL_GPIO_ReadPin(BUTTON1_GPIO_Port, BUTTON1_Pin));
+
+  print("dumping...");
+  fds_dump("bad.bin");
+  print("dumped.");
 
 
   /* USER CODE END 2 */
@@ -339,9 +347,9 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 6399;
+  htim1.Init.Prescaler = 63999;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 99;
+  htim1.Init.Period = 9;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -457,7 +465,7 @@ static void MX_TIM3_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 31;
+  sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
@@ -468,6 +476,55 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 2 */
   HAL_TIM_MspPostInit(&htim3);
+
+}
+
+/**
+  * @brief TIM15 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM15_Init(void)
+{
+
+  /* USER CODE BEGIN TIM15_Init 0 */
+
+  /* USER CODE END TIM15_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_IC_InitTypeDef sConfigIC = {0};
+
+  /* USER CODE BEGIN TIM15_Init 1 */
+
+  /* USER CODE END TIM15_Init 1 */
+  htim15.Instance = TIM15;
+  htim15.Init.Prescaler = 0;
+  htim15.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim15.Init.Period = 65535;
+  htim15.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim15.Init.RepetitionCounter = 0;
+  htim15.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_IC_Init(&htim15) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim15, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
+  sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
+  sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
+  sConfigIC.ICFilter = 0;
+  if (HAL_TIM_IC_ConfigChannel(&htim15, &sConfigIC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM15_Init 2 */
+
+  /* USER CODE END TIM15_Init 2 */
 
 }
 
@@ -485,6 +542,9 @@ static void MX_DMA_Init(void)
   /* DMA1_Channel1_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+  /* DMA1_Channel2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
 
 }
 
@@ -539,17 +599,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(FDS_MOTOR_ON_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : FDS_STOP_MOTOR_Pin SD_MISO_Pin */
-  GPIO_InitStruct.Pin = FDS_STOP_MOTOR_Pin|SD_MISO_Pin;
+  /*Configure GPIO pins : FDS_STOP_MOTOR_Pin SD_MISO_Pin BUTTON1_Pin */
+  GPIO_InitStruct.Pin = FDS_STOP_MOTOR_Pin|SD_MISO_Pin|BUTTON1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : FDS_WRITE_DATA_Pin */
-  GPIO_InitStruct.Pin = FDS_WRITE_DATA_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(FDS_WRITE_DATA_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : FDS_SCAN_MEDIA_Pin FDS_WRITE_Pin */
   GPIO_InitStruct.Pin = FDS_SCAN_MEDIA_Pin|FDS_WRITE_Pin;
@@ -571,9 +625,6 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(SD_DTCT_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI2_IRQn);
-
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
