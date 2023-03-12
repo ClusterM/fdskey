@@ -197,15 +197,15 @@ int main(void)
     print("fds file loaded");
   else
     print("fds load failed");
-  print("dumping good...");
-  fds_dump("good.bin");
-  print("dumped.");
+//  print("dumping good...");
+//  fds_dump("good.bin");
+//  print("dumped.");
 
-  while(HAL_GPIO_ReadPin(BUTTON1_GPIO_Port, BUTTON1_Pin));
-
-  print("dumping...");
-  fds_dump("bad.bin");
-  print("dumped.");
+//  while(HAL_GPIO_ReadPin(BUTTON1_GPIO_Port, BUTTON1_Pin));
+//
+//  print("dumping...");
+//  fds_dump("bad.bin");
+//  print("dumped.");
 
 
   /* USER CODE END 2 */

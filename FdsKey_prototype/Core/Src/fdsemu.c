@@ -326,17 +326,17 @@ static void fds_start_writing()
 
   // start and reset timer
   fds_state = FDS_WRITING_GAP;
-  HAL_DMA_RegisterCallback(&hdma_tim15_ch1, HAL_DMA_XFER_HALFCPLT_CB_ID, fds_dma_write_half_callback);
-  HAL_DMA_RegisterCallback(&hdma_tim15_ch1, HAL_DMA_XFER_CPLT_CB_ID, fds_dma_write_full_callback);
-  __HAL_TIM_ENABLE_DMA(&htim15, TIM_DMA_CC1);
-  HAL_DMA_Start_IT(&hdma_tim15_ch1, (uint32_t)&(htim15.Instance->CCR1), (uint32_t)&fds_write_buffer, FDS_WRITE_BUFFER_SIZE);
-  HAL_TIM_IC_Start_IT(&htim15, TIM_CHANNEL_1);
+  HAL_DMA_RegisterCallback(&FDS_WRITE_DMA, HAL_DMA_XFER_HALFCPLT_CB_ID, fds_dma_write_half_callback);
+  HAL_DMA_RegisterCallback(&FDS_WRITE_DMA, HAL_DMA_XFER_CPLT_CB_ID, fds_dma_write_full_callback);
+  __HAL_TIM_ENABLE_DMA(&FDS_WRITE_CAPTURE_TIMER, FDS_WRITE_CAPTURE_DMA_TRIGGER_CONST);
+  HAL_DMA_Start_IT(&FDS_WRITE_DMA, (uint32_t)&(FDS_WRITE_CAPTURE_TIMER.Instance->FDS_WRITE_CAPTURE_TIMER_CHANNEL_REG), (uint32_t)&fds_write_buffer, FDS_WRITE_BUFFER_SIZE);
+  HAL_TIM_IC_Start_IT(&FDS_WRITE_CAPTURE_TIMER, FDS_WRITE_CAPTURE_TIMER_CHANNEL_CONST);
 }
 
 static void fds_stop_writing()
 {
-  HAL_DMA_Abort_IT(&hdma_tim15_ch1);
-  HAL_TIM_IC_Stop_IT(&htim15, TIM_CHANNEL_1);
+  HAL_DMA_Abort_IT(&FDS_WRITE_DMA);
+  HAL_TIM_IC_Stop_IT(&FDS_WRITE_CAPTURE_TIMER, FDS_WRITE_CAPTURE_TIMER_CHANNEL_CONST);
 }
 
 static void fds_stop()
