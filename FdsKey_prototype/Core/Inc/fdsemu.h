@@ -45,16 +45,19 @@
 
 
 typedef enum {
-  FDS_OFF,
-  FDS_IDLE,
-  FDS_READ_WAIT_READY,
-  FDS_READ_WAIT_READY_TIMER,
-  FDS_READING,
-  FDS_WRITING_GAP,
-  FDS_WRITING,
-  FDS_WRITING_STOPPING,
-  FDS_SAVING
+  FDS_OFF,                    // disk image is not loaded
+  FDS_IDLE,                   // disk stopped
+  FDS_READ_WAIT_READY,        // waiting for disk rewinding
+  FDS_READ_WAIT_READY_TIMER,  // not-ready timer
+  FDS_READING,                // reading data
+  FDS_WRITING_GAP,            // waiting for gap terminator before writing
+  FDS_WRITING,                // writing data
+  FDS_WRITING_STOPPING,       // end of useful data, writing garbage
+  FDS_SAVING                  // saving image
 } FDS_STATE;
+
+#define FDSR_WRONG_CRC 0x80
+#define FDSR_INVALID_ROM 0x81
 
 FRESULT fds_load_side(char *filename, uint8_t side);
 FRESULT fds_close(uint8_t save, uint8_t backup_original);

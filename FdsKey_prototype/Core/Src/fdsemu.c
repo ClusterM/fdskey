@@ -485,7 +485,7 @@ FRESULT fds_load_side(char *filename, uint8_t side)
   if (fr != FR_OK)
     return fr;
   if (fno.fsize % FDS_SIDE_SIZE != 0 && fno.fsize % FDS_SIDE_SIZE != 16)
-    return FR_INVALID_OBJECT;
+    return FDSR_INVALID_ROM;
   fr = f_lseek(&fp, ((fno.fsize % FDS_SIDE_SIZE == FDS_HEADER_SIZE) ? FDS_HEADER_SIZE : 0) + side * FDS_SIDE_SIZE);
   if (fr != FR_OK)
     return fr;
@@ -592,12 +592,21 @@ FRESULT fds_save(uint8_t backup_original)
   int i;
 
   if (!fds_changed)
-    return FR_NOT_ENABLED;
+    return FR_OK;
   while (fds_state != FDS_IDLE)
     ; // wait for idle state
   fds_state = FDS_SAVING;
 
   // TODO: check CRC?
+  // check CRC of every block
+  for (i = 0; i < fds_block_count; i++)
+  {
+    int block_size = fds_get_block_size(i, 0, 0);
+    uint16_t valid_crc = fds_crc(fds_raw_data + fds_block_offsets[i] + (i == 0 ? FDS_FIRST_GAP_READ_BITS : FDS_NEXT_GAPS_READ_BITS) / 8, block_size);
+    uint16_t* crc = fds_raw_data + fds_block_offsets[i] + (i == 0 ? FDS_FIRST_GAP_READ_BITS : FDS_NEXT_GAPS_READ_BITS) / 8 + block_size;
+    if (valid_crc != *crc)
+      return FDSR_WRONG_CRC;
+  }
 
   if (backup_original)
   {
@@ -736,7 +745,7 @@ FRESULT fds_get_sides_count(char *filename, uint8_t *count)
   if (fno.fsize % FDS_SIDE_SIZE == FDS_HEADER_SIZE)
     fno.fsize -= FDS_HEADER_SIZE;
   if (fno.fsize % FDS_SIDE_SIZE != 0)
-    return FR_INVALID_OBJECT;
+    return FDSR_INVALID_ROM;
   *count = fno.fsize / FDS_SIDE_SIZE;
   return fr;
 }
