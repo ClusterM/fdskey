@@ -217,6 +217,7 @@ int main(void)
   int idle_time = 0;
   while (1)
   {
+    int pos = fds_get_head_position();
     int block = fds_get_block();
     FDS_STATE st = fds_get_state();
     char* state;
@@ -234,15 +235,14 @@ int main(void)
     case FDS_SAVING: state = "FDS_SAVING"; break;
     default: state = "UNKNOWN"; break;
     }
-    sprintf(message, "block %d, %s", block, state);
+    sprintf(message, "%d, block %d, %s", pos, block, state);
     print(message);
     if (fds_is_changed())
     {
-      if (fds_get_state() == FDS_IDLE)
-        idle_time++;
-      else
-        idle_time = 0;
-      if (idle_time == 100)
+      if (fds_get_state() != FDS_IDLE)
+        idle_time = HAL_GetTick();
+
+      if (idle_time + 5000 < HAL_GetTick())
       {
         print("saving");
         fr = fds_save(1);

@@ -32,6 +32,7 @@ static void fds_start_reading();
 static void fds_start_writing();
 static void fds_stop_reading();
 static void fds_stop_writing();
+static void fds_reset();
 
 // debug dumping
 void fds_dump(char *filename)
@@ -123,6 +124,14 @@ static void fds_dma_fill_read_buffer(int pos, int length)
         HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_RESET);
         fds_state = FDS_READING;
       }
+      if (fds_config_fast_rewind && fds_current_byte > fds_used_space + FDS_NOT_READY_BYTES)
+      {
+        // end of data
+        HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_SET);
+        fds_not_ready_time = HAL_GetTick();
+        fds_state = FDS_READ_WAIT_READY_TIMER;
+        fds_reset();
+      }
     }
     pos++;
     length--;
@@ -146,7 +155,6 @@ static void fds_write_bit(uint8_t bit)
   if (fds_current_bit > 7)
   {
     fds_current_bit = 0;
-    uint8_t data = fds_raw_data[fds_current_byte];
     fds_current_byte = (fds_current_byte + 1) % FDS_MAX_SIDE_SIZE;
 
     if (fds_current_byte >= fds_current_block_end)
@@ -370,6 +378,8 @@ void fds_check_pins()
       break;
     default:
       fds_stop();
+      if (fds_config_fast_rewind)
+        fds_reset();
     }
   } else
   {
@@ -382,9 +392,9 @@ void fds_check_pins()
       case FDS_IDLE:
         if (fds_config_fast_rewind || fds_current_byte == 0)
         {
-          fds_reset();
           fds_not_ready_time = HAL_GetTick();
           fds_state = FDS_READ_WAIT_READY_TIMER;
+          fds_reset();
         } else
         {
           fds_start_reading();
@@ -691,11 +701,14 @@ FDS_STATE fds_get_state()
   return fds_state;
 }
 
+int fds_get_head_position()
+{
+  return fds_current_byte;
+}
+
 int fds_get_block()
 {
   int i;
-  int gap_length;
-  int fds_current_block = 0;
 
   // calculate current block
   for (i = 0;; i++)
