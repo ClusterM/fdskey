@@ -11,7 +11,6 @@ static volatile uint8_t fds_read_buffer[FDS_READ_BUFFER_SIZE];
 static volatile int fds_used_space = 0;
 static volatile int fds_block_count = 0;
 static volatile int fds_block_offsets[FDS_MAX_BLOCKS];
-static volatile int fds_block_sizes[FDS_MAX_BLOCKS];
 static volatile uint16_t fds_write_buffer[FDS_WRITE_BUFFER_SIZE];
 
 // state machine variables
@@ -27,7 +26,7 @@ static volatile uint16_t fds_current_block_end = 0;
 static volatile uint16_t fds_write_gap_skip = 0;
 static volatile uint8_t fds_changed = 0;
 
-static uint8_t fds_config_fast_rewind = 1;
+static uint8_t fds_config_fast_rewind = 0;
 
 static void fds_start_reading();
 static void fds_start_writing();
@@ -147,9 +146,10 @@ static void fds_write_bit(uint8_t bit)
   if (fds_current_bit > 7)
   {
     fds_current_bit = 0;
+    uint8_t data = fds_raw_data[fds_current_byte];
     fds_current_byte = (fds_current_byte + 1) % FDS_MAX_SIDE_SIZE;
 
-    if (fds_current_byte > fds_current_block_end)
+    if (fds_current_byte >= fds_current_block_end)
     {
       // end of block
       fds_stop_writing();
@@ -381,7 +381,6 @@ void fds_check_pins()
       {
       case FDS_IDLE:
       case FDS_WRITING_STOPPING:
-        fds_start_reading();
         if (fds_config_fast_rewind || fds_current_byte == 0)
         {
           fds_reset();
@@ -391,6 +390,7 @@ void fds_check_pins()
         {
           fds_state = FDS_READ_WAIT_READY;
         }
+        fds_start_reading();
         break;
       default:
         // ignore any other state
@@ -474,6 +474,8 @@ FRESULT fds_load_side(char *filename, uint8_t side)
   {
     fds_block_offsets[fds_block_count] = fds_used_space;
     gap_length = fds_block_count == 0 ? FDS_FIRST_GAP_READ_BITS / 8 : FDS_NEXT_GAPS_READ_BITS / 8;
+    if (fds_used_space + gap_length /*CRC*/> FDS_SIDE_SIZE)
+      break;
     // gap before data
     for (i = 0; i < gap_length - 1; i++)
     {
@@ -510,6 +512,7 @@ FRESULT fds_load_side(char *filename, uint8_t side)
 
     if (fds_used_space + block_size + 2 /*CRC*/> FDS_SIDE_SIZE)
     {
+      fds_raw_data[fds_used_space - 1] = 0; // remove terminator
       fds_used_space -= gap_length; // rollback last gap
       break;
     }
@@ -526,19 +529,20 @@ FRESULT fds_load_side(char *filename, uint8_t side)
     if (br != block_size)
     {
       // end of file?
+      fds_raw_data[fds_used_space - 1] = 0; // remove terminator
       fds_used_space -= gap_length; // rollback last gap
       break;
     }
     if (fds_raw_data[fds_used_space] != block_type)
     {
       // invalid block?
+      fds_raw_data[fds_used_space - 1] = 0; // remove terminator
       fds_used_space -= gap_length; // rollback last gap
       break;
     }
     if (block_type == 3) // file header block - parse file size
       next_file_size = fds_raw_data[fds_used_space + 0x0D] | (fds_raw_data[fds_used_space + 0x0E] << 8);
     crc = fds_crc((uint8_t*) fds_raw_data + fds_used_space, block_size);
-    fds_block_sizes[fds_block_count] = block_size + 2; // block + crc
     fds_used_space += block_size;
     fds_raw_data[fds_used_space++] = crc & 0xFF;
     fds_raw_data[fds_used_space++] = (crc >> 8) & 0xFF;
@@ -675,6 +679,27 @@ uint8_t fds_is_changed()
 FDS_STATE fds_get_state()
 {
   return fds_state;
+}
+
+int fds_get_block()
+{
+  int i;
+  int gap_length;
+  int fds_current_block = 0;
+
+  // calculate current block
+  for (i = 0;; i++)
+  {
+    if (i >= fds_block_count)
+    {
+      return -1;
+    }
+    uint16_t block_size = fds_get_block_size(i, 1, 1);
+    if (fds_current_byte < fds_block_offsets[i] + block_size)
+    {
+      return i;
+    }
+  }
 }
 
 FRESULT fds_get_sides_count(char *filename, uint8_t *count)

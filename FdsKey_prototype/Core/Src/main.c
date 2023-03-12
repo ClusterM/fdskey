@@ -86,7 +86,7 @@ void print(char *text)
     int i;
     for (i = 0; i < 8; i++) {
       oled_set_line(oled_get_line() + 1);
-      //HAL_Delay(5);
+      HAL_Delay(50);
     }
   }
   line++;
@@ -197,13 +197,13 @@ int main(void)
     print("fds file loaded");
   else
     print("fds load failed");
-//  print("dumping good...");
-//  fds_dump("good.bin");
-//  print("dumped.");
+  print("dumping good...");
+  fds_dump("good.bin");
+  print("dumped.");
 
 //  while(HAL_GPIO_ReadPin(BUTTON1_GPIO_Port, BUTTON1_Pin));
-//
-//  print("dumping...");
+
+//  print("dumping bad...");
 //  fds_dump("bad.bin");
 //  print("dumped.");
 
@@ -214,6 +214,25 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    int block = fds_get_block();
+    FDS_STATE st = fds_get_state();
+    char* state;
+    char message[128];
+    switch (st)
+    {
+    case FDS_OFF: state = "FDS_OFF"; break;
+    case FDS_IDLE: state = "FDS_IDLE"; break;
+    case FDS_READ_WAIT_READY: state = "FDS_READ_WAIT_READY"; break;
+    case FDS_READ_WAIT_READY_TIMER: state = "FDS_READ_WAIT_READY_TIMER"; break;
+    case FDS_READING: state = "FDS_READING"; break;
+    case FDS_WRITING_GAP: state = "FDS_WRITING_GAP"; break;
+    case FDS_WRITING: state = "FDS_WRITING"; break;
+    case FDS_WRITING_STOPPING: state = "FDS_WRITING_STOPPING"; break;
+    case FDS_SAVING: state = "FDS_SAVING"; break;
+    default: state = "UNKNOWN"; break;
+    }
+    sprintf(message, "block %d, %s", block, state);
+    print(message);
     if (fds_is_changed() && fds_get_state() == FDS_IDLE)
     {
       print("saving");
@@ -223,7 +242,6 @@ int main(void)
       else
         print("error :(");
     }
-    HAL_Delay(200);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
