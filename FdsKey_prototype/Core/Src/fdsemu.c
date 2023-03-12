@@ -26,7 +26,7 @@ static volatile uint16_t fds_current_block_end = 0;
 static volatile uint16_t fds_write_gap_skip = 0;
 static volatile uint8_t fds_changed = 0;
 
-static uint8_t fds_config_fast_rewind = 0;
+static uint8_t fds_config_fast_rewind = 1;
 
 static void fds_start_reading();
 static void fds_start_writing();
@@ -380,7 +380,6 @@ void fds_check_pins()
       switch (fds_state)
       {
       case FDS_IDLE:
-      case FDS_WRITING_STOPPING:
         if (fds_config_fast_rewind || fds_current_byte == 0)
         {
           fds_reset();
@@ -388,8 +387,18 @@ void fds_check_pins()
           fds_state = FDS_READ_WAIT_READY_TIMER;
         } else
         {
+          fds_start_reading();
           fds_state = FDS_READ_WAIT_READY;
         }
+        break;
+      case FDS_READ_WAIT_READY:
+        if (fds_not_ready_time + FDS_NOT_READY_TIME < HAL_GetTick())
+        {
+          HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_RESET);
+          fds_start_reading();
+        }
+        break;
+      case FDS_WRITING_STOPPING:
         fds_start_reading();
         break;
       default:
@@ -421,12 +430,13 @@ void fds_tick_100ms() // call every ~100ms, low priority task
     return;
   if (fds_state == FDS_SAVING)
     return;
+  fds_check_pins();
   if (fds_state == FDS_READ_WAIT_READY_TIMER)
   {
     if (fds_not_ready_time + FDS_NOT_READY_TIME < HAL_GetTick())
     {
-      fds_state = FDS_READING;
       HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_RESET);
+      fds_start_reading();
     }
   }
 }

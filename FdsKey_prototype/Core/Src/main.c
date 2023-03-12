@@ -195,11 +195,13 @@ int main(void)
   fr = fds_load_side(filename, 0);
   if (fr == FR_OK)
     print("fds file loaded");
-  else
+  else {
     print("fds load failed");
-  print("dumping good...");
-  fds_dump("good.bin");
-  print("dumped.");
+    while(1){}
+  }
+//  print("dumping good...");
+//  fds_dump("good.bin");
+//  print("dumped.");
 
 //  while(HAL_GPIO_ReadPin(BUTTON1_GPIO_Port, BUTTON1_Pin));
 
@@ -212,6 +214,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  int idle_time = 0;
   while (1)
   {
     int block = fds_get_block();
@@ -233,14 +236,21 @@ int main(void)
     }
     sprintf(message, "block %d, %s", block, state);
     print(message);
-    if (fds_is_changed() && fds_get_state() == FDS_IDLE)
+    if (fds_is_changed())
     {
-      print("saving");
-      fr = fds_save(1);
-      if (fr == FR_OK)
-        print("saved.");
+      if (fds_get_state() == FDS_IDLE)
+        idle_time++;
       else
-        print("error :(");
+        idle_time = 0;
+      if (idle_time == 100)
+      {
+        print("saving");
+        fr = fds_save(1);
+        if (fr == FR_OK)
+          print("saved.");
+        else
+          print("error :(");
+      }
     }
     /* USER CODE END WHILE */
 
