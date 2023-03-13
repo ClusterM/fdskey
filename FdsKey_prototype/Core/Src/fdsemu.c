@@ -3,10 +3,10 @@
 #include "fdsemu.h"
 #include "fatfs.h"
 
-static char fds_filename[FDS_MAX_FILE_PATH_LENGTH];
+static char fds_filename[_MAX_LFN + 1];
 static uint8_t fds_side;
 // loaded FDS data
-static volatile uint8_t fds_raw_data[FDS_MAX_SIDE_SIZE];
+static uint8_t * volatile fds_raw_data;
 static volatile uint8_t fds_read_buffer[FDS_READ_BUFFER_SIZE];
 static volatile int fds_used_space = 0;
 static volatile int fds_block_count = 0;
@@ -490,6 +490,8 @@ FRESULT fds_load_side(char *filename, uint8_t side)
   if (fr != FR_OK)
     return fr;
 
+  fds_raw_data = malloc(FDS_MAX_SIDE_SIZE);
+
   while (1)
   {
     fds_block_offsets[fds_block_count] = fds_used_space;
@@ -500,7 +502,7 @@ FRESULT fds_load_side(char *filename, uint8_t side)
     for (i = 0; i < gap_length - 1; i++)
     {
       fds_raw_data[fds_used_space++] = 0;
-      if (fds_used_space - 1 >= sizeof(fds_raw_data))
+      if (fds_used_space - 1 >= FDS_MAX_SIDE_SIZE)
       {
         fds_used_space -= i;
         break;
@@ -597,13 +599,12 @@ FRESULT fds_save(uint8_t backup_original)
     ; // wait for idle state
   fds_state = FDS_SAVING;
 
-  // TODO: check CRC?
   // check CRC of every block
   for (i = 0; i < fds_block_count; i++)
   {
     int block_size = fds_get_block_size(i, 0, 0);
     uint16_t valid_crc = fds_crc(fds_raw_data + fds_block_offsets[i] + (i == 0 ? FDS_FIRST_GAP_READ_BITS : FDS_NEXT_GAPS_READ_BITS) / 8, block_size);
-    uint16_t* crc = fds_raw_data + fds_block_offsets[i] + (i == 0 ? FDS_FIRST_GAP_READ_BITS : FDS_NEXT_GAPS_READ_BITS) / 8 + block_size;
+    uint16_t* crc = (uint16_t*)(fds_raw_data + fds_block_offsets[i] + (i == 0 ? FDS_FIRST_GAP_READ_BITS : FDS_NEXT_GAPS_READ_BITS) / 8 + block_size);
     if (valid_crc != *crc)
       return FDSR_WRONG_CRC;
   }
@@ -611,7 +612,7 @@ FRESULT fds_save(uint8_t backup_original)
   if (backup_original)
   {
     // combine backup filename
-    char backup_filename[FDS_MAX_FILE_PATH_LENGTH + 4];
+    char backup_filename[_MAX_LFN + 5];
     strcpy(backup_filename, fds_filename);
     strcat(backup_filename, ".bak");
     // check if exists
@@ -677,6 +678,9 @@ FRESULT fds_save(uint8_t backup_original)
   fds_state = FDS_IDLE;
   // but start reading/writing if need
   fds_check_pins();
+
+  fds_state = FDS_IDLE;
+
   return FR_OK;
 }
 
@@ -696,6 +700,11 @@ FRESULT fds_close(uint8_t save, uint8_t backup_original)
   fds_used_space = 0;
   fds_block_count = 0;
   fds_changed = 0;
+  if (fds_raw_data)
+  {
+    free(fds_raw_data);
+    fds_raw_data = 0;
+  }
 
   return fr;
 }

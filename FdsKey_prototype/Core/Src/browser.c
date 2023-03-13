@@ -1,19 +1,26 @@
 #include <string.h>
 #include "main.h"
+#include "browser.h"
 #include "fatfs.h"
+#include "oled.h"
+#include "buttons.h"
 
-static char* dir_path = 0;
 static char** dir_list = 0;
 static char** file_list = 0;
 static int dir_count = 0;
 static int file_count = 0;
+static uint8_t is_root;
+
+static uint8_t browser_config_hide_hidden = 0;
+static uint8_t browser_config_hide_extensions = 1;
+static uint8_t browser_config_hide_non_fds = 1;
 
 static void browser_free();
 
-// Left source half is A[ iBegin:iMiddle-1].
-// Right source half is A[iMiddle:iEnd-1   ].
+// Left source half is A[iBegin:iMiddle-1].
+// Right source half is A[iMiddle:iEnd-1].
 // Result is B[ iBegin:iEnd-1   ].
-void top_down_merge(char** A, int iBegin, int iMiddle, int iEnd, char** B)
+static void top_down_merge(char** A, int iBegin, int iMiddle, int iEnd, char** B)
 {
   int i = iBegin, j = iMiddle, k;
 
@@ -29,10 +36,9 @@ void top_down_merge(char** A, int iBegin, int iMiddle, int iEnd, char** B)
     }
   }
 }
-
 // Split A[] into 2 runs, sort both runs into B[], merge both runs from B[] to A[]
 // iBegin is inclusive; iEnd is exclusive (A[iEnd] is not in the set).
-void top_down_split_merge(char** B, int iBegin, int iEnd, char** A)
+static void top_down_split_merge(char** B, int iBegin, int iEnd, char** A)
 {
   if (iEnd - iBegin <= 1)                     // if run size == 1
       return;                                 //   consider it sorted
@@ -44,28 +50,148 @@ void top_down_split_merge(char** B, int iBegin, int iEnd, char** A)
   // merge the resulting runs from array B[] into A[]
   top_down_merge(B, iBegin, iMiddle, iEnd, A);
 }
-
-void top_down_merge_sort(char** A, int n)
+static void top_down_merge_sort(char** A, int n)
 {
   char* B[n];
   memcpy(B, A, sizeof(char*) * n);
   top_down_split_merge(B, 0, n, A); // sort data from B[] into A[]
 }
 
-FRESULT browser_load_dir(char *path, char *select)
+static void draw_item(uint8_t line, int item, uint8_t is_selected, int text_scroll)
+{
+  uint8_t is_dir;
+  int i, offset, max_length, text_length, total_scroll;
+  char* text;
+  if (item < dir_count)
+    text = dir_list[item];
+  else if (item < dir_count + file_count)
+  {
+    text = file_list[item - dir_count];
+    if (browser_config_hide_extensions)
+    {
+      char trimmed[_MAX_LFN + 1];
+      strncpy(trimmed, text, _MAX_LFN);
+      text = trimmed;
+      for (i = strlen(text) - 1; i >= 0; i--)
+      {
+        if (text[i] == '.')
+        {
+          text[i] = 0;
+          break;
+        }
+      }
+    }
+  }
+  else
+    text = "";
+
+  is_dir = item < dir_count;
+  oled_draw_rectangle(0, line * 8, OLED_WIDTH - 1, line * 8 + 7, 1, 0);
+  if (is_selected)
+    oled_draw_image(&IMAGE_CURSOR, 0, line * 8, 0, 0);
+  offset = IMAGE_CURSOR.width + (is_dir ? BROWSER_FOLDER_IMAGE.width + 2: 0);
+  max_length = OLED_WIDTH - offset - 1;
+  if (is_dir)
+    oled_draw_image(item < 0 ? &IMAGE_FOLDER_UP : &BROWSER_FOLDER_IMAGE, IMAGE_CURSOR.width, line * 8, 0, 0);
+
+  text_length = oled_get_text_length(&BROWSER_FONT, text) - 1 /*spaceing*/;
+  if (text_length > max_length)
+  {
+    total_scroll = BROWSER_HORIZONTAL_SCROLL_PAUSE + (text_length - max_length) + BROWSER_HORIZONTAL_SCROLL_PAUSE;
+    text_scroll /= BROWSER_HORIZONTAL_SCROLL_SPEED;
+    text_scroll %= total_scroll * 2;
+    // two-directional
+    if (text_scroll > total_scroll)
+      text_scroll = total_scroll * 2 - text_scroll;
+    if (text_scroll < BROWSER_HORIZONTAL_SCROLL_PAUSE)
+      text_scroll = 0;
+    else if (text_scroll >= BROWSER_HORIZONTAL_SCROLL_PAUSE + (text_length - max_length))
+      text_scroll = text_length - max_length;
+    else
+      text_scroll = text_scroll - BROWSER_HORIZONTAL_SCROLL_PAUSE;
+  } else {
+    text_scroll = 0;
+  }
+
+  oled_draw_text_cropped(&BROWSER_FONT, text,
+      offset, line * 8,
+      text_scroll, max_length,
+      0, 0,
+      0, 0);
+  oled_update(line, line);
+}
+
+static int browser_menu(int selection)
+{
+  int i;
+  int text_scroll = 0;
+  int item_count = (is_root ? 0 : 1) + dir_count + file_count;
+  int line = selection - 2;
+  if (line + 4 > item_count) line = item_count - 4;
+  if (line < 0) line = 0;
+
+  oled_draw_rectangle(0, 0, OLED_WIDTH - 1, OLED_HEIGHT - 1, 1, 0);
+  oled_update_full();
+  oled_set_line(0);
+  oled_send_command(OLED_CMD_SET_ON);
+
+  for (i = 0; i < 4; i++)
+  {
+    draw_item(oled_get_line() / 8 + i, line + i, line + i == selection, 0);
+  }
+
+  while (1)
+  {
+    if (button_up() && selection > 0)
+    {
+      draw_item(oled_get_line() / 8 + selection - line, selection, 0, 0);
+      selection--;
+      draw_item(oled_get_line() / 8 + selection - line, selection, 1, 0);
+      text_scroll = 0;
+    }
+    if (button_down() && selection + 1 < item_count)
+    {
+      draw_item(oled_get_line() / 8 + selection - line, selection, 0, 0);
+      selection++;
+      draw_item(oled_get_line() / 8 + selection - line, selection, 1, 0);
+      text_scroll = 0;
+    }
+    if (button_left()) return -1; // back
+    if (button_right()) return selection;
+    while (selection < line && line)
+    {
+      line--;
+      for (i = 0; i < 8; i++) {
+        oled_set_line(oled_get_line() - 1);
+        HAL_Delay(5);
+      }
+    }
+    while (selection > line + 3)
+    {
+      line++;
+      for (i = 0; i < 8; i++) {
+        oled_set_line(oled_get_line() + 1);
+        HAL_Delay(5);
+      }
+    }
+    draw_item(oled_get_line() / 8 + selection - line, selection, 1, text_scroll);
+    text_scroll++;
+    HAL_Delay(1);
+  }
+}
+
+FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, char *select)
 {
   FRESULT fr;
   DIR dir;
   FILINFO fno;
   int mem_dir_count = 512;
   int mem_file_count = 512;
+  int i, r, selection;
   dir_count = 0;
   file_count = 0;
 
-  print("Loading files...");
-
-  dir_path = malloc(strlen(path) + 1);
-  strcpy(dir_path, path);
+  oled_send_command(OLED_CMD_SET_OFF);
 
   dir_list = malloc(mem_dir_count * sizeof(char*));
   file_list = malloc(mem_file_count * sizeof(char*));
@@ -82,7 +208,7 @@ FRESULT browser_load_dir(char *path, char *select)
     fr = f_readdir(&dir, &fno);
     if (fr != FR_OK || !fno.fname[0])
       break;
-    if (!(fno.fattrib & AM_HID))
+    if (!browser_config_hide_hidden || !(fno.fattrib & AM_HID))
     {
       if (fno.fattrib & AM_DIR)
       {
@@ -95,6 +221,11 @@ FRESULT browser_load_dir(char *path, char *select)
         strcpy(dir_list[dir_count], fno.fname);
         dir_count++;
       } else {
+        if (browser_config_hide_non_fds)
+        {
+          if (strcasecmp(fno.fname + strlen(fno.fname) - 4, ".fds") != 0)
+              continue;
+        }
         if (file_count + 1 > mem_file_count)
         {
           mem_file_count *= 2;
@@ -110,17 +241,37 @@ FRESULT browser_load_dir(char *path, char *select)
   file_list = realloc(file_list, file_count * sizeof(char*));
   f_closedir(&dir);
 
-  print("sorting...");
-
   // sort them
   top_down_merge_sort(dir_list, dir_count);
   top_down_merge_sort(file_list, file_count);
 
-  for (int i = 0; i < file_count; i++)
+  selection = 0;
+  if (select)
   {
-    print(file_list[i]);
-    //HAL_Delay(500);
+    for (i = 0; i < dir_count + file_count; i++)
+    {
+      char* name = i < dir_count ? dir_list[i] : file_list[i - dir_count];
+      if (strcmp(name, select) == 0)
+      {
+        selection = i;
+        break;
+      }
+    }
   }
+
+  r = browser_menu(selection);
+  if (r < 0)
+    *result = BROWSER_BACK;
+  else if (r < dir_count)
+  {
+    *result = BROWSER_DIRECTORY;
+    strncpy(output, dir_list[r], max_len);
+  } else {
+    *result = BROWSER_FILE;
+    strncpy(output, file_list[r - dir_count], max_len);
+  }
+
+  browser_free();
 
   return FR_OK;
 }
@@ -128,7 +279,6 @@ FRESULT browser_load_dir(char *path, char *select)
 void browser_free()
 {
   int i;
-  if (dir_path) free(dir_path);
   for (i = 0; i < dir_count; i++)
     free(dir_list[i]);
   for (i = 0; i < file_count; i++)
@@ -137,7 +287,6 @@ void browser_free()
     free(dir_list);
   if (file_list)
     free(file_list);
-  dir_path = 0;
   file_list = 0;
   dir_list = 0;
   dir_count = 0;

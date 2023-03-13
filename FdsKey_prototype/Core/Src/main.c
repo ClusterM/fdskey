@@ -25,6 +25,7 @@
 #include "oled.h"
 #include "sdcard.h"
 #include "fdsemu.h"
+#include "browser.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -179,20 +180,22 @@ int main(void)
 
   //HAL_StatusTypeDef r = HAL_SD_ReadBlocks(&hsd2, buff, 0, sizeof(buff), 1000);
   //char *filename = "Metroid (Japan) (v1.2) (eng).fds";
-  char *filename = "Super Mario Brothers (Japan).fds";
+//  char *filename = "Super Mario Brothers (Japan).fds";
   //char *filename = "metroid_my.fds";
 
-//  browser_load_dir("/", 0);
+  char selected[_MAX_LFN + 1];
+  BROWSER_RESULT br;
+  fr = browser("/", selected, sizeof(selected) - 1, &br, "Super Mario Brothers (Japan).fds");
 //  while(1);
 
   uint8_t sides;
-  fr = fds_get_sides_count(filename, &sides);
+  fr = fds_get_sides_count(selected, &sides);
   if (fr != FR_OK) print("fds file size failed");
 
 //  /while (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin));
 
   print("LOADING FDS FILE...");
-  fr = fds_load_side(filename, 0);
+  fr = fds_load_side(selected, 0);
   if (fr == FR_OK)
     print("fds file loaded");
   else {
@@ -627,8 +630,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(FDS_MOTOR_ON_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : FDS_STOP_MOTOR_Pin SD_MISO_Pin BUTTON1_Pin */
-  GPIO_InitStruct.Pin = FDS_STOP_MOTOR_Pin|SD_MISO_Pin|BUTTON1_Pin;
+  /*Configure GPIO pins : FDS_STOP_MOTOR_Pin SD_MISO_Pin BUTTON_RIGHT_Pin BUTTON_LEFT_Pin
+                           BUTTON_UP_Pin */
+  GPIO_InitStruct.Pin = FDS_STOP_MOTOR_Pin|SD_MISO_Pin|BUTTON_RIGHT_Pin|BUTTON_LEFT_Pin
+                          |BUTTON_UP_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -651,6 +656,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(SD_DTCT_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : BUTTON_DOWN_Pin */
+  GPIO_InitStruct.Pin = BUTTON_DOWN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(BUTTON_DOWN_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);

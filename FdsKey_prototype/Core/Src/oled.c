@@ -77,6 +77,9 @@ HAL_StatusTypeDef oled_update(uint8_t start_page, uint8_t end_page) {
 	uint8_t p, x, y, l, bt, buffer[256], bpos;
 	HAL_StatusTypeDef r = HAL_OK;
 
+	start_page = start_page % (OLED_HEIGHT * 2 / 8);
+	end_page = end_page % (OLED_HEIGHT * 2 / 8);
+
 	for (p = start_page; p < end_page + 1; p++) {
 		oled_send_commands(3, OLED_CMD_SET_PAGE(p % 8),
 				OLED_CMD_SET_COLUMN_LOW(padding_left),
@@ -257,7 +260,6 @@ void oled_draw_text_cropped(const DotMatrixFont *font, char *text, int x, int y,
 	uint8_t *char_data; // pointer for character data
 	uint64_t char_data_casted; // unboxed character data
 	uint8_t char_width; // current character width
-	uint8_t spacing; // space between characters
   uint8_t size_offset = font->font_type;
 	while (*text) {
 		char ch = *text;
@@ -359,20 +361,89 @@ void oled_draw_text_cropped(const DotMatrixFont *font, char *text, int x, int y,
 		}
 
 		text++;
-		spacing = ch != '_' ? font->spacing : 0; // squeeze underscores
 		// fill gap between characters
-		if (spacing > 0 && replace && *text)
+		if (font->spacing > 0 && replace && *text)
 			oled_draw_rectangle(xpos + char_width, y,
-					xpos + char_width + spacing - 1, y + font->char_height - 1,
+					xpos + char_width + font->spacing - 1, y + font->char_height - 1,
 					1, invert);
-		xpos += char_width + spacing;
-		len += spacing;
+		xpos += char_width + (*text ? font->spacing : 0);
+		if (*text)
+		  len += font->spacing;
 	}
 }
 
-void oled_draw_image(const DotMatrixImage *img, int x, int y, uint8_t replace,
-		uint8_t invert) {
-	oled_draw_image_cropped(img, x, y, 0, 0, 0, 0, replace, invert);
+int oled_get_text_length(const DotMatrixFont *font, char *text) {
+  int len = 0; // total text length
+  uint8_t *char_data; // pointer for character data
+  uint8_t char_width; // current character width
+  uint8_t size_offset = font->font_type;
+  while (*text) {
+    char ch = *text;
+    // replace unknown characters with underscore
+    if (ch < font->start_char || ch >= font->start_char + font->font_length)
+      ch = '_';
+
+    // get character length
+    if (font->char_height <= 8)
+      char_data = &((uint8_t*) font->font_data)[(ch - font->start_char)
+          * (font->char_width + size_offset)];
+    else if (font->char_height <= 16)
+      char_data = &((uint8_t*) font->font_data)[(ch - font->start_char)
+          * (font->char_width * sizeof(uint16_t) + size_offset)];
+    else if (font->char_height <= 24)
+      char_data = &((uint8_t*) font->font_data)[(ch - font->start_char)
+          * (font->char_width * 3 + size_offset)];
+    else if (font->char_height <= 32)
+      char_data = &((uint8_t*) font->font_data)[(ch - font->start_char)
+          * (font->char_width * sizeof(uint32_t) + size_offset)];
+    else if (font->char_height <= 40)
+      char_data = &((uint8_t*) font->font_data)[(ch - font->start_char)
+          * (font->char_width * 5 + size_offset)];
+    else if (font->char_height <= 48)
+      char_data = &((uint8_t*) font->font_data)[(ch - font->start_char)
+          * (font->char_width * 6 + size_offset)];
+    else if (font->char_height <= 56)
+      char_data = &((uint8_t*) font->font_data)[(ch - font->start_char)
+          * (font->char_width * 7 + size_offset)];
+    else
+      char_data = &((uint8_t*) font->font_data)[(ch - font->start_char)
+          * (font->char_width * sizeof(uint64_t) + size_offset)];
+
+    // resize spaces if need
+    if (font->font_type == 0) // monospaced
+    {
+      char_width = font->char_width;
+    } else {
+      char_width =
+          (ch != ' ' || !font->space_length) ?
+              char_data[0] : font->space_length;
+    }
+
+    text++;
+    len += char_width + (*text ? font->spacing : 0);
+  }
+  return len;
+}
+
+void oled_draw_image(const DotMatrixImage *img, int x, int y,
+    uint8_t replace, uint8_t invert) {
+  int c, l;
+  uint8_t bit = 0;
+  int pos = 0;
+
+  for (l = 0; l < img->height; l++) {
+    for (c = 0; c < img->width; c++) {
+      if (img->image_data[pos] & (1 << bit))
+        *oled_pixel(x + c, y + l) = !invert;
+      else if (replace)
+        *oled_pixel(x + c, y + l) = invert;
+      bit++;
+      if (bit >= 8) {
+        bit = 0;
+        pos++;
+      }
+    }
+  }
 }
 
 void oled_draw_image_cropped(const DotMatrixImage *img, int x, int y,

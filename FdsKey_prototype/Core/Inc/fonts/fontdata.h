@@ -291,7 +291,7 @@ const DotMatrixFont FONT_SLIMFONT_8 = {
   .char_width = FONT_SLIMFONT_8_CHAR_WIDTH,
   .char_height = FONT_SLIMFONT_8_CHAR_HEIGHT,
   .spacing = 1,
-  .space_length = 0,
+  .space_length = 3,
   .font_data = font_slimfont_8
 };
 

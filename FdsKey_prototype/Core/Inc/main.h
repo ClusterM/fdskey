@@ -87,8 +87,14 @@ void Error_Handler(void);
 #define SD_DTCT_GPIO_Port GPIOA
 #define SD_CS_Pin GPIO_PIN_4
 #define SD_CS_GPIO_Port GPIOB
-#define BUTTON1_Pin GPIO_PIN_9
-#define BUTTON1_GPIO_Port GPIOB
+#define BUTTON_RIGHT_Pin GPIO_PIN_5
+#define BUTTON_RIGHT_GPIO_Port GPIOB
+#define BUTTON_DOWN_Pin GPIO_PIN_3
+#define BUTTON_DOWN_GPIO_Port GPIOH
+#define BUTTON_LEFT_Pin GPIO_PIN_8
+#define BUTTON_LEFT_GPIO_Port GPIOB
+#define BUTTON_UP_Pin GPIO_PIN_9
+#define BUTTON_UP_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
