@@ -8,3 +8,5 @@ extern const DotMatrixImage IMAGE_FOLDER4;
 extern const DotMatrixImage IMAGE_FOLDER5;
 extern const DotMatrixImage IMAGE_FOLDER6;
 extern const DotMatrixImage IMAGE_FOLDER_UP;
+extern const DotMatrixImage IMAGE_MICROSD;
+extern const DotMatrixImage IMAGE_MICROSD2;

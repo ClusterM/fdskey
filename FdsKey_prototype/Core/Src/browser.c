@@ -9,9 +9,8 @@ static char** dir_list = 0;
 static char** file_list = 0;
 static int dir_count = 0;
 static int file_count = 0;
-static uint8_t is_root;
 
-static uint8_t browser_config_hide_hidden = 0;
+static uint8_t browser_config_show_hidden = 0;
 static uint8_t browser_config_hide_extensions = 1;
 static uint8_t browser_config_hide_non_fds = 1;
 
@@ -125,7 +124,7 @@ static int browser_menu(int selection)
 {
   int i;
   int text_scroll = 0;
-  int item_count = (is_root ? 0 : 1) + dir_count + file_count;
+  int item_count = dir_count + file_count;
   int line = selection - 2;
   if (line + 4 > item_count) line = item_count - 4;
   if (line < 0) line = 0;
@@ -208,7 +207,7 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
     fr = f_readdir(&dir, &fno);
     if (fr != FR_OK || !fno.fname[0])
       break;
-    if (!browser_config_hide_hidden || !(fno.fattrib & AM_HID))
+    if (browser_config_show_hidden || !(fno.fattrib & AM_HID))
     {
       if (fno.fattrib & AM_DIR)
       {
@@ -246,7 +245,7 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
   top_down_merge_sort(file_list, file_count);
 
   selection = 0;
-  if (select)
+  if (select && select[0])
   {
     for (i = 0; i < dir_count + file_count; i++)
     {
@@ -274,6 +273,61 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
   browser_free();
 
   return FR_OK;
+}
+
+FRESULT browser_tree(char *directory, int dir_max_len, char *filename, int filename_max_len, BROWSER_RESULT *br)
+{
+  char text[BROWSER_MAX_PATH_LENGTH];
+  FRESULT fr;
+  int i;
+
+  while (1)
+  {
+    fr = browser(directory, text, BROWSER_MAX_PATH_LENGTH - 1, br, filename);
+    if (fr != FR_OK) return fr;
+    switch (*br)
+    {
+    case BROWSER_BACK:
+      if (!*directory)
+      {
+        *br = BROWSER_BACK;
+        return FR_OK;
+      }
+      for (i = strlen(directory) - 2; i >= 0; i--)
+      {
+        if (i <= 0)
+        {
+          strncpy(filename, directory + (*directory == '\\' ? 1 : 0), filename_max_len);
+          filename[filename_max_len - 1] = 0;
+          directory[0] = 0;
+        }
+        if (directory[i] == '\\')
+        {
+          directory[i] = 0;
+          strncpy(filename, &directory[i + 1], filename_max_len);
+          filename[filename_max_len - 1] = 0;
+          if (i < dir_max_len) directory[i + 1] = 0;
+          break;
+        }
+      }
+      break;
+    case BROWSER_DIRECTORY:
+      strncat(directory, "\\", dir_max_len);
+      strncat(directory, text, dir_max_len);
+      directory[dir_max_len - 1] = 0;
+      *filename = 0;
+      break;
+    case BROWSER_FILE:
+      // wtf... i have no idea why strncpy if not working here
+      i = 0;
+      for (i = 0; i < filename_max_len && text[i]; i++)
+        filename[i] = text[i];
+      filename[i] = 0;
+      //strncpy(filename, text, filename_max_len);
+      *br = BROWSER_FILE;
+      return FR_OK;
+    }
+  }
 }
 
 void browser_free()

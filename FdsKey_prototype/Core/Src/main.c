@@ -156,6 +156,7 @@ int main(void)
   oled_draw_rectangle(0, 0, OLED_WIDTH - 1, OLED_HEIGHT - 1, 1, 0);
   oled_update_full();
   oled_set_line(0);
+  line = 0;
 
   print("started");
 
@@ -182,26 +183,86 @@ int main(void)
   //char *filename = "Metroid (Japan) (v1.2) (eng).fds";
 //  char *filename = "Super Mario Brothers (Japan).fds";
   //char *filename = "metroid_my.fds";
+  char selected_dir[4096] = "";
+  char selected_file[_MAX_LFN + 1] = "";
+  char full_path[4096];
 
-  char selected[_MAX_LFN + 1];
-  BROWSER_RESULT br;
-  fr = browser("/", selected, sizeof(selected) - 1, &br, "Super Mario Brothers (Japan).fds");
-//  while(1);
+  while (1)
+  {
+    BROWSER_RESULT br;
+    fr = browser_tree(selected_dir, sizeof(selected_dir), selected_file, sizeof(selected_dir), &br);
 
-  uint8_t sides;
-  fr = fds_get_sides_count(selected, &sides);
-  if (fr != FR_OK) print("fds file size failed");
+    oled_init(1, 0, 0x80);
+    oled_draw_rectangle(0, 0, OLED_WIDTH - 1, OLED_HEIGHT - 1, 1, 0);
+    oled_update_full();
+    oled_set_line(0);
+    line = 0;
 
-//  /while (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin));
+    if (br == BROWSER_BACK)
+    {
+      print("back");
+      while (1) {}
+    }
 
-  print("LOADING FDS FILE...");
-  fr = fds_load_side(selected, 0);
-  if (fr == FR_OK)
-    print("fds file loaded");
-  else {
-    print("fds load failed");
-    while(1){}
-  }
+    strncpy(full_path, selected_dir, sizeof(full_path));
+    strncat(full_path, "\\", sizeof(full_path));
+    strncat(full_path, selected_file, sizeof(full_path));
+  //  while(1);
+    uint8_t sides;
+    fr = fds_get_sides_count(full_path, &sides);
+    if (fr != FR_OK) print("fds file size failed");
+
+  //  /while (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin));
+
+    print("LOADING FDS FILE...");
+    fr = fds_load_side(full_path, HAL_GPIO_ReadPin(BUTTON_RIGHT_GPIO_Port, BUTTON_RIGHT_Pin) ^ 1);
+    if (fr == FR_OK)
+      print("fds file loaded");
+    else {
+      print("fds load failed");
+      while(1){}
+    }
+    int idle_time = 0;
+
+    while (!button_left())
+    {
+      int pos = fds_get_head_position();
+      int block = fds_get_block();
+      FDS_STATE st = fds_get_state();
+      char* state;
+      char message[128];
+      switch (st)
+      {
+      case FDS_OFF: state = "FDS_OFF"; break;
+      case FDS_IDLE: state = "FDS_IDLE"; break;
+      case FDS_READ_WAIT_READY: state = "FDS_READ_WAIT_READY"; break;
+      case FDS_READ_WAIT_READY_TIMER: state = "FDS_READ_WAIT_READY_TIMER"; break;
+      case FDS_READING: state = "FDS_READING"; break;
+      case FDS_WRITING_GAP: state = "FDS_WRITING_GAP"; break;
+      case FDS_WRITING: state = "FDS_WRITING"; break;
+      case FDS_WRITING_STOPPING: state = "FDS_WRITING_STOPPING"; break;
+      case FDS_SAVING: state = "FDS_SAVING"; break;
+      default: state = "UNKNOWN"; break;
+      }
+      sprintf(message, "%d, block %d, %s", pos, block, state);
+      print(message);
+      if (fds_is_changed())
+      {
+        if (fds_get_state() != FDS_IDLE)
+          idle_time = HAL_GetTick();
+
+        if (idle_time + 5000 < HAL_GetTick())
+        {
+          print("saving");
+          fr = fds_save(1);
+          if (fr == FR_OK)
+            print("saved.");
+          else
+            print("error :(");
+        }
+      }
+    }
+    fds_close(1, 1);
 //  print("dumping good...");
 //  fds_dump("good.bin");
 //  print("dumped.");
@@ -217,44 +278,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  int idle_time = 0;
-  while (1)
-  {
-    int pos = fds_get_head_position();
-    int block = fds_get_block();
-    FDS_STATE st = fds_get_state();
-    char* state;
-    char message[128];
-    switch (st)
-    {
-    case FDS_OFF: state = "FDS_OFF"; break;
-    case FDS_IDLE: state = "FDS_IDLE"; break;
-    case FDS_READ_WAIT_READY: state = "FDS_READ_WAIT_READY"; break;
-    case FDS_READ_WAIT_READY_TIMER: state = "FDS_READ_WAIT_READY_TIMER"; break;
-    case FDS_READING: state = "FDS_READING"; break;
-    case FDS_WRITING_GAP: state = "FDS_WRITING_GAP"; break;
-    case FDS_WRITING: state = "FDS_WRITING"; break;
-    case FDS_WRITING_STOPPING: state = "FDS_WRITING_STOPPING"; break;
-    case FDS_SAVING: state = "FDS_SAVING"; break;
-    default: state = "UNKNOWN"; break;
-    }
-    sprintf(message, "%d, block %d, %s", pos, block, state);
-    print(message);
-    if (fds_is_changed())
-    {
-      if (fds_get_state() != FDS_IDLE)
-        idle_time = HAL_GetTick();
 
-      if (idle_time + 5000 < HAL_GetTick())
-      {
-        print("saving");
-        fr = fds_save(1);
-        if (fr == FR_OK)
-          print("saved.");
-        else
-          print("error :(");
-      }
-    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

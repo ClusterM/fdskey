@@ -8,6 +8,8 @@
 #include "folder5.h"
 #include "folder6.h"
 #include "folder_up.h"
+#include "microsd.h"
+#include "microsd2.h"
 #include "../images.h"
 
 const DotMatrixImage IMAGE_CARD_A = {
@@ -68,4 +70,16 @@ const DotMatrixImage IMAGE_FOLDER_UP = {
   .width = IMAGE_FOLDER_UP_WIDTH,
   .height = IMAGE_FOLDER_UP_HEIGHT,
   .image_data = image_folder_up
+};
+
+const DotMatrixImage IMAGE_MICROSD = {
+  .width = IMAGE_MICROSD_WIDTH,
+  .height = IMAGE_MICROSD_HEIGHT,
+  .image_data = image_microsd
+};
+
+const DotMatrixImage IMAGE_MICROSD2 = {
+  .width = IMAGE_MICROSD2_WIDTH,
+  .height = IMAGE_MICROSD2_HEIGHT,
+  .image_data = image_microsd2
 };

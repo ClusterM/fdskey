@@ -26,7 +26,7 @@
 #define FDS_NEXT_GAPS_READ_BITS 976   // next gap size, bits
 #define FDS_WRITE_GAP_SKIP_BITS 8     // dispose bits before writing
 #define FDS_NOT_READY_TIME 1000       // disk rewind time, milliseconds (for fast rewind)
-#define FDS_NOT_READY_BYTES 4096      // disk rewind time, bytes (for slow rewind)
+#define FDS_NOT_READY_BYTES 16000      // disk rewind time, bytes (for slow rewind)
 
 // do not touch it
 #define FDS_HEADER_SIZE 16    // header in ROM

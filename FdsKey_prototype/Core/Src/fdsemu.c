@@ -26,13 +26,14 @@ static volatile uint16_t fds_current_block_end = 0;
 static volatile uint16_t fds_write_gap_skip = 0;
 static volatile uint8_t fds_changed = 0;
 
-static uint8_t fds_config_fast_rewind = 1;
+static uint8_t fds_config_fast_rewind = 0;
 
 static void fds_start_reading();
 static void fds_start_writing();
 static void fds_stop_reading();
 static void fds_stop_writing();
 static void fds_reset();
+static void fds_stop();
 
 // debug dumping
 void fds_dump(char *filename)
@@ -122,7 +123,6 @@ static void fds_dma_fill_read_buffer(int pos, int length)
       {
         // disk just rewinded and ready again
         HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_RESET);
-        fds_state = FDS_READING;
       }
       if (fds_config_fast_rewind && fds_current_byte > fds_used_space + FDS_NOT_READY_BYTES)
       {
@@ -369,7 +369,7 @@ void fds_check_pins()
   if (HAL_GPIO_ReadPin(FDS_SCAN_MEDIA_GPIO_Port, FDS_SCAN_MEDIA_Pin))
   {
     // motor stop
-    HAL_GPIO_WritePin(FDS_MOTOR_ON_GPIO_Port, FDS_MOTOR_ON_Pin, GPIO_PIN_RESET); // do i really need this?
+    //HAL_GPIO_WritePin(FDS_MOTOR_ON_GPIO_Port, FDS_MOTOR_ON_Pin, GPIO_PIN_RESET); // do i really need this?
     switch (fds_state)
     {
     case FDS_OFF:
@@ -383,7 +383,7 @@ void fds_check_pins()
     }
   } else
   {
-    HAL_GPIO_WritePin(FDS_MOTOR_ON_GPIO_Port, FDS_MOTOR_ON_Pin, GPIO_PIN_SET);
+    //HAL_GPIO_WritePin(FDS_MOTOR_ON_GPIO_Port, FDS_MOTOR_ON_Pin, GPIO_PIN_SET);
     if (HAL_GPIO_ReadPin(FDS_WRITE_GPIO_Port, FDS_WRITE_Pin))
     {
       // reading
@@ -401,7 +401,7 @@ void fds_check_pins()
           fds_state = FDS_READ_WAIT_READY;
         }
         break;
-      case FDS_READ_WAIT_READY:
+      case FDS_READ_WAIT_READY_TIMER:
         if (fds_not_ready_time + FDS_NOT_READY_TIME < HAL_GetTick())
         {
           HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_RESET);
@@ -606,7 +606,10 @@ FRESULT fds_save(uint8_t backup_original)
     uint16_t valid_crc = fds_crc(fds_raw_data + fds_block_offsets[i] + (i == 0 ? FDS_FIRST_GAP_READ_BITS : FDS_NEXT_GAPS_READ_BITS) / 8, block_size);
     uint16_t* crc = (uint16_t*)(fds_raw_data + fds_block_offsets[i] + (i == 0 ? FDS_FIRST_GAP_READ_BITS : FDS_NEXT_GAPS_READ_BITS) / 8 + block_size);
     if (valid_crc != *crc)
+    {
+      fds_state = FDS_IDLE;
       return FDSR_WRONG_CRC;
+    }
   }
 
   if (backup_original)
@@ -622,56 +625,85 @@ FRESULT fds_save(uint8_t backup_original)
       // need to create backup
       fr = f_open(&fp, fds_filename, FA_READ);
       if (fr != FR_OK)
+      {
+        fds_state = FDS_IDLE;
         return fr;
+      }
       fr = f_open(&fp_backup, backup_filename, FA_CREATE_NEW | FA_WRITE);
       if (fr != FR_OK)
       {
         f_close(&fp);
+        fds_state = FDS_IDLE;
         return fr;
       }
       do
       {
         fr = f_read(&fp, buff, sizeof(buff), &br);
         if (fr != FR_OK)
+        {
+          fds_state = FDS_IDLE;
           return fr;
+        }
         fr = f_write(&fp_backup, buff, br, &bw);
         if (bw != br)
         {
           f_close(&fp);
           f_close(&fp_backup);
+          fds_state = FDS_IDLE;
           return FR_DENIED;
         }
       } while (br > 0);
       f_close(&fp);
       fr = f_close(&fp_backup);
       if (fr != FR_OK)
+      {
+        fds_state = FDS_IDLE;
         return fr;
+      }
     }
   }
 
   // we need to set disk side offset
   fr = f_stat(fds_filename, &fno);
   if (fr != FR_OK)
+  {
+    fds_state = FDS_IDLE;
     return fr;
+  }
   int header_offset = fno.fsize % FDS_SIDE_SIZE;
   fr = f_open(&fp, fds_filename, FA_READ | FA_WRITE);
   if (fr != FR_OK)
+  {
+    fds_state = FDS_IDLE;
     return fr;
+  }
   fr = f_lseek(&fp, header_offset + fds_side * FDS_SIDE_SIZE);
   if (fr != FR_OK)
+  {
+    fds_state = FDS_IDLE;
     return fr;
+  }
   // save every block
   for (i = 0; i < fds_block_count; i++)
   {
     fr = f_write(&fp, (uint8_t*) fds_raw_data + fds_block_offsets[i] + (i == 0 ? FDS_FIRST_GAP_READ_BITS : FDS_NEXT_GAPS_READ_BITS) / 8, fds_get_block_size(i, 0, 0), &bw);
     if (fr != FR_OK)
+    {
+      fds_state = FDS_IDLE;
       return fr;
+    }
     if (bw != fds_get_block_size(i, 0, 0))
+    {
+      fds_state = FDS_IDLE;
       return FR_DISK_ERR;
+    }
   }
   fr = f_close(&fp);
   if (fr != FR_OK)
+  {
+    fds_state = FDS_IDLE;
     return fr;
+  }
 
   fds_changed = 0;
   // resume idle state
