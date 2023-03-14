@@ -241,25 +241,19 @@ int main(void)
       case FDS_WRITING_GAP: state = "FDS_WRITING_GAP"; break;
       case FDS_WRITING: state = "FDS_WRITING"; break;
       case FDS_WRITING_STOPPING: state = "FDS_WRITING_STOPPING"; break;
-      case FDS_SAVING: state = "FDS_SAVING"; break;
+      case FDS_SAVE_PENDING: state = "FDS_SAVING"; break;
       default: state = "UNKNOWN"; break;
       }
       sprintf(message, "%d, block %d, %s", pos, block, state);
       print(message);
-      if (fds_is_changed())
+      if (st == FDS_SAVE_PENDING)
       {
-        if (fds_get_state() != FDS_IDLE)
-          idle_time = HAL_GetTick();
-
-        if (idle_time + 5000 < HAL_GetTick())
-        {
-          print("saving");
-          fr = fds_save(1);
-          if (fr == FR_OK)
-            print("saved.");
-          else
-            print("error :(");
-        }
+        print("saving");
+        fr = fds_save(1);
+        if (fr == FR_OK)
+          print("saved.");
+        else
+          print("error :(");
       }
     }
     fds_close(1, 1);

@@ -53,7 +53,7 @@ typedef enum {
   FDS_WRITING_GAP,            // waiting for gap terminator before writing
   FDS_WRITING,                // writing data
   FDS_WRITING_STOPPING,       // end of useful data, writing garbage
-  FDS_SAVING                  // saving image
+  FDS_SAVE_PENDING            // saving image
 } FDS_STATE;
 
 #define FDSR_WRONG_CRC 0x80

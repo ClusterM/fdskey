@@ -403,14 +403,21 @@ void fds_check_pins()
     case FDS_IDLE:
     case FDS_WRITING: // waiting for FDS_WRITING_STOPPING (until buffer written by DMA)
       break;
+    case FDS_SAVE_PENDING:
+      if (!fds_changed)
+        fds_state = FDS_IDLE;
     default:
       fds_stop();
       if (fds_config_fast_rewind)
         fds_reset();
+      if (fds_changed)
+        fds_state = FDS_SAVE_PENDING;
     }
   } else
   {
     //HAL_GPIO_WritePin(FDS_MOTOR_ON_GPIO_Port, FDS_MOTOR_ON_Pin, GPIO_PIN_SET);
+    // return from saving state if saved
+    if ((fds_state == FDS_SAVE_PENDING) && !fds_changed) fds_state = FDS_IDLE;
     if (HAL_GPIO_ReadPin(FDS_WRITE_GPIO_Port, FDS_WRITE_Pin))
     {
       // reading
@@ -465,8 +472,6 @@ void fds_check_pins()
 void fds_tick_100ms() // call every ~100ms, low priority task
 {
   if (fds_state == FDS_OFF)
-    return;
-  if (fds_state == FDS_SAVING)
     return;
   fds_check_pins();
   if (fds_state == FDS_READ_WAIT_READY_TIMER)
@@ -600,8 +605,8 @@ FRESULT fds_load_side(char *filename, uint8_t side)
   }
   f_close(&fp);
 
-  strcat(filename, ".good.bin");
-  fds_dump(filename);
+//  strcat(filename, ".good.bin");
+//  fds_dump(filename);
 
   if (!HAL_GPIO_ReadPin(FDS_SCAN_MEDIA_GPIO_Port, FDS_SCAN_MEDIA_Pin))
   {
@@ -621,15 +626,12 @@ FRESULT fds_save(uint8_t backup_original)
   FIL fp, fp_backup;
   FILINFO fno;
   char backup_filename[_MAX_LFN + 5];
-  uint8_t buff[256];
+  uint8_t buff[4096];
   UINT br, bw;
   int i;
 
   if (!fds_changed)
     return FR_OK;
-  while (fds_state != FDS_IDLE && fds_state != FDS_SAVING)
-    ; // wait for idle state
-  fds_state = FDS_SAVING;
 
   // check CRC of every block
   for (i = 0; i < fds_block_count; i++)
@@ -638,14 +640,7 @@ FRESULT fds_save(uint8_t backup_original)
     uint16_t valid_crc = fds_crc(fds_raw_data + fds_block_offsets[i] + (i == 0 ? FDS_FIRST_GAP_READ_BITS : FDS_NEXT_GAPS_READ_BITS) / 8, block_size);
     uint16_t* crc = (uint16_t*)(fds_raw_data + fds_block_offsets[i] + (i == 0 ? FDS_FIRST_GAP_READ_BITS : FDS_NEXT_GAPS_READ_BITS) / 8 + block_size);
     if (valid_crc != *crc)
-    {
-      fds_state = FDS_IDLE;
-      strcpy(backup_filename, fds_filename);
-      strcat(backup_filename, ".bad.bin");
-      fds_dump(backup_filename);
-      fds_changed = 0;
       return FDSR_WRONG_CRC;
-    }
   }
 
   if (backup_original)
@@ -741,10 +736,9 @@ FRESULT fds_save(uint8_t backup_original)
     return fr;
   }
 
+  // clear changed flag
   fds_changed = 0;
   // resume idle state
-  fds_state = FDS_IDLE;
-  // but start reading/writing if need
   fds_check_pins();
 
   return FR_OK;
