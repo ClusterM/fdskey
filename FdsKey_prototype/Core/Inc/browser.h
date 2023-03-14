@@ -15,6 +15,6 @@ typedef enum {
   BROWSER_FILE
 } BROWSER_RESULT;
 
-FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, char *select);
+FRESULT browser_tree(char *directory, int dir_max_len, char *filename, int filename_max_len, BROWSER_RESULT *br);
 
 #endif /* INC_BROWSER_H_ */

@@ -22,10 +22,13 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <string.h>
+#include <stdio.h>
 #include "oled.h"
 #include "sdcard.h"
 #include "fdsemu.h"
 #include "browser.h"
+#include "buttons.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -204,27 +207,26 @@ int main(void)
       while (1) {}
     }
 
-    strncpy(full_path, selected_dir, sizeof(full_path));
-    strncat(full_path, "\\", sizeof(full_path));
-    strncat(full_path, selected_file, sizeof(full_path));
+    strncpy(full_path, selected_dir, sizeof(full_path) - 1);
+    strncat(full_path, "\\", sizeof(full_path) - 1);
+    strncat(full_path, selected_file, sizeof(full_path) - 1);
   //  while(1);
     uint8_t sides;
-    fr = fds_get_sides_count(full_path, &sides);
+    fr = fds_get_side_count(full_path, &sides, 0);
     if (fr != FR_OK) print("fds file size failed");
 
   //  /while (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin));
 
     print("LOADING FDS FILE...");
-    fr = fds_load_side(full_path, HAL_GPIO_ReadPin(BUTTON_RIGHT_GPIO_Port, BUTTON_RIGHT_Pin) ^ 1);
+    fr = fds_load_side(full_path, HAL_GPIO_ReadPin(BUTTON_RIGHT_GPIO_Port, BUTTON_RIGHT_Pin) ^ 1, 0);
     if (fr == FR_OK)
       print("fds file loaded");
     else {
       print("fds load failed");
       while(1){}
     }
-    int idle_time = 0;
 
-    while (!button_left())
+    while (!button_left_newpress())
     {
       int pos = fds_get_head_position();
       int block = fds_get_block();

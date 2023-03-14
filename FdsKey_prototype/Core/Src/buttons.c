@@ -5,12 +5,34 @@ uint8_t up_pressed = 0;
 uint8_t down_pressed = 0;
 uint8_t left_pressed = 0;
 uint8_t right_pressed = 0;
-int up_hold_time = 0;
-int down_hold_time = 0;
+uint32_t up_hold_time = 0;
+uint32_t down_hold_time = 0;
+uint32_t left_hold_time = 0;
+uint32_t right_hold_time = 0;
 
-uint8_t button_up()
+uint8_t button_up_holding()
 {
-  uint8_t v = !HAL_GPIO_ReadPin(BUTTON_UP_GPIO_Port, BUTTON_UP_Pin);
+  return !HAL_GPIO_ReadPin(BUTTON_UP_GPIO_Port, BUTTON_UP_Pin);
+}
+
+uint8_t button_down_holding()
+{
+  return !HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin);
+}
+
+uint8_t button_left_holding()
+{
+  return !HAL_GPIO_ReadPin(BUTTON_LEFT_GPIO_Port, BUTTON_LEFT_Pin);
+}
+
+uint8_t button_right_holding()
+{
+  return !HAL_GPIO_ReadPin(BUTTON_RIGHT_GPIO_Port, BUTTON_RIGHT_Pin);
+}
+
+uint8_t button_up_newpress()
+{
+  uint8_t v = button_up_holding();
   uint8_t newpress = v && !up_pressed;
   up_pressed = v;
   if (newpress)
@@ -20,9 +42,9 @@ uint8_t button_up()
   return newpress || (up_hold_time && (up_hold_time + BUTTONS_REPEAT_TIME < HAL_GetTick()));
 }
 
-uint8_t button_down()
+uint8_t button_down_newpress()
 {
-  uint8_t v = !HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin);;
+  uint8_t v = button_down_holding();
   uint8_t newpress = v && !down_pressed;
   down_pressed = v;
   if (newpress)
@@ -32,18 +54,42 @@ uint8_t button_down()
   return newpress || (down_hold_time && (down_hold_time + BUTTONS_REPEAT_TIME < HAL_GetTick()));
 }
 
-uint8_t button_left()
+uint8_t button_left_newpress()
 {
-  uint8_t v = !HAL_GPIO_ReadPin(BUTTON_LEFT_GPIO_Port, BUTTON_LEFT_Pin);
+  uint8_t v = button_left_holding();
   uint8_t newpress = v && !left_pressed;
+  if (newpress)
+    left_hold_time = HAL_GetTick();
+  else if (!v)
+    left_hold_time = 0;
   left_pressed = v;
   return newpress;
 }
 
-uint8_t button_right()
+uint8_t button_right_newpress()
 {
-  uint8_t v = !HAL_GPIO_ReadPin(BUTTON_RIGHT_GPIO_Port, BUTTON_RIGHT_Pin);
+  uint8_t v = button_right_holding();
   uint8_t newpress = v && !right_pressed;
+  if (newpress)
+    right_hold_time = HAL_GetTick();
+  else if (!v)
+    right_hold_time = 0;
   right_pressed = v;
   return newpress;
+}
+
+uint32_t button_left_hold_time()
+{
+  if (!button_left_holding())
+    left_hold_time = 0;
+  if (!left_hold_time) return 0;
+  return HAL_GetTick() - left_hold_time;
+}
+
+uint32_t button_right_hold_time()
+{
+  if (!button_right_holding())
+    right_hold_time = 0;
+  if (!right_hold_time) return 0;
+  return HAL_GetTick() - right_hold_time;
 }

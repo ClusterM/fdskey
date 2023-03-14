@@ -25,8 +25,10 @@ static volatile uint16_t fds_last_write_impulse = 0;
 static volatile uint16_t fds_current_block_end = 0;
 static volatile uint16_t fds_write_gap_skip = 0;
 static volatile uint8_t fds_changed = 0;
+static volatile uint32_t fds_last_action_time = 0;
 
 static uint8_t fds_config_fast_rewind = 1;
+static uint32_t fds_config_autosave_time = 5000;
 
 static void fds_start_reading();
 static void fds_start_writing();
@@ -158,16 +160,12 @@ static void fds_write_bit(uint8_t bit)
   fds_current_bit++;
   if (fds_current_bit > 7)
   {
-//    uint8_t data = fds_raw_data[fds_current_byte];
-//    if (wr_count == 2)
-//      print("bingo");
     fds_current_bit = 0;
     fds_current_byte = (fds_current_byte + 1) % FDS_MAX_SIDE_SIZE;
 
     if (fds_current_byte >= fds_current_block_end)
     {
       // end of block
-      //fds_stop_writing();
       if (!HAL_GPIO_ReadPin(FDS_SCAN_MEDIA_GPIO_Port, FDS_SCAN_MEDIA_Pin))
       {
         // still spinning disk
@@ -182,6 +180,7 @@ static void fds_write_bit(uint8_t bit)
           fds_state = FDS_WRITING_STOPPING;
         }
       } else {
+        // not spinning
         fds_stop();
       }
     }
@@ -196,7 +195,7 @@ static void fds_write_impulse(uint16_t pulse)
   case FDS_WRITING:
     break;
   case FDS_WRITING_STOPPING:
-    // some unlicensed software can write multiple blocks at once
+    // some unlicensed software can write multiple blocks at once without /write toggling
     if (pulse < FDS_THRESHOLD_1)
       fds_write_gap_skip++;
     else
@@ -225,6 +224,7 @@ static void fds_write_impulse(uint16_t pulse)
     }
   } else if (fds_state == FDS_WRITING)
   {
+    // some demodulation magic
     uint8_t l = fds_write_carrier;
     if (pulse < FDS_THRESHOLD_1)
       l |= 2;
@@ -309,8 +309,6 @@ static void fds_start_writing()
   int i;
   int gap_length;
   int fds_current_block = 0;
-
-  wr_count++;
 
   // calculate current block
   for (i = 0;; i++)
@@ -400,18 +398,21 @@ void fds_check_pins()
     switch (fds_state)
     {
     case FDS_OFF:
-    case FDS_IDLE:
     case FDS_WRITING: // waiting for FDS_WRITING_STOPPING (until buffer written by DMA)
+      break;
+    case FDS_IDLE:
+      // schedule file saving if need and idle time exceeded
+      if (fds_changed && fds_last_action_time + fds_config_autosave_time < HAL_GetTick())
+        fds_state = FDS_SAVE_PENDING;
       break;
     case FDS_SAVE_PENDING:
       if (!fds_changed)
         fds_state = FDS_IDLE;
+      break;
     default:
       fds_stop();
       if (fds_config_fast_rewind)
         fds_reset();
-      if (fds_changed)
-        fds_state = FDS_SAVE_PENDING;
     }
   } else
   {
@@ -466,6 +467,7 @@ void fds_check_pins()
         break;
       }
     }
+    fds_last_action_time = HAL_GetTick();
   }
 }
 
@@ -484,7 +486,7 @@ void fds_tick_100ms() // call every ~100ms, low priority task
   }
 }
 
-FRESULT fds_load_side(char *filename, uint8_t side)
+FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
 {
   int i;
   FRESULT fr;
@@ -505,7 +507,7 @@ FRESULT fds_load_side(char *filename, uint8_t side)
   // but media is inserted
   HAL_GPIO_WritePin(FDS_MEDIA_SET_GPIO_Port, FDS_MEDIA_SET_Pin, GPIO_PIN_RESET);
   // writable maybe
-  HAL_GPIO_WritePin(FDS_WRITABLE_MEDIA_GPIO_Port, FDS_WRITABLE_MEDIA_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(FDS_WRITABLE_MEDIA_GPIO_Port, FDS_WRITABLE_MEDIA_Pin, ro ? GPIO_PIN_SET : GPIO_PIN_RESET);
 
   strncpy(fds_filename, filename, sizeof(fds_filename));
   filename[sizeof(fds_filename) - 1] = 0;
@@ -524,6 +526,7 @@ FRESULT fds_load_side(char *filename, uint8_t side)
     return fr;
 
   fds_raw_data = malloc(FDS_MAX_SIDE_SIZE);
+  if (!fds_raw_data) return FDSR_OUT_OF_MEMORY;
 
   while (1)
   {
@@ -625,7 +628,6 @@ FRESULT fds_save(uint8_t backup_original)
   FRESULT fr;
   FIL fp, fp_backup;
   FILINFO fno;
-  char backup_filename[_MAX_LFN + 5];
   uint8_t buff[4096];
   UINT br, bw;
   int i;
@@ -768,19 +770,9 @@ FRESULT fds_close(uint8_t save, uint8_t backup_original)
   return fr;
 }
 
-uint8_t fds_is_changed()
-{
-  return fds_changed;
-}
-
 FDS_STATE fds_get_state()
 {
   return fds_state;
-}
-
-int fds_get_head_position()
-{
-  return fds_current_byte;
 }
 
 int fds_get_block()
@@ -802,7 +794,22 @@ int fds_get_block()
   }
 }
 
-FRESULT fds_get_sides_count(char *filename, uint8_t *count)
+int fds_get_head_position()
+{
+  return fds_current_byte;
+}
+
+int fds_get_max_size()
+{
+  return FDS_MAX_SIDE_SIZE;
+}
+
+int fds_get_used_space()
+{
+  return fds_used_space;
+}
+
+FRESULT fds_get_side_count(char *filename, uint8_t *count, FILINFO *fileinfo)
 {
   FILINFO fno;
   FRESULT fr;
@@ -814,6 +821,9 @@ FRESULT fds_get_sides_count(char *filename, uint8_t *count)
     fno.fsize -= FDS_HEADER_SIZE;
   if (fno.fsize % FDS_SIDE_SIZE != 0)
     return FDSR_INVALID_ROM;
-  *count = fno.fsize / FDS_SIDE_SIZE;
+  if (count)
+    *count = fno.fsize / FDS_SIDE_SIZE;
+  if (fileinfo)
+    *fileinfo = fno;
   return fr;
 }

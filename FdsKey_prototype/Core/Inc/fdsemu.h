@@ -58,15 +58,19 @@ typedef enum {
 
 #define FDSR_WRONG_CRC 0x80
 #define FDSR_INVALID_ROM 0x81
+#define FDSR_OUT_OF_MEMORY 0x82
 
-FRESULT fds_load_side(char *filename, uint8_t side);
+FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro);
 FRESULT fds_close(uint8_t save, uint8_t backup_original);
 FRESULT fds_save(uint8_t backup_original);
-FRESULT fds_get_sides_count(char *filename, uint8_t *count);
+FRESULT fds_get_side_count(char *filename, uint8_t *count, FILINFO *fileinfo);
 void fds_check_pins();
 void fds_tick_100ms();
-uint8_t fds_is_changed();
 FDS_STATE fds_get_state();
+int fds_get_block();
+int fds_get_head_position();
+int fds_get_max_size();
+int fds_get_used_space();
 
 extern TIM_HandleTypeDef FDS_READ_PWM_TIMER;
 extern DMA_HandleTypeDef FDS_READ_DMA;

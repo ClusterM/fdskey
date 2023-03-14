@@ -141,22 +141,22 @@ static int browser_menu(int selection)
 
   while (1)
   {
-    if (button_up() && selection > 0)
+    if (button_up_newpress() && selection > 0)
     {
       draw_item(oled_get_line() / 8 + selection - line, selection, 0, 0);
       selection--;
       draw_item(oled_get_line() / 8 + selection - line, selection, 1, 0);
       text_scroll = 0;
     }
-    if (button_down() && selection + 1 < item_count)
+    if (button_down_newpress() && selection + 1 < item_count)
     {
       draw_item(oled_get_line() / 8 + selection - line, selection, 0, 0);
       selection++;
       draw_item(oled_get_line() / 8 + selection - line, selection, 1, 0);
       text_scroll = 0;
     }
-    if (button_left()) return -1; // back
-    if (button_right()) return selection;
+    if (button_left_newpress()) return -1; // back
+    if (button_right_newpress()) return selection;
     while (selection < line && line)
     {
       line--;
