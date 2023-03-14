@@ -8,11 +8,13 @@
 #define BROWSER_HORIZONTAL_SCROLL_PAUSE 12
 #define BROWSER_MAX_PATH_LENGTH 4096
 #define BROWSER_FOLDER_IMAGE IMAGE_FOLDER6
+#define BROWSER_LONGPRESS_TIME 1000
 
 typedef enum {
   BROWSER_BACK,
   BROWSER_DIRECTORY,
-  BROWSER_FILE
+  BROWSER_FILE,
+  BROWSER_FILE_LONGPRESS
 } BROWSER_RESULT;
 
 FRESULT browser_tree(char *directory, int dir_max_len, char *filename, int filename_max_len, BROWSER_RESULT *br);

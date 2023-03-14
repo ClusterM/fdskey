@@ -218,7 +218,7 @@ int main(void)
   //  /while (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin));
 
     print("LOADING FDS FILE...");
-    fr = fds_load_side(full_path, HAL_GPIO_ReadPin(BUTTON_RIGHT_GPIO_Port, BUTTON_RIGHT_Pin) ^ 1, 0);
+    fr = fds_load_side(full_path, br == BROWSER_FILE ? 0 : 1, 0);
     if (fr == FR_OK)
       print("fds file loaded");
     else {

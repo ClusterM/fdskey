@@ -267,6 +267,14 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
     strncpy(output, dir_list[r], max_len);
   } else {
     *result = BROWSER_FILE;
+    while (button_right_holding())
+    {
+      if (button_right_hold_time() >= BROWSER_LONGPRESS_TIME)
+      {
+        *result = BROWSER_FILE_LONGPRESS;
+        break;
+      }
+    }
     strncpy(output, file_list[r - dir_count], max_len);
   }
 
@@ -318,13 +326,13 @@ FRESULT browser_tree(char *directory, int dir_max_len, char *filename, int filen
       *filename = 0;
       break;
     case BROWSER_FILE:
+    case BROWSER_FILE_LONGPRESS:
       // wtf... i have no idea why strncpy if not working here
       i = 0;
       for (i = 0; i < filename_max_len && text[i]; i++)
         filename[i] = text[i];
       filename[i] = 0;
       //strncpy(filename, text, filename_max_len);
-      *br = BROWSER_FILE;
       return FR_OK;
     }
   }
