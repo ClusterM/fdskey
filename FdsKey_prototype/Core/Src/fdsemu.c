@@ -26,7 +26,7 @@ static volatile uint16_t fds_current_block_end = 0;
 static volatile uint16_t fds_write_gap_skip = 0;
 static volatile uint8_t fds_changed = 0;
 
-static uint8_t fds_config_fast_rewind = 0;
+static uint8_t fds_config_fast_rewind = 1;
 
 static void fds_start_reading();
 static void fds_start_writing();
@@ -34,6 +34,9 @@ static void fds_stop_reading();
 static void fds_stop_writing();
 static void fds_reset();
 static void fds_stop();
+
+int wr_count = 0;
+
 
 // debug dumping
 void fds_dump(char *filename)
@@ -122,6 +125,7 @@ static void fds_dma_fill_read_buffer(int pos, int length)
       if (fds_current_byte == 0 && fds_state == FDS_READ_WAIT_READY)
       {
         // disk just rewinded and ready again
+        fds_state = FDS_READING;
         HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_RESET);
       }
       if (fds_config_fast_rewind && fds_current_byte > fds_used_space + FDS_NOT_READY_BYTES)
@@ -154,22 +158,31 @@ static void fds_write_bit(uint8_t bit)
   fds_current_bit++;
   if (fds_current_bit > 7)
   {
+//    uint8_t data = fds_raw_data[fds_current_byte];
+//    if (wr_count == 2)
+//      print("bingo");
     fds_current_bit = 0;
     fds_current_byte = (fds_current_byte + 1) % FDS_MAX_SIDE_SIZE;
 
     if (fds_current_byte >= fds_current_block_end)
     {
       // end of block
-      fds_stop_writing();
+      //fds_stop_writing();
       if (!HAL_GPIO_ReadPin(FDS_SCAN_MEDIA_GPIO_Port, FDS_SCAN_MEDIA_Pin))
       {
         // still spinning disk
         if (HAL_GPIO_ReadPin(FDS_WRITE_GPIO_Port, FDS_WRITE_Pin))
+        {
+          // reading
+          fds_stop_writing();
           fds_start_reading(); // not writing anymore
-        else
-          fds_state = FDS_WRITING_STOPPING; // still writing but garbage data
+        } else {
+          // still writing but garbage data
+          fds_write_gap_skip = 0;
+          fds_state = FDS_WRITING_STOPPING;
+        }
       } else {
-        fds_state = FDS_IDLE;
+        fds_stop();
       }
     }
   }
@@ -177,12 +190,24 @@ static void fds_write_bit(uint8_t bit)
 
 static void fds_write_impulse(uint16_t pulse)
 {
-  //if (time < 512) return; // filter
   switch (fds_state)
   {
   case FDS_WRITING_GAP:
   case FDS_WRITING:
     break;
+  case FDS_WRITING_STOPPING:
+    // some unlicensed software can write multiple blocks at once
+    if (pulse < FDS_THRESHOLD_1)
+      fds_write_gap_skip++;
+    else
+      fds_write_gap_skip = 0;
+    if (fds_write_gap_skip >= FDS_MULTI_WRITE_UNLICENSED_BITS)
+    {
+      // start writing of the next block
+      fds_stop_writing();
+      fds_start_writing();
+    }
+    return;
   default:
     fds_stop_writing();
     return;
@@ -284,6 +309,8 @@ static void fds_start_writing()
   int i;
   int gap_length;
   int fds_current_block = 0;
+
+  wr_count++;
 
   // calculate current block
   for (i = 0;; i++)
@@ -409,6 +436,7 @@ void fds_check_pins()
         }
         break;
       case FDS_WRITING_STOPPING:
+        fds_stop_writing();
         fds_start_reading();
         break;
       default:
@@ -572,6 +600,9 @@ FRESULT fds_load_side(char *filename, uint8_t side)
   }
   f_close(&fp);
 
+  strcat(filename, ".good.bin");
+  fds_dump(filename);
+
   if (!HAL_GPIO_ReadPin(FDS_SCAN_MEDIA_GPIO_Port, FDS_SCAN_MEDIA_Pin))
   {
     fds_start_reading();
@@ -589,13 +620,14 @@ FRESULT fds_save(uint8_t backup_original)
   FRESULT fr;
   FIL fp, fp_backup;
   FILINFO fno;
+  char backup_filename[_MAX_LFN + 5];
   uint8_t buff[256];
   UINT br, bw;
   int i;
 
   if (!fds_changed)
     return FR_OK;
-  while (fds_state != FDS_IDLE)
+  while (fds_state != FDS_IDLE && fds_state != FDS_SAVING)
     ; // wait for idle state
   fds_state = FDS_SAVING;
 
@@ -608,6 +640,10 @@ FRESULT fds_save(uint8_t backup_original)
     if (valid_crc != *crc)
     {
       fds_state = FDS_IDLE;
+      strcpy(backup_filename, fds_filename);
+      strcat(backup_filename, ".bad.bin");
+      fds_dump(backup_filename);
+      fds_changed = 0;
       return FDSR_WRONG_CRC;
     }
   }
@@ -711,8 +747,6 @@ FRESULT fds_save(uint8_t backup_original)
   // but start reading/writing if need
   fds_check_pins();
 
-  fds_state = FDS_IDLE;
-
   return FR_OK;
 }
 
@@ -720,14 +754,13 @@ FRESULT fds_close(uint8_t save, uint8_t backup_original)
 {
   FRESULT fr = FR_OK;
 
+  if (save)
+    fr = fds_save(backup_original);
+
   fds_stop();
   fds_state = FDS_OFF;
   // remove disk
   HAL_GPIO_WritePin(FDS_MEDIA_SET_GPIO_Port, FDS_MEDIA_SET_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_SET);
-
-  if (save)
-    fr = fds_save(backup_original);
 
   fds_used_space = 0;
   fds_block_count = 0;

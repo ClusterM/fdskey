@@ -21,12 +21,13 @@
 #define FDS_MAX_BLOCKS 256
 #define FDS_MAX_BLOCK_SIZE FDS_MAX_SIDE_SIZE
 #define FDS_READ_BUFFER_SIZE 128      // bits
-#define FDS_WRITE_BUFFER_SIZE 128     // impulses
+#define FDS_WRITE_BUFFER_SIZE 32     // impulses
 #define FDS_FIRST_GAP_READ_BITS 28300 // first gap size, bits
 #define FDS_NEXT_GAPS_READ_BITS 976   // next gap size, bits
-#define FDS_WRITE_GAP_SKIP_BITS 8     // dispose bits before writing
+#define FDS_WRITE_GAP_SKIP_BITS 32     // dispose bits before writing
 #define FDS_NOT_READY_TIME 1000       // disk rewind time, milliseconds (for fast rewind)
 #define FDS_NOT_READY_BYTES 16000      // disk rewind time, bytes (for slow rewind)
+#define FDS_MULTI_WRITE_UNLICENSED_BITS 32 // some unlicensed software can write multiple blocks at once
 
 // do not touch it
 #define FDS_HEADER_SIZE 16    // header in ROM
@@ -42,7 +43,6 @@
 #define FDS_WRITE_CAPTURE_TIMER_CHANNEL_REG FDS_TIMER_CHANNEL_REG(FDS_WRITE_CAPTURE_TIMER_CHANNEL)
 #define FDS_WRITE_CAPTURE_TIMER_CHANNEL_CONST FDS_TIMER_CHANNEL_CONST(FDS_WRITE_CAPTURE_TIMER_CHANNEL)
 #define FDS_WRITE_CAPTURE_DMA_TRIGGER_CONST FDS_TIMER_DMA_TRIGGER_CONST(FDS_WRITE_CAPTURE_TIMER_CHANNEL)
-
 
 typedef enum {
   FDS_OFF,                    // disk image is not loaded
