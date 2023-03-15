@@ -30,6 +30,7 @@
 #include "browser.h"
 #include "buttons.h"
 #include "splash.h"
+#include "side_select.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -116,6 +117,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     fds_check_pins();
 }
 
+
+
 /* USER CODE END 0 */
 
 /**
@@ -179,14 +182,17 @@ int main(void)
   //char *filename = "Metroid (Japan) (v1.2) (eng).fds";
 //  char *filename = "Super Mario Brothers (Japan).fds";
   //char *filename = "metroid_my.fds";
-  char selected_dir[4096] = "";
-  char selected_file[_MAX_LFN + 1] = "";
-  char full_path[4096];
+
+  char *selected_dir = malloc(4096);
+  selected_dir[0] = 0;
+  char *selected_file = malloc(_MAX_LFN + 1);
+  selected_file[0] = 0;
+//  char *full_path = malloc(4096);
 
   while (1)
   {
     BROWSER_RESULT br;
-    fr = browser_tree(selected_dir, sizeof(selected_dir), selected_file, sizeof(selected_dir), &br);
+    fr = browser_tree(selected_dir, 4096, selected_file, 4096, &br);
 
     if (br == BROWSER_BACK)
     {
@@ -196,13 +202,13 @@ int main(void)
 
     show_loading_screen();
 
-    strncpy(full_path, selected_dir, sizeof(full_path) - 1);
-    strncat(full_path, "\\", sizeof(full_path) - 1);
-    strncat(full_path, selected_file, sizeof(full_path) - 1);
+//    strncpy(full_path, selected_dir, sizeof(full_path) - 1);
+//    strncat(full_path, "\\", sizeof(full_path) - 1);
+//    strncat(full_path, selected_file, sizeof(full_path) - 1);
   //  while(1);
     uint8_t sides;
-    fr = fds_get_side_count(full_path, &sides, 0);
-    show_error_screen_fr(fr, 1);
+//    fr = fds_get_side_count(full_path, &sides, 0);
+//    show_error_screen_fr(fr, 1);
 
   //  /while (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin));
 

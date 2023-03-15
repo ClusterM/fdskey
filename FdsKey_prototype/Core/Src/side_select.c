@@ -94,10 +94,6 @@ FRESULT fds_side_select(char *directory, char *filename)
   char game_name[fl + 1];
   int i, text_scroll = 0;
 
-  fr = fds_get_side_count(filename, &side_count, &fileinfo);
-  if (fr != FR_OK) return fr;
-  if (side_count > 7) side_count = 7;
-
   strcpy(full_path, directory);
   strcat(full_path, "\\");
   strcat(full_path, filename);
@@ -111,6 +107,10 @@ FRESULT fds_side_select(char *directory, char *filename)
       break;
     }
   }
+
+  fr = fds_get_side_count(full_path, &side_count, &fileinfo);
+  if (fr != FR_OK) return fr;
+  if (side_count > 7) side_count = 7;
 
   while (1)
   {

@@ -5,6 +5,6 @@
 #define SIDE_SELECT_HORIZONTAL_SCROLL_SPEED 1
 #define SIDE_SELECT_HORIZONTAL_SCROLL_PAUSE 12
 
-void fds_side_select(char *directory, char *filename);
+FRESULT fds_side_select(char *directory, char *filename);
 
 #endif /* INC_SIDE_SELECT_H_ */

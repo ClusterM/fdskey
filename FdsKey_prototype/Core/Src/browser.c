@@ -235,7 +235,7 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
   }
   dir_list = realloc(dir_list, dir_count * sizeof(char*));
   file_list = realloc(file_list, file_count * sizeof(char*));
-  f_closedir(&dir);
+
 
   // sort them
   top_down_merge_sort(dir_list, dir_count);
@@ -275,6 +275,7 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
     strncpy(output, file_list[r - dir_count], max_len);
   }
 
+  f_closedir(&dir);
   browser_free();
 
   return FR_OK;
@@ -282,13 +283,13 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
 
 FRESULT browser_tree(char *directory, int dir_max_len, char *filename, int filename_max_len, BROWSER_RESULT *br)
 {
-  char text[BROWSER_MAX_PATH_LENGTH];
   FRESULT fr;
   int i;
+  char new_filename[_MAX_LFN + 1];
 
   while (1)
   {
-    fr = browser(directory, text, BROWSER_MAX_PATH_LENGTH - 1, br, filename);
+    fr = browser(directory, new_filename, _MAX_LFN, br, filename);
     if (fr != FR_OK) return fr;
     switch (*br)
     {
@@ -318,18 +319,14 @@ FRESULT browser_tree(char *directory, int dir_max_len, char *filename, int filen
       break;
     case BROWSER_DIRECTORY:
       strncat(directory, "\\", dir_max_len);
-      strncat(directory, text, dir_max_len);
+      strncat(directory, new_filename, dir_max_len);
       directory[dir_max_len - 1] = 0;
       *filename = 0;
       break;
     case BROWSER_FILE:
     case BROWSER_FILE_LONGPRESS:
-      // wtf... i have no idea why strncpy if not working here
-      i = 0;
-      for (i = 0; i < filename_max_len && text[i]; i++)
-        filename[i] = text[i];
-      filename[i] = 0;
-      //strncpy(filename, text, filename_max_len);
+      strncpy(filename, new_filename, filename_max_len);
+      filename[filename_max_len - 1] = 0;
       return FR_OK;
     }
   }
