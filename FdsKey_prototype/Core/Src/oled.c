@@ -79,6 +79,7 @@ HAL_StatusTypeDef oled_update(uint8_t start_page, uint8_t end_page) {
 
 	start_page = start_page % (OLED_HEIGHT * 2 / 8);
 	end_page = end_page % (OLED_HEIGHT * 2 / 8);
+	if (end_page < start_page) end_page += (OLED_HEIGHT * 2 / 8);
 
 	for (p = start_page; p < end_page + 1; p++) {
 		oled_send_commands(3, OLED_CMD_SET_PAGE(p % 8),

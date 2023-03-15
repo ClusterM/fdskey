@@ -60,7 +60,7 @@ static void top_down_merge_sort(char** A, int n)
 static void draw_item(uint8_t line, int item, uint8_t is_selected, int text_scroll)
 {
   uint8_t is_dir;
-  int i, offset, max_length, text_length, total_scroll;
+  int i, offset, max_width, text_width, total_scroll;
   char* text;
   if (item < dir_count)
     text = dir_list[item];
@@ -90,14 +90,14 @@ static void draw_item(uint8_t line, int item, uint8_t is_selected, int text_scro
   if (is_selected)
     oled_draw_image(&IMAGE_CURSOR, 0, line * 8, 0, 0);
   offset = IMAGE_CURSOR.width + (is_dir ? BROWSER_FOLDER_IMAGE.width + 2: 0);
-  max_length = OLED_WIDTH - offset - 1;
+  max_width = OLED_WIDTH - offset - 1;
   if (is_dir)
     oled_draw_image(item < 0 ? &IMAGE_FOLDER_UP : &BROWSER_FOLDER_IMAGE, IMAGE_CURSOR.width, line * 8, 0, 0);
 
-  text_length = oled_get_text_length(&BROWSER_FONT, text) - 1 /*spaceing*/;
-  if (text_length > max_length)
+  text_width = oled_get_text_length(&BROWSER_FONT, text) - 1 /*spacing*/;
+  if (text_width > max_width)
   {
-    total_scroll = BROWSER_HORIZONTAL_SCROLL_PAUSE + (text_length - max_length) + BROWSER_HORIZONTAL_SCROLL_PAUSE;
+    total_scroll = BROWSER_HORIZONTAL_SCROLL_PAUSE + (text_width - max_width) + BROWSER_HORIZONTAL_SCROLL_PAUSE;
     text_scroll /= BROWSER_HORIZONTAL_SCROLL_SPEED;
     text_scroll %= total_scroll * 2;
     // two-directional
@@ -105,8 +105,8 @@ static void draw_item(uint8_t line, int item, uint8_t is_selected, int text_scro
       text_scroll = total_scroll * 2 - text_scroll;
     if (text_scroll < BROWSER_HORIZONTAL_SCROLL_PAUSE)
       text_scroll = 0;
-    else if (text_scroll >= BROWSER_HORIZONTAL_SCROLL_PAUSE + (text_length - max_length))
-      text_scroll = text_length - max_length;
+    else if (text_scroll >= BROWSER_HORIZONTAL_SCROLL_PAUSE + (text_width - max_width))
+      text_scroll = text_width - max_width;
     else
       text_scroll = text_scroll - BROWSER_HORIZONTAL_SCROLL_PAUSE;
   } else {
@@ -115,7 +115,7 @@ static void draw_item(uint8_t line, int item, uint8_t is_selected, int text_scro
 
   oled_draw_text_cropped(&BROWSER_FONT, text,
       offset, line * 8,
-      text_scroll, max_length,
+      text_scroll, max_width,
       0, 0,
       0, 0);
   oled_update(line, line);
@@ -129,11 +129,6 @@ static int browser_menu(int selection)
   int line = selection - 2;
   if (line + 4 > item_count) line = item_count - 4;
   if (line < 0) line = 0;
-
-//  oled_draw_rectangle(0, OLED_HEIGHT, OLED_WIDTH - 1, OLED_HEIGHT * 2 - 1, 1, 0);
-//  oled_update_full();
-//  oled_set_line(0);
-//  oled_send_command(OLED_CMD_SET_ON);
 
   for (i = 0; i < 4; i++)
   {

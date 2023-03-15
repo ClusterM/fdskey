@@ -155,27 +155,23 @@ int main(void)
   MX_TIM15_Init();
   /* USER CODE BEGIN 2 */
 
-  HAL_Delay(100);
-  oled_init(1, 0, 0x80);
-  oled_draw_rectangle(0, 0, OLED_WIDTH - 1, OLED_HEIGHT - 1, 1, 0);
-  oled_update_full();
-  oled_set_line(0);
+
   line = 0;
 
 //  if (HAL_GPIO_ReadPin(SD_DTCT_GPIO_Port, SD_DTCT_Pin))
 //    print("no sd card");
 
   if (HAL_GPIO_ReadPin(SD_DTCT_GPIO_Port, SD_DTCT_Pin))
-    show_error_screen("No SD card");
+    show_error_screen("No SD card", 1);
 
   HAL_StatusTypeDef r = SD_init();
   if (r != HAL_OK)
-    show_error_screen("Can't init SD card");
+    show_error_screen("Can't init SD card", 1);
 
   FATFS FatFs;
   FRESULT fr;
   fr = f_mount(&FatFs, "", 1);
-  show_error_screen_fr(fr);
+  show_error_screen_fr(fr, 1);
 
   HAL_TIM_Base_Start_IT(&htim1);
 
@@ -206,51 +202,50 @@ int main(void)
   //  while(1);
     uint8_t sides;
     fr = fds_get_side_count(full_path, &sides, 0);
-    show_error_screen_fr(fr);
+    show_error_screen_fr(fr, 1);
 
   //  /while (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin));
 
     //print("LOADING FDS FILE...");
-    show_loading_screen();
-    fr = fds_load_side(full_path, br == BROWSER_FILE ? 0 : 1, 0);
-    show_error_screen_fr(fr);
-
-    oled_init(1, 0, 0x80);
-    oled_draw_rectangle(0, 0, OLED_WIDTH - 1, OLED_HEIGHT - 1, 1, 0);
-    oled_update_full();
-
-    while (!button_left_newpress())
-    {
-      int pos = fds_get_head_position();
-      int block = fds_get_block();
-      FDS_STATE st = fds_get_state();
-      char* state;
-      char message[128];
-      switch (st)
-      {
-      case FDS_OFF: state = "FDS_OFF"; break;
-      case FDS_IDLE: state = "FDS_IDLE"; break;
-      case FDS_READ_WAIT_READY: state = "FDS_READ_WAIT_READY"; break;
-      case FDS_READ_WAIT_READY_TIMER: state = "FDS_READ_WAIT_READY_TIMER"; break;
-      case FDS_READING: state = "FDS_READING"; break;
-      case FDS_WRITING_GAP: state = "FDS_WRITING_GAP"; break;
-      case FDS_WRITING: state = "FDS_WRITING"; break;
-      case FDS_WRITING_STOPPING: state = "FDS_WRITING_STOPPING"; break;
-      case FDS_SAVE_PENDING: state = "FDS_SAVING"; break;
-      default: state = "UNKNOWN"; break;
-      }
-      sprintf(message, "%d, block %d, %s", pos, block, state);
-//      print(message);
-      if (st == FDS_SAVE_PENDING)
-      {
-//        print("saving");
-        fr = fds_save(1);
-        if (fr != FR_OK)
-          show_error_screen_fr(fr);
-      }
-    }
+    fr = fds_side_select(selected_dir, selected_file);
+    show_error_screen_fr(fr, 1);
+//
+//    oled_init(1, 0, 0x80);
+//    oled_draw_rectangle(0, 0, OLED_WIDTH - 1, OLED_HEIGHT - 1, 1, 0);
+//    oled_update_full();
+//
+//    while (!button_left_newpress())
+//    {
+//      int pos = fds_get_head_position();
+//      int block = fds_get_block();
+//      FDS_STATE st = fds_get_state();
+//      char* state;
+//      char message[128];
+//      switch (st)
+//      {
+//      case FDS_OFF: state = "FDS_OFF"; break;
+//      case FDS_IDLE: state = "FDS_IDLE"; break;
+//      case FDS_READ_WAIT_READY: state = "FDS_READ_WAIT_READY"; break;
+//      case FDS_READ_WAIT_READY_TIMER: state = "FDS_READ_WAIT_READY_TIMER"; break;
+//      case FDS_READING: state = "FDS_READING"; break;
+//      case FDS_WRITING_GAP: state = "FDS_WRITING_GAP"; break;
+//      case FDS_WRITING: state = "FDS_WRITING"; break;
+//      case FDS_WRITING_STOPPING: state = "FDS_WRITING_STOPPING"; break;
+//      case FDS_SAVE_PENDING: state = "FDS_SAVING"; break;
+//      default: state = "UNKNOWN"; break;
+//      }
+//      sprintf(message, "%d, block %d, %s", pos, block, state);
+////      print(message);
+//      if (st == FDS_SAVE_PENDING)
+//      {
+////        print("saving");
+//        fr = fds_save(1);
+//        if (fr != FR_OK)
+//          show_error_screen_fr(fr, 1);
+//      }
+//    }
     fr = fds_close(1, 1);
-    show_error_screen_fr(fr);
+    show_error_screen_fr(fr, 1);
 //  print("dumping good...");
 //  fds_dump("good.bin");
 //  print("dumped.");
@@ -366,7 +361,11 @@ static void MX_I2C1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN I2C1_Init 2 */
-
+  HAL_Delay(100);
+  oled_init(1, 0, 0x80);
+  oled_draw_rectangle(0, 0, OLED_WIDTH - 1, OLED_HEIGHT - 1, 1, 0);
+  oled_update_full();
+  oled_set_line(0);
   /* USER CODE END I2C1_Init 2 */
 
 }
@@ -693,7 +692,7 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  show_error_screen("Unknown fatal error");
+  show_error_screen("Unknown fatal error", 1);
   /* USER CODE END Error_Handler_Debug */
 }
 
