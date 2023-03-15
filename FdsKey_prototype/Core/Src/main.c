@@ -193,6 +193,7 @@ int main(void)
   {
     BROWSER_RESULT br;
     fr = browser_tree(selected_dir, 4096, selected_file, 4096, &br);
+    show_error_screen_fr(fr, 1);
 
     if (br == BROWSER_BACK)
     {

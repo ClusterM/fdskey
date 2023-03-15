@@ -5,6 +5,7 @@
 #include "oled.h"
 #include "buttons.h"
 #include "splash.h"
+#include "fdsemu.h"
 
 static char** dir_list = 0;
 static char** file_list = 0;
@@ -190,10 +191,11 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
   show_loading_screen();
 
   dir_list = malloc(mem_dir_count * sizeof(char*));
+  if (!dir_list) return FDSR_OUT_OF_MEMORY;
   file_list = malloc(mem_file_count * sizeof(char*));
+  if (!file_list) return FDSR_OUT_OF_MEMORY;
 
   // load files and directories names
-  // TODO: handle out of memory error
   fr = f_opendir(&dir, path);
   if (fr != FR_OK) {
     browser_free();
@@ -212,8 +214,10 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
         {
           mem_dir_count *= 2;
           dir_list = realloc(dir_list, mem_dir_count * sizeof(char*));
+          if (!dir_list) return FDSR_OUT_OF_MEMORY;
         }
         dir_list[dir_count] = malloc(strlen(fno.fname) + 1);
+        if (!dir_list[dir_count]) return FDSR_OUT_OF_MEMORY;
         strcpy(dir_list[dir_count], fno.fname);
         dir_count++;
       } else {
@@ -226,16 +230,20 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
         {
           mem_file_count *= 2;
           file_list = realloc(file_list, mem_file_count * sizeof(char*));
+          if (!file_list) return FDSR_OUT_OF_MEMORY;
         }
         file_list[file_count] = malloc(strlen(fno.fname) + 1);
+        if (!file_list[file_count]) return FDSR_OUT_OF_MEMORY;
         strcpy(file_list[file_count], fno.fname);
         file_count++;
       }
     }
   }
+  f_closedir(&dir);
   dir_list = realloc(dir_list, dir_count * sizeof(char*));
+  if (dir_count && !dir_list) return FDSR_OUT_OF_MEMORY;
   file_list = realloc(file_list, file_count * sizeof(char*));
-
+  if (file_count && !file_list) return FDSR_OUT_OF_MEMORY;
 
   // sort them
   top_down_merge_sort(dir_list, dir_count);
@@ -275,7 +283,6 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
     strncpy(output, file_list[r - dir_count], max_len);
   }
 
-  f_closedir(&dir);
   browser_free();
 
   return FR_OK;
