@@ -193,7 +193,7 @@ const DotMatrixFont FONT_GAMEGIRL_CLASSIC_6 = {
   .font_length = FONT_GAMEGIRL_CLASSIC_6_LENGTH,
   .char_width = FONT_GAMEGIRL_CLASSIC_6_CHAR_WIDTH,
   .char_height = FONT_GAMEGIRL_CLASSIC_6_CHAR_HEIGHT,
-  .spacing = 1,
+  .spacing = 0,
   .space_length = 0,
   .font_data = font_gamegirl_classic_6
 };

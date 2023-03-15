@@ -4,6 +4,7 @@
 #include "fatfs.h"
 #include "oled.h"
 #include "buttons.h"
+#include "splash.h"
 
 static char** dir_list = 0;
 static char** file_list = 0;
@@ -129,10 +130,10 @@ static int browser_menu(int selection)
   if (line + 4 > item_count) line = item_count - 4;
   if (line < 0) line = 0;
 
-  oled_draw_rectangle(0, OLED_HEIGHT, OLED_WIDTH - 1, OLED_HEIGHT * 2 - 1, 1, 0);
-  oled_update_full();
-  oled_set_line(0);
-  oled_send_command(OLED_CMD_SET_ON);
+//  oled_draw_rectangle(0, OLED_HEIGHT, OLED_WIDTH - 1, OLED_HEIGHT * 2 - 1, 1, 0);
+//  oled_update_full();
+//  oled_set_line(0);
+//  oled_send_command(OLED_CMD_SET_ON);
 
   for (i = 0; i < 4; i++)
   {
@@ -191,7 +192,7 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
   dir_count = 0;
   file_count = 0;
 
-  oled_send_command(OLED_CMD_SET_OFF);
+  show_loading_screen();
 
   dir_list = malloc(mem_dir_count * sizeof(char*));
   file_list = malloc(mem_file_count * sizeof(char*));

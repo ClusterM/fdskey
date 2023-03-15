@@ -29,6 +29,7 @@
 #include "fdsemu.h"
 #include "browser.h"
 #include "buttons.h"
+#include "splash.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -161,24 +162,20 @@ int main(void)
   oled_set_line(0);
   line = 0;
 
-  print("started");
-
 //  if (HAL_GPIO_ReadPin(SD_DTCT_GPIO_Port, SD_DTCT_Pin))
 //    print("no sd card");
 
+  if (HAL_GPIO_ReadPin(SD_DTCT_GPIO_Port, SD_DTCT_Pin))
+    show_error_screen("No SD card");
+
   HAL_StatusTypeDef r = SD_init();
-  if (r == HAL_OK)
-    print("sd card ok");
-  else
-    print("sd card error");
+  if (r != HAL_OK)
+    show_error_screen("Can't init SD card");
 
   FATFS FatFs;
   FRESULT fr;
   fr = f_mount(&FatFs, "", 1);
-  if (fr == FR_OK)
-    print("fat ok");
-  else
-    print("fat error");
+  show_error_screen_fr(fr);
 
   HAL_TIM_Base_Start_IT(&htim1);
 
@@ -195,17 +192,13 @@ int main(void)
     BROWSER_RESULT br;
     fr = browser_tree(selected_dir, sizeof(selected_dir), selected_file, sizeof(selected_dir), &br);
 
-    oled_init(1, 0, 0x80);
-    oled_draw_rectangle(0, 0, OLED_WIDTH - 1, OLED_HEIGHT - 1, 1, 0);
-    oled_update_full();
-    oled_set_line(0);
-    line = 0;
-
     if (br == BROWSER_BACK)
     {
       print("back");
       while (1) {}
     }
+
+    show_loading_screen();
 
     strncpy(full_path, selected_dir, sizeof(full_path) - 1);
     strncat(full_path, "\\", sizeof(full_path) - 1);
@@ -213,18 +206,18 @@ int main(void)
   //  while(1);
     uint8_t sides;
     fr = fds_get_side_count(full_path, &sides, 0);
-    if (fr != FR_OK) print("fds file size failed");
+    show_error_screen_fr(fr);
 
   //  /while (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin));
 
-    print("LOADING FDS FILE...");
+    //print("LOADING FDS FILE...");
+    show_loading_screen();
     fr = fds_load_side(full_path, br == BROWSER_FILE ? 0 : 1, 0);
-    if (fr == FR_OK)
-      print("fds file loaded");
-    else {
-      print("fds load failed");
-      while(1){}
-    }
+    show_error_screen_fr(fr);
+
+    oled_init(1, 0, 0x80);
+    oled_draw_rectangle(0, 0, OLED_WIDTH - 1, OLED_HEIGHT - 1, 1, 0);
+    oled_update_full();
 
     while (!button_left_newpress())
     {
@@ -247,18 +240,17 @@ int main(void)
       default: state = "UNKNOWN"; break;
       }
       sprintf(message, "%d, block %d, %s", pos, block, state);
-      print(message);
+//      print(message);
       if (st == FDS_SAVE_PENDING)
       {
-        print("saving");
+//        print("saving");
         fr = fds_save(1);
-        if (fr == FR_OK)
-          print("saved.");
-        else
-          print("error :(");
+        if (fr != FR_OK)
+          show_error_screen_fr(fr);
       }
     }
-    fds_close(1, 1);
+    fr = fds_close(1, 1);
+    show_error_screen_fr(fr);
 //  print("dumping good...");
 //  fds_dump("good.bin");
 //  print("dumped.");
@@ -701,10 +693,7 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
+  show_error_screen("Unknown fatal error");
   /* USER CODE END Error_Handler_Debug */
 }
 
