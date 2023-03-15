@@ -129,15 +129,16 @@ static int browser_menu(int selection)
   if (line + 4 > item_count) line = item_count - 4;
   if (line < 0) line = 0;
 
-  oled_draw_rectangle(0, 0, OLED_WIDTH - 1, OLED_HEIGHT - 1, 1, 0);
+  oled_draw_rectangle(0, OLED_HEIGHT, OLED_WIDTH - 1, OLED_HEIGHT * 2 - 1, 1, 0);
   oled_update_full();
   oled_set_line(0);
   oled_send_command(OLED_CMD_SET_ON);
 
   for (i = 0; i < 4; i++)
   {
-    draw_item(oled_get_line() / 8 + i, line + i, line + i == selection, 0);
+    draw_item((oled_get_line() + OLED_HEIGHT) / 8 + i, line + i, line + i == selection, 0);
   }
+  oled_switch_to_invisible();
 
   while (1)
   {

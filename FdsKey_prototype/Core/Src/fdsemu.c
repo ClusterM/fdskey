@@ -757,6 +757,7 @@ FRESULT fds_close(uint8_t save, uint8_t backup_original)
   fds_state = FDS_OFF;
   // remove disk
   HAL_GPIO_WritePin(FDS_MEDIA_SET_GPIO_Port, FDS_MEDIA_SET_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(FDS_WRITABLE_MEDIA_GPIO_Port, FDS_WRITABLE_MEDIA_Pin, GPIO_PIN_SET);
 
   fds_used_space = 0;
   fds_block_count = 0;

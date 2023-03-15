@@ -5,6 +5,8 @@ extern const DotMatrixFont FONT_BERLIN_SANS_FB_20;
 extern const DotMatrixFont FONT_BERLIN_SANS_FB_24;
 extern const DotMatrixFont FONT_BERLIN_SANS_FB_28;
 extern const DotMatrixFont FONT_BERLIN_SANS_FB_8;
+extern const DotMatrixFont FONT_DIGITS2;
+extern const DotMatrixFont FONT_DIGITS;
 extern const DotMatrixFont FONT_DISKUN_22_BOLD;
 extern const DotMatrixFont FONT_DISKUN_28_BOLD;
 extern const DotMatrixFont FONT_DISKUN_22;

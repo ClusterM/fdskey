@@ -5,6 +5,8 @@
 #include "berlin_sans_fb_24_font.h"
 #include "berlin_sans_fb_28_font.h"
 #include "berlin_sans_fb_8_font.h"
+#include "digits2_font.h"
+#include "digits_font.h"
 #include "diskun22_bold_font.h"
 #include "diskun28_bold_font.h"
 #include "diskun_22_font.h"
@@ -119,6 +121,28 @@ const DotMatrixFont FONT_BERLIN_SANS_FB_8 = {
   .font_data = font_berlin_sans_fb_8
 };
 
+const DotMatrixFont FONT_DIGITS2 = {
+  .font_type = FONT_DIGITS2_FONT_TYPE,
+  .start_char = FONT_DIGITS2_START_CHAR,
+  .font_length = FONT_DIGITS2_LENGTH,
+  .char_width = FONT_DIGITS2_CHAR_WIDTH,
+  .char_height = FONT_DIGITS2_CHAR_HEIGHT,
+  .spacing = 1,
+  .space_length = 0,
+  .font_data = font_digits2
+};
+
+const DotMatrixFont FONT_DIGITS = {
+  .font_type = FONT_DIGITS_FONT_TYPE,
+  .start_char = FONT_DIGITS_START_CHAR,
+  .font_length = FONT_DIGITS_LENGTH,
+  .char_width = FONT_DIGITS_CHAR_WIDTH,
+  .char_height = FONT_DIGITS_CHAR_HEIGHT,
+  .spacing = 1,
+  .space_length = 0,
+  .font_data = font_digits
+};
+
 const DotMatrixFont FONT_DISKUN_22_BOLD = {
   .font_type = FONT_DISKUN_22_BOLD_FONT_TYPE,
   .start_char = FONT_DISKUN_22_BOLD_START_CHAR,
@@ -126,7 +150,7 @@ const DotMatrixFont FONT_DISKUN_22_BOLD = {
   .char_width = FONT_DISKUN_22_BOLD_CHAR_WIDTH,
   .char_height = FONT_DISKUN_22_BOLD_CHAR_HEIGHT,
   .spacing = 1,
-  .space_length = 0,
+  .space_length = 3,
   .font_data = font_diskun_22_bold
 };
 
@@ -137,7 +161,7 @@ const DotMatrixFont FONT_DISKUN_28_BOLD = {
   .char_width = FONT_DISKUN_28_BOLD_CHAR_WIDTH,
   .char_height = FONT_DISKUN_28_BOLD_CHAR_HEIGHT,
   .spacing = 1,
-  .space_length = 0,
+  .space_length = 3,
   .font_data = font_diskun_28_bold
 };
 
@@ -148,7 +172,7 @@ const DotMatrixFont FONT_DISKUN_22 = {
   .char_width = FONT_DISKUN_22_CHAR_WIDTH,
   .char_height = FONT_DISKUN_22_CHAR_HEIGHT,
   .spacing = 1,
-  .space_length = 0,
+  .space_length = 3,
   .font_data = font_diskun_22
 };
 
@@ -159,7 +183,7 @@ const DotMatrixFont FONT_DISKUN_28 = {
   .char_width = FONT_DISKUN_28_CHAR_WIDTH,
   .char_height = FONT_DISKUN_28_CHAR_HEIGHT,
   .spacing = 1,
-  .space_length = 0,
+  .space_length = 3,
   .font_data = font_diskun_28
 };
 
@@ -291,7 +315,7 @@ const DotMatrixFont FONT_SLIMFONT_8 = {
   .char_width = FONT_SLIMFONT_8_CHAR_WIDTH,
   .char_height = FONT_SLIMFONT_8_CHAR_HEIGHT,
   .spacing = 1,
-  .space_length = 3,
+  .space_length = 0,
   .font_data = font_slimfont_8
 };
 
@@ -324,7 +348,7 @@ const DotMatrixFont FONT_ULTRASLIMFONT_8 = {
   .char_width = FONT_ULTRASLIMFONT_8_CHAR_WIDTH,
   .char_height = FONT_ULTRASLIMFONT_8_CHAR_HEIGHT,
   .spacing = 1,
-  .space_length = 3,
+  .space_length = 0,
   .font_data = font_ultraslimfont_8
 };
 
