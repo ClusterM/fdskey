@@ -7,6 +7,8 @@
 #include "card_g.h"
 #include "card_h.h"
 #include "cursor.h"
+#include "cursor_down.h"
+#include "cursor_up.h"
 #include "folder.h"
 #include "folder2.h"
 #include "folder3.h"
@@ -14,6 +16,7 @@
 #include "folder5.h"
 #include "folder6.h"
 #include "folder_up.h"
+#include "head_cursor.h"
 #include "microsd.h"
 #include "microsd2.h"
 #include "state_ff.h"
@@ -76,6 +79,18 @@ const DotMatrixImage IMAGE_CURSOR = {
   .image_data = image_cursor
 };
 
+const DotMatrixImage IMAGE_CURSOR_DOWN = {
+  .width = IMAGE_CURSOR_DOWN_WIDTH,
+  .height = IMAGE_CURSOR_DOWN_HEIGHT,
+  .image_data = image_cursor_down
+};
+
+const DotMatrixImage IMAGE_CURSOR_UP = {
+  .width = IMAGE_CURSOR_UP_WIDTH,
+  .height = IMAGE_CURSOR_UP_HEIGHT,
+  .image_data = image_cursor_up
+};
+
 const DotMatrixImage IMAGE_FOLDER = {
   .width = IMAGE_FOLDER_WIDTH,
   .height = IMAGE_FOLDER_HEIGHT,
@@ -116,6 +131,12 @@ const DotMatrixImage IMAGE_FOLDER_UP = {
   .width = IMAGE_FOLDER_UP_WIDTH,
   .height = IMAGE_FOLDER_UP_HEIGHT,
   .image_data = image_folder_up
+};
+
+const DotMatrixImage IMAGE_HEAD_CURSOR = {
+  .width = IMAGE_HEAD_CURSOR_WIDTH,
+  .height = IMAGE_HEAD_CURSOR_HEIGHT,
+  .image_data = image_head_cursor
 };
 
 const DotMatrixImage IMAGE_MICROSD = {

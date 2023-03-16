@@ -17,6 +17,7 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
+#include <sideselect.h>
 #include "main.h"
 #include "fatfs.h"
 
@@ -30,7 +31,7 @@
 #include "browser.h"
 #include "buttons.h"
 #include "splash.h"
-#include "side_select.h"
+#include "sideselect.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -201,13 +202,11 @@ int main(void)
       while (1) {}
     }
 
-    show_loading_screen();
-
 //    strncpy(full_path, selected_dir, sizeof(full_path) - 1);
 //    strncat(full_path, "\\", sizeof(full_path) - 1);
 //    strncat(full_path, selected_file, sizeof(full_path) - 1);
   //  while(1);
-    uint8_t sides;
+//    uint8_t sides;
 //    fr = fds_get_side_count(full_path, &sides, 0);
 //    show_error_screen_fr(fr, 1);
 
@@ -251,8 +250,6 @@ int main(void)
 //          show_error_screen_fr(fr, 1);
 //      }
 //    }
-    fr = fds_close(1, 1);
-    show_error_screen_fr(fr, 1);
 //  print("dumping good...");
 //  fds_dump("good.bin");
 //  print("dumped.");

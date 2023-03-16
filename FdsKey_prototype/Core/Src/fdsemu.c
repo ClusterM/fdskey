@@ -6,7 +6,7 @@
 static char fds_filename[_MAX_LFN + 1];
 static uint8_t fds_side;
 // loaded FDS data
-static uint8_t * volatile fds_raw_data;
+static uint8_t volatile fds_raw_data[FDS_MAX_SIDE_SIZE];
 static volatile uint8_t fds_read_buffer[FDS_READ_BUFFER_SIZE];
 static volatile int fds_used_space = 0;
 static volatile int fds_block_count = 0;
@@ -27,7 +27,8 @@ static volatile uint16_t fds_write_gap_skip = 0;
 static volatile uint8_t fds_changed = 0;
 static volatile uint32_t fds_last_action_time = 0;
 
-static uint8_t fds_config_fast_rewind = 1;
+static uint8_t fds_config_fast_rewind = 0;
+static uint8_t fds_config_backup_original = 1;
 static uint32_t fds_config_autosave_time = 5000;
 
 static void fds_start_reading();
@@ -499,7 +500,7 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
   UINT br;
   uint16_t crc;
 
-  fds_close(0, 0);
+  fds_close(0);
   fds_reset();
 
   // not ready yet
@@ -515,18 +516,27 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
 
   fr = f_stat(filename, &fno);
   if (fr != FR_OK)
+  {
+    fds_close(0);
     return fr;
+  }
   fr = f_open(&fp, filename, FA_READ);
   if (fr != FR_OK)
+  {
+    fds_close(0);
     return fr;
+  }
   if (fno.fsize % FDS_SIDE_SIZE != 0 && fno.fsize % FDS_SIDE_SIZE != 16)
+  {
+    fds_close(0);
     return FDSR_INVALID_ROM;
+  }
   fr = f_lseek(&fp, ((fno.fsize % FDS_SIDE_SIZE == FDS_HEADER_SIZE) ? FDS_HEADER_SIZE : 0) + side * FDS_SIDE_SIZE);
   if (fr != FR_OK)
     return fr;
 
-  fds_raw_data = malloc(FDS_MAX_SIDE_SIZE);
-  if (!fds_raw_data) return FDSR_OUT_OF_MEMORY;
+  //fds_raw_data = malloc(FDS_MAX_SIDE_SIZE);
+//  if (!fds_raw_data) return FDSR_OUT_OF_MEMORY;
 
   while (1)
   {
@@ -581,7 +591,7 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
     {
       // SD card error?
       f_close(&fp);
-      fds_close(0, 0);
+      fds_close(0);
       return fr;
     }
     if (br != block_size)
@@ -623,7 +633,7 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
   return FR_OK;
 }
 
-FRESULT fds_save(uint8_t backup_original)
+FRESULT fds_save()
 {
   FRESULT fr;
   FIL fp, fp_backup;
@@ -645,7 +655,7 @@ FRESULT fds_save(uint8_t backup_original)
       return FDSR_WRONG_CRC;
   }
 
-  if (backup_original)
+  if (fds_config_backup_original)
   {
     // combine backup filename
     char backup_filename[_MAX_LFN + 5];
@@ -746,12 +756,12 @@ FRESULT fds_save(uint8_t backup_original)
   return FR_OK;
 }
 
-FRESULT fds_close(uint8_t save, uint8_t backup_original)
+FRESULT fds_close(uint8_t save)
 {
   FRESULT fr = FR_OK;
 
   if (save)
-    fr = fds_save(backup_original);
+    fr = fds_save();
 
   fds_stop();
   fds_state = FDS_OFF;
@@ -762,10 +772,10 @@ FRESULT fds_close(uint8_t save, uint8_t backup_original)
   fds_used_space = 0;
   fds_block_count = 0;
   fds_changed = 0;
-  if (fds_raw_data)
+//  if (fds_raw_data)
   {
-    free(fds_raw_data);
-    fds_raw_data = 0;
+    //free(fds_raw_data);
+    //fds_raw_data = 0;
   }
 
   return fr;
@@ -774,6 +784,11 @@ FRESULT fds_close(uint8_t save, uint8_t backup_original)
 FDS_STATE fds_get_state()
 {
   return fds_state;
+}
+
+uint8_t fds_is_changed()
+{
+  return fds_changed;
 }
 
 int fds_get_block()
@@ -793,6 +808,11 @@ int fds_get_block()
       return i;
     }
   }
+}
+
+int fds_get_block_count()
+{
+  return fds_block_count;
 }
 
 int fds_get_head_position()

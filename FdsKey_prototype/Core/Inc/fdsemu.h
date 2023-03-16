@@ -61,13 +61,15 @@ typedef enum {
 #define FDSR_OUT_OF_MEMORY 0x82
 
 FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro);
-FRESULT fds_close(uint8_t save, uint8_t backup_original);
-FRESULT fds_save(uint8_t backup_original);
+FRESULT fds_close(uint8_t save);
+FRESULT fds_save();
 FRESULT fds_get_side_count(char *filename, uint8_t *count, FILINFO *fileinfo);
 void fds_check_pins();
 void fds_tick_100ms();
 FDS_STATE fds_get_state();
+uint8_t fds_is_changed();
 int fds_get_block();
+int fds_get_block_count();
 int fds_get_head_position();
 int fds_get_max_size();
 int fds_get_used_space();

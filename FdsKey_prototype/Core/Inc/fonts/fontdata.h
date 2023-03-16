@@ -15,6 +15,10 @@
 #include "haettenschweiler_18_font.h"
 #include "haettenschweiler_23_font.h"
 #include "haettenschweiler_28_font.h"
+#include "impact_12_bold_font.h"
+#include "impact_12_font.h"
+#include "impact_14_bold_font.h"
+#include "impact_14_font.h"
 #include "impact_16_font.h"
 #include "impact_18_font.h"
 #include "impact_20_font.h"
@@ -26,6 +30,9 @@
 #include "standard_12_font.h"
 #include "standard_6_font.h"
 #include "ultraslimfont_8_font.h"
+#include "verdana_12_bold_font.h"
+#include "verdana_12_font.h"
+#include "verdana_13_bold_font.h"
 #include "verdana_14_bold_font.h"
 #include "verdana_14_font.h"
 #include "verdana_16_bold_font.h"
@@ -150,7 +157,7 @@ const DotMatrixFont FONT_DISKUN_22_BOLD = {
   .char_width = FONT_DISKUN_22_BOLD_CHAR_WIDTH,
   .char_height = FONT_DISKUN_22_BOLD_CHAR_HEIGHT,
   .spacing = 1,
-  .space_length = 3,
+  .space_length = 0,
   .font_data = font_diskun_22_bold
 };
 
@@ -161,7 +168,7 @@ const DotMatrixFont FONT_DISKUN_28_BOLD = {
   .char_width = FONT_DISKUN_28_BOLD_CHAR_WIDTH,
   .char_height = FONT_DISKUN_28_BOLD_CHAR_HEIGHT,
   .spacing = 1,
-  .space_length = 3,
+  .space_length = 0,
   .font_data = font_diskun_28_bold
 };
 
@@ -172,7 +179,7 @@ const DotMatrixFont FONT_DISKUN_22 = {
   .char_width = FONT_DISKUN_22_CHAR_WIDTH,
   .char_height = FONT_DISKUN_22_CHAR_HEIGHT,
   .spacing = 1,
-  .space_length = 3,
+  .space_length = 0,
   .font_data = font_diskun_22
 };
 
@@ -183,7 +190,7 @@ const DotMatrixFont FONT_DISKUN_28 = {
   .char_width = FONT_DISKUN_28_CHAR_WIDTH,
   .char_height = FONT_DISKUN_28_CHAR_HEIGHT,
   .spacing = 1,
-  .space_length = 3,
+  .space_length = 0,
   .font_data = font_diskun_28
 };
 
@@ -229,6 +236,50 @@ const DotMatrixFont FONT_HAETTENSCHWEILER_28 = {
   .spacing = 1,
   .space_length = 0,
   .font_data = font_haettenschweiler_28
+};
+
+const DotMatrixFont FONT_IMPACT_12_BOLD = {
+  .font_type = FONT_IMPACT_12_BOLD_FONT_TYPE,
+  .start_char = FONT_IMPACT_12_BOLD_START_CHAR,
+  .font_length = FONT_IMPACT_12_BOLD_LENGTH,
+  .char_width = FONT_IMPACT_12_BOLD_CHAR_WIDTH,
+  .char_height = FONT_IMPACT_12_BOLD_CHAR_HEIGHT,
+  .spacing = 1,
+  .space_length = 0,
+  .font_data = font_impact_12_bold
+};
+
+const DotMatrixFont FONT_IMPACT_12 = {
+  .font_type = FONT_IMPACT_12_FONT_TYPE,
+  .start_char = FONT_IMPACT_12_START_CHAR,
+  .font_length = FONT_IMPACT_12_LENGTH,
+  .char_width = FONT_IMPACT_12_CHAR_WIDTH,
+  .char_height = FONT_IMPACT_12_CHAR_HEIGHT,
+  .spacing = 1,
+  .space_length = 0,
+  .font_data = font_impact_12
+};
+
+const DotMatrixFont FONT_IMPACT_14_BOLD = {
+  .font_type = FONT_IMPACT_14_BOLD_FONT_TYPE,
+  .start_char = FONT_IMPACT_14_BOLD_START_CHAR,
+  .font_length = FONT_IMPACT_14_BOLD_LENGTH,
+  .char_width = FONT_IMPACT_14_BOLD_CHAR_WIDTH,
+  .char_height = FONT_IMPACT_14_BOLD_CHAR_HEIGHT,
+  .spacing = 1,
+  .space_length = 0,
+  .font_data = font_impact_14_bold
+};
+
+const DotMatrixFont FONT_IMPACT_14 = {
+  .font_type = FONT_IMPACT_14_FONT_TYPE,
+  .start_char = FONT_IMPACT_14_START_CHAR,
+  .font_length = FONT_IMPACT_14_LENGTH,
+  .char_width = FONT_IMPACT_14_CHAR_WIDTH,
+  .char_height = FONT_IMPACT_14_CHAR_HEIGHT,
+  .spacing = 1,
+  .space_length = 0,
+  .font_data = font_impact_14
 };
 
 const DotMatrixFont FONT_IMPACT_16 = {
@@ -350,6 +401,39 @@ const DotMatrixFont FONT_ULTRASLIMFONT_8 = {
   .spacing = 1,
   .space_length = 0,
   .font_data = font_ultraslimfont_8
+};
+
+const DotMatrixFont FONT_VERDANA_12_BOLD = {
+  .font_type = FONT_VERDANA_12_BOLD_FONT_TYPE,
+  .start_char = FONT_VERDANA_12_BOLD_START_CHAR,
+  .font_length = FONT_VERDANA_12_BOLD_LENGTH,
+  .char_width = FONT_VERDANA_12_BOLD_CHAR_WIDTH,
+  .char_height = FONT_VERDANA_12_BOLD_CHAR_HEIGHT,
+  .spacing = 1,
+  .space_length = 0,
+  .font_data = font_verdana_12_bold
+};
+
+const DotMatrixFont FONT_VERDANA_12 = {
+  .font_type = FONT_VERDANA_12_FONT_TYPE,
+  .start_char = FONT_VERDANA_12_START_CHAR,
+  .font_length = FONT_VERDANA_12_LENGTH,
+  .char_width = FONT_VERDANA_12_CHAR_WIDTH,
+  .char_height = FONT_VERDANA_12_CHAR_HEIGHT,
+  .spacing = 1,
+  .space_length = 0,
+  .font_data = font_verdana_12
+};
+
+const DotMatrixFont FONT_VERDANA_13_BOLD = {
+  .font_type = FONT_VERDANA_13_BOLD_FONT_TYPE,
+  .start_char = FONT_VERDANA_13_BOLD_START_CHAR,
+  .font_length = FONT_VERDANA_13_BOLD_LENGTH,
+  .char_width = FONT_VERDANA_13_BOLD_CHAR_WIDTH,
+  .char_height = FONT_VERDANA_13_BOLD_CHAR_HEIGHT,
+  .spacing = 1,
+  .space_length = 0,
+  .font_data = font_verdana_13_bold
 };
 
 const DotMatrixFont FONT_VERDANA_14_BOLD = {
