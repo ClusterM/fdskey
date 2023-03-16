@@ -6,7 +6,11 @@
 static char fds_filename[_MAX_LFN + 1];
 static uint8_t fds_side;
 // loaded FDS data
+#ifdef FDS_USE_DYNAMIC_MEMORY
+static uint8_t * volatile fds_raw_data;
+#else
 static uint8_t volatile fds_raw_data[FDS_MAX_SIDE_SIZE];
+#endif
 static volatile uint8_t fds_read_buffer[FDS_READ_BUFFER_SIZE];
 static volatile int fds_used_space = 0;
 static volatile int fds_block_count = 0;
@@ -39,7 +43,6 @@ static void fds_reset();
 static void fds_stop();
 
 int wr_count = 0;
-
 
 // debug dumping
 void fds_dump(char *filename)
@@ -349,7 +352,7 @@ static void fds_start_writing()
     // oops, next block overwrited or disaligned
     // trimming and erasing
     fds_block_count = fds_current_block + 1;
-    memset((uint8_t*) fds_raw_data + fds_block_offsets[fds_current_block + 1], 0, FDS_SIDE_SIZE - fds_block_offsets[fds_current_block + 1]);
+    memset((uint8_t*)fds_raw_data + fds_block_offsets[fds_current_block + 1], 0, FDS_SIDE_SIZE - fds_block_offsets[fds_current_block + 1]);
   }
   // gap before data
   for (i = 0; i < gap_length - 1; i++)
@@ -535,8 +538,12 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
   if (fr != FR_OK)
     return fr;
 
-  //fds_raw_data = malloc(FDS_MAX_SIDE_SIZE);
-//  if (!fds_raw_data) return FDSR_OUT_OF_MEMORY;
+#ifdef FDS_USE_DYNAMIC_MEMORY
+  fds_raw_data = malloc(FDS_MAX_SIDE_SIZE * sizeof(uint8_t));
+  if (!fds_raw_data) return FDSR_OUT_OF_MEMORY;
+#endif
+
+  memset((uint8_t*)fds_raw_data, 0, FDS_MAX_SIDE_SIZE);
 
   while (1)
   {
@@ -649,7 +656,7 @@ FRESULT fds_save()
   for (i = 0; i < fds_block_count; i++)
   {
     int block_size = fds_get_block_size(i, 0, 0);
-    uint16_t valid_crc = fds_crc(fds_raw_data + fds_block_offsets[i] + (i == 0 ? FDS_FIRST_GAP_READ_BITS : FDS_NEXT_GAPS_READ_BITS) / 8, block_size);
+    uint16_t valid_crc = fds_crc((uint8_t*)(fds_raw_data + fds_block_offsets[i] + (i == 0 ? FDS_FIRST_GAP_READ_BITS : FDS_NEXT_GAPS_READ_BITS) / 8), block_size);
     uint16_t* crc = (uint16_t*)(fds_raw_data + fds_block_offsets[i] + (i == 0 ? FDS_FIRST_GAP_READ_BITS : FDS_NEXT_GAPS_READ_BITS) / 8 + block_size);
     if (valid_crc != *crc)
       return FDSR_WRONG_CRC;
@@ -772,11 +779,11 @@ FRESULT fds_close(uint8_t save)
   fds_used_space = 0;
   fds_block_count = 0;
   fds_changed = 0;
-//  if (fds_raw_data)
-  {
-    //free(fds_raw_data);
-    //fds_raw_data = 0;
-  }
+#ifdef FDS_USE_DYNAMIC_MEMORY
+  if (fds_raw_data)
+    free(fds_raw_data);
+  fds_raw_data = 0;
+#endif
 
   return fr;
 }

@@ -17,7 +17,6 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include <sideselect.h>
 #include "main.h"
 #include "fatfs.h"
 
@@ -118,6 +117,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     fds_check_pins();
 }
 
+char selected_dir[4096] = "";
+char selected_file[256] = "";
 
 
 /* USER CODE END 0 */
@@ -184,16 +185,12 @@ int main(void)
 //  char *filename = "Super Mario Brothers (Japan).fds";
   //char *filename = "metroid_my.fds";
 
-  char *selected_dir = malloc(4096);
-  selected_dir[0] = 0;
-  char *selected_file = malloc(_MAX_LFN + 1);
-  selected_file[0] = 0;
 //  char *full_path = malloc(4096);
 
   while (1)
   {
     BROWSER_RESULT br;
-    fr = browser_tree(selected_dir, 4096, selected_file, 4096, &br);
+    fr = browser_tree(selected_dir, 4096, selected_file, 256, &br);
     show_error_screen_fr(fr, 1);
 
     if (br == BROWSER_BACK)

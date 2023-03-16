@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "splash.h"
 #include "oled.h"
 #include "fatfs.h"
@@ -31,6 +32,7 @@ void show_error_screen(char *text, uint8_t fatal)
   oled_draw_text(&FONT_SLIMFONT_8, text, 4, oled_get_line() + OLED_HEIGHT + 20, 0, 0);
   oled_update_invisible();
   oled_switch_to_invisible();
+
   if (fatal)
   {
     while (1);
@@ -69,4 +71,35 @@ void show_error_screen_fr(FRESULT fr, uint8_t fatal)
     case FDSR_OUT_OF_MEMORY: text = "Out of memory"; break;
   }
   show_error_screen(text, fatal);
+}
+
+void show_free_memory()
+{
+  int i;
+  void ** pointers;
+  i = 0;
+  int mem;
+  char text[16];
+  pointers = malloc(1024 * sizeof(void*));
+  while ((pointers[i] = malloc(1024)))
+  {
+    i++;
+  }
+  mem = i;
+  i--;
+  for (; i >= 0; i--)
+  {
+    free(pointers[i]);
+  }
+  free(pointers);
+
+  oled_draw_rectangle(0, oled_get_line() + OLED_HEIGHT, OLED_WIDTH - 1, oled_get_line() + OLED_HEIGHT * 2 - 1, 1, 0);
+  oled_draw_image(&SPLASH_LOADING_IMAGE, OLED_WIDTH - SPLASH_LOADING_IMAGE.width - 10, oled_get_line() + OLED_HEIGHT + (OLED_HEIGHT - SPLASH_LOADING_IMAGE.height) / 2, 0, 0);
+  oled_draw_text(&FONT_GAMEGIRL_CLASSIC_6, "FREE MEMORY", 3, oled_get_line() + OLED_HEIGHT + 3, 0, 0);
+  sprintf(text, "%d KiB", mem);
+  oled_draw_text(&FONT_GAMEGIRL_CLASSIC_6, text, 3, oled_get_line() + OLED_HEIGHT + 20, 0, 0);
+  oled_update_invisible();
+  oled_switch_to_invisible();
+
+  while (!button_up_newpress() && !button_down_newpress() && !button_left_newpress() && !button_right_newpress());
 }

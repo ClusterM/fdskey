@@ -9,5 +9,6 @@ void show_loading_screen();
 void show_saving_screen();
 void show_error_screen(char *text, uint8_t fatal);
 void show_error_screen_fr(FRESULT fr, uint8_t fatal);
+void show_free_memory();
 
 #endif /* INC_SPLASH_H_ */

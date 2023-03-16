@@ -191,9 +191,11 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
   show_loading_screen();
 
   dir_list = malloc(mem_dir_count * sizeof(char*));
-  if (!dir_list) return FDSR_OUT_OF_MEMORY;
+  if (!dir_list)
+    return FDSR_OUT_OF_MEMORY;
   file_list = malloc(mem_file_count * sizeof(char*));
-  if (!file_list) return FDSR_OUT_OF_MEMORY;
+  if (!file_list)
+    return FDSR_OUT_OF_MEMORY;
 
   // load files and directories names
   fr = f_opendir(&dir, path);
@@ -214,7 +216,8 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
         {
           mem_dir_count *= 2;
           dir_list = realloc(dir_list, mem_dir_count * sizeof(char*));
-          if (!dir_list) return FDSR_OUT_OF_MEMORY;
+          if (!dir_list)
+            return FDSR_OUT_OF_MEMORY;
         }
         dir_list[dir_count] = malloc(strlen(fno.fname) + 1);
         if (!dir_list[dir_count]) return FDSR_OUT_OF_MEMORY;
@@ -230,7 +233,8 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
         {
           mem_file_count *= 2;
           file_list = realloc(file_list, mem_file_count * sizeof(char*));
-          if (!file_list) return FDSR_OUT_OF_MEMORY;
+          if (!file_list)
+            return FDSR_OUT_OF_MEMORY;
         }
         file_list[file_count] = malloc(strlen(fno.fname) + 1);
         if (!file_list[file_count]) return FDSR_OUT_OF_MEMORY;
@@ -239,7 +243,11 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
       }
     }
   }
+
+  // show_free_memory();
+
   f_closedir(&dir);
+  // free some memory (do i readlly need it?)
   dir_list = realloc(dir_list, dir_count * sizeof(char*));
   if (dir_count && !dir_list) return FDSR_OUT_OF_MEMORY;
   file_list = realloc(file_list, file_count * sizeof(char*));
@@ -325,13 +333,13 @@ FRESULT browser_tree(char *directory, int dir_max_len, char *filename, int filen
       }
       break;
     case BROWSER_DIRECTORY:
+    case BROWSER_FILE_LONGPRESS:
       strncat(directory, "\\", dir_max_len);
       strncat(directory, new_filename, dir_max_len);
       directory[dir_max_len - 1] = 0;
       *filename = 0;
       break;
     case BROWSER_FILE:
-    case BROWSER_FILE_LONGPRESS:
       strncpy(filename, new_filename, filename_max_len);
       filename[filename_max_len - 1] = 0;
       return FR_OK;

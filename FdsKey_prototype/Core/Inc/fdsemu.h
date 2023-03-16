@@ -3,6 +3,8 @@
 
 #include "fatfs.h"
 
+#define FDS_USE_DYNAMIC_MEMORY
+
 // hardware settings
 #define FDS_READ_PWM_TIMER htim3
 #define FDS_READ_PWM_TIMER_CHANNEL 2
