@@ -69,6 +69,7 @@ void show_error_screen_fr(FRESULT fr, uint8_t fatal)
     case FDSR_WRONG_CRC: text = "Wrong block CRC"; break;
     case FDSR_INVALID_ROM: text = "Invalid ROM"; break;
     case FDSR_OUT_OF_MEMORY: text = "Out of memory"; break;
+    case FDSR_ROM_TOO_LARGE: text = "ROM is too large"; break;
   }
   show_error_screen(text, fatal);
 }

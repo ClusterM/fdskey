@@ -18,7 +18,7 @@
 #define FDS_THRESHOLD_2 1120
 
 // FDS emulation settings
-#define FDS_MAX_SIDE_SIZE (80 * 1024) // 65000 + some space for gaps and crcs
+#define FDS_MAX_SIDE_SIZE (65 * 1024) // 65000 + some space for gaps and crcs but largest ROM is 60204 bytes including gaps and crcs
 #define FDS_MAX_FILE_PATH_LENGTH 4096
 #define FDS_MAX_BLOCKS 256
 #define FDS_MAX_BLOCK_SIZE FDS_MAX_SIDE_SIZE
@@ -27,8 +27,8 @@
 #define FDS_FIRST_GAP_READ_BITS 28300 // first gap size, bits
 #define FDS_NEXT_GAPS_READ_BITS 976   // next gap size, bits
 #define FDS_WRITE_GAP_SKIP_BITS 32     // dispose bits before writing
-#define FDS_NOT_READY_TIME 1000       // disk rewind time, milliseconds (for fast rewind)
-#define FDS_NOT_READY_BYTES 16000      // disk rewind time, bytes (for slow rewind)
+#define FDS_NOT_READY_TIME 1000       // disk rewind time, milliseconds
+#define FDS_NOT_READY_BYTES 1024      // fast rewind after this amount of bytes of used data
 #define FDS_MULTI_WRITE_UNLICENSED_BITS 32 // some unlicensed software can write multiple blocks at once
 
 // do not touch it
@@ -61,6 +61,7 @@ typedef enum {
 #define FDSR_WRONG_CRC 0x80
 #define FDSR_INVALID_ROM 0x81
 #define FDSR_OUT_OF_MEMORY 0x82
+#define FDSR_ROM_TOO_LARGE 0x83
 
 FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro);
 FRESULT fds_close(uint8_t save);

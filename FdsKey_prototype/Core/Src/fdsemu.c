@@ -31,7 +31,7 @@ static volatile uint16_t fds_write_gap_skip = 0;
 static volatile uint8_t fds_changed = 0;
 static volatile uint32_t fds_last_action_time = 0;
 
-static uint8_t fds_config_fast_rewind = 0;
+static uint8_t fds_config_fast_rewind = 1;
 static uint8_t fds_config_backup_original = 1;
 static uint32_t fds_config_autosave_time = 5000;
 
@@ -122,21 +122,10 @@ static void fds_dma_fill_read_buffer(int pos, int length)
     {
       fds_current_bit = 0;
       fds_current_byte = (fds_current_byte + 1) % FDS_MAX_SIDE_SIZE;
-      if (fds_current_byte == FDS_MAX_SIDE_SIZE - FDS_NOT_READY_BYTES && fds_state == FDS_READING)
+      if ((fds_current_byte == 0) ||
+          (fds_config_fast_rewind && fds_current_byte > fds_used_space + FDS_NOT_READY_BYTES))
       {
-        // "end of head" meet
-        HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_SET);
-        fds_state = FDS_READ_WAIT_READY;
-      }
-      if (fds_current_byte == 0 && fds_state == FDS_READ_WAIT_READY)
-      {
-        // disk just rewinded and ready again
-        fds_state = FDS_READING;
-        HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_RESET);
-      }
-      if (fds_config_fast_rewind && fds_current_byte > fds_used_space + FDS_NOT_READY_BYTES)
-      {
-        // end of data
+        // pause before ready
         HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_SET);
         fds_not_ready_time = HAL_GetTick();
         fds_state = FDS_READ_WAIT_READY_TIMER;
@@ -495,13 +484,13 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
   int i;
   FRESULT fr;
   FIL fp;
-  FILINFO fno;
+  FSIZE_t f_size;
   int gap_length;
   int block_size;
   uint8_t block_type;
-  int next_file_size = 0;
   UINT br;
   uint16_t crc;
+  int min_blocks = 0;
 
   fds_close(0);
   fds_reset();
@@ -517,24 +506,19 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
   filename[sizeof(fds_filename) - 1] = 0;
   fds_side = side;
 
-  fr = f_stat(filename, &fno);
-  if (fr != FR_OK)
-  {
-    fds_close(0);
-    return fr;
-  }
   fr = f_open(&fp, filename, FA_READ);
   if (fr != FR_OK)
   {
     fds_close(0);
     return fr;
   }
-  if (fno.fsize % FDS_SIDE_SIZE != 0 && fno.fsize % FDS_SIDE_SIZE != 16)
+  f_size = f_size(&fp);
+  if (f_size % FDS_SIDE_SIZE != 0 && f_size % FDS_SIDE_SIZE != 16)
   {
     fds_close(0);
     return FDSR_INVALID_ROM;
   }
-  fr = f_lseek(&fp, ((fno.fsize % FDS_SIDE_SIZE == FDS_HEADER_SIZE) ? FDS_HEADER_SIZE : 0) + side * FDS_SIDE_SIZE);
+  fr = f_lseek(&fp, ((f_size % FDS_SIDE_SIZE == FDS_HEADER_SIZE) ? FDS_HEADER_SIZE : 0) + side * FDS_SIDE_SIZE);
   if (fr != FR_OK)
     return fr;
 
@@ -547,16 +531,34 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
 
   while (1)
   {
+    // calculate total number of blocks based on file amount block
+    if (fds_block_count == 2)
+      min_blocks = fds_raw_data[fds_block_offsets[1] + FDS_NEXT_GAPS_READ_BITS / 8 + 1] * 2 + 2; // files * 2 + header blocks;
     fds_block_offsets[fds_block_count] = fds_used_space;
     gap_length = fds_block_count == 0 ? FDS_FIRST_GAP_READ_BITS / 8 : FDS_NEXT_GAPS_READ_BITS / 8;
-    if (fds_used_space + gap_length /*CRC*/> FDS_SIDE_SIZE)
+    if (fds_used_space + gap_length > FDS_SIDE_SIZE)
+    {
+      if (fds_block_count + 1 < min_blocks)
+      {
+        f_close(&fp);
+        fds_close(0);
+        return FDSR_ROM_TOO_LARGE;
+      }
       break;
+    }
     // gap before data
     for (i = 0; i < gap_length - 1; i++)
     {
       fds_raw_data[fds_used_space++] = 0;
+      // check size
       if (fds_used_space - 1 >= FDS_MAX_SIDE_SIZE)
       {
+        if (fds_block_count + 1 < min_blocks)
+        {
+          f_close(&fp);
+          fds_close(0);
+          return FDSR_ROM_TOO_LARGE;
+        }
         fds_used_space -= i;
         break;
       }
@@ -564,29 +566,28 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
     fds_raw_data[fds_used_space++] = 0x80; // gap terminator
 
     if (fds_block_count == 0)
-    {
       // disk info block
       block_type = 1;
-      block_size = 56;
-    } else if (fds_block_count == 1)
-    {
+    else if (fds_block_count == 1)
       // file amount block
       block_type = 2;
-      block_size = 2;
-    } else if (fds_block_count % 2 == 0)
-    {
+    else if (fds_block_count % 2 == 0)
       // file header block
       block_type = 3;
-      block_size = 16;
-    } else
-    {
+    else
       // file data block
       block_type = 4;
-      block_size = next_file_size + 1;
-    }
+    block_size = fds_get_block_size(fds_block_count, 0, 0);
 
+    // check size
     if (fds_used_space + block_size + 2 /*CRC*/> FDS_SIDE_SIZE)
     {
+      if (fds_block_count + 1 < min_blocks)
+      {
+        f_close(&fp);
+        fds_close(0);
+        return FDSR_ROM_TOO_LARGE;
+      }
       fds_raw_data[fds_used_space - 1] = 0; // remove terminator
       fds_used_space -= gap_length; // rollback last gap
       break;
@@ -604,6 +605,12 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
     if (br != block_size)
     {
       // end of file?
+      if (fds_block_count + 1 < min_blocks)
+      {
+        f_close(&fp);
+        fds_close(0);
+        return FDSR_ROM_TOO_LARGE;
+      }
       fds_raw_data[fds_used_space - 1] = 0; // remove terminator
       fds_used_space -= gap_length; // rollback last gap
       break;
@@ -611,12 +618,30 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
     if (fds_raw_data[fds_used_space] != block_type)
     {
       // invalid block?
+      if (fds_block_count + 1 < min_blocks)
+      {
+        f_close(&fp);
+        fds_close(0);
+        return FDSR_INVALID_ROM;
+      }
       fds_raw_data[fds_used_space - 1] = 0; // remove terminator
       fds_used_space -= gap_length; // rollback last gap
       break;
     }
-    if (block_type == 3) // file header block - parse file size
-      next_file_size = fds_raw_data[fds_used_space + 0x0D] | (fds_raw_data[fds_used_space + 0x0E] << 8);
+    if (fds_block_count == 0)
+    {
+      // check header
+      const char signature[] = "*NINTENDO-HVC*";
+      char verify[sizeof(signature)];
+      memcpy(verify, fds_raw_data + fds_used_space + 1, sizeof(signature) - 1);
+      verify[sizeof(signature) - 1] = 0;
+      if (strcmp(verify, signature) != 0)
+      {
+        f_close(&fp);
+        fds_close(0);
+        return FDSR_INVALID_ROM;
+      }
+    }
     crc = fds_crc((uint8_t*) fds_raw_data + fds_used_space, block_size);
     fds_used_space += block_size;
     fds_raw_data[fds_used_space++] = crc & 0xFF;

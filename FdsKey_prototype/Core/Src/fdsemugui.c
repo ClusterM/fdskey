@@ -49,7 +49,6 @@ void fds_gui_draw(uint8_t side, char *game_name, int text_scroll)
     state_image = (DotMatrixImage*)&IMAGE_STATE_PLAY;
     break;
   case FDS_READ_WAIT_READY:
-  case FDS_READ_WAIT_READY_TIMER:
     state_image = (DotMatrixImage*)&IMAGE_STATE_FF;
     break;
   case FDS_WRITING:
