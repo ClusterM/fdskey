@@ -100,6 +100,27 @@ void fds_gui_draw(uint8_t side, char *game_name, int text_scroll)
   oled_draw_text(&FDS_GUI_FILE_NUMBER_FONT, file_str, 32 + (((block_count - 2) / 2 / 10 == 1) ? 4 : 0), line + 22, 0, 0);
   sprintf(file_str, "%02d", (block_count - 2) / 2);
   oled_draw_text(&FDS_GUI_FILE_NUMBER_FONT, file_str, 80, line + 22, 0, 0);
+  if (state_image != (DotMatrixImage*)&IMAGE_STATE_PAUSE) // lol
+  {
+    static int spinning = 0;
+    spinning++;
+    // draw disk spinning animation
+    switch (spinning % 4)
+    {
+    case 0:
+      oled_draw_line(110, line + 13, 113, line + 13, 1);
+      break;
+    case 1:
+      oled_draw_line(114, line + 14, 114, line + 17, 1);
+      break;
+    case 2:
+      oled_draw_line(111, line + 18, 113, line + 18, 1);
+      break;
+    case 3:
+      oled_draw_line(109, line + 14, 109, line + 17, 1);
+      break;
+    }
+  }
 
   oled_update_invisible();
   oled_switch_to_invisible();

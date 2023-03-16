@@ -18,7 +18,7 @@
 #define FDS_THRESHOLD_2 1120
 
 // FDS emulation settings
-#define FDS_MAX_SIDE_SIZE (65 * 1024) // 65000 + some space for gaps and crcs but largest ROM is 60204 bytes including gaps and crcs
+#define FDS_MAX_SIDE_SIZE (64 * 1024) // 65000 + some space for gaps and crcs but largest ROM is 60204 bytes including gaps and crcs
 #define FDS_MAX_FILE_PATH_LENGTH 4096
 #define FDS_MAX_BLOCKS 256
 #define FDS_MAX_BLOCK_SIZE FDS_MAX_SIDE_SIZE
