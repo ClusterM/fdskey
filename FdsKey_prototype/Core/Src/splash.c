@@ -5,6 +5,16 @@
 #include "fdsemu.h"
 #include "buttons.h"
 
+void show_message(char *text)
+{
+  oled_draw_rectangle(0, oled_get_line() + OLED_HEIGHT, OLED_WIDTH - 1, oled_get_line() + OLED_HEIGHT * 2 - 1, 1, 0);
+  oled_draw_text(&FONT_SLIMFONT_8, text, 0, oled_get_line() + OLED_HEIGHT, 0, 0);
+  oled_update_invisible();
+  oled_switch_to_invisible();
+
+  while (!button_up_newpress() && !button_down_newpress() && !button_left_newpress() && !button_right_newpress());
+}
+
 void show_loading_screen()
 {
   oled_draw_rectangle(0, oled_get_line() + OLED_HEIGHT, OLED_WIDTH - 1, oled_get_line() + OLED_HEIGHT * 2 - 1, 1, 0);
@@ -70,6 +80,7 @@ void show_error_screen_fr(FRESULT fr, uint8_t fatal)
     case FDSR_INVALID_ROM: text = "Invalid ROM"; break;
     case FDSR_OUT_OF_MEMORY: text = "Out of memory"; break;
     case FDSR_ROM_TOO_LARGE: text = "ROM is too large"; break;
+    default: text = "Unknown error"; break;
   }
   show_error_screen(text, fatal);
 }

@@ -80,8 +80,7 @@ int fds_get_used_space();
 extern TIM_HandleTypeDef FDS_READ_PWM_TIMER;
 extern DMA_HandleTypeDef FDS_READ_DMA;
 extern TIM_HandleTypeDef FDS_WRITE_TIMER;
-
-extern DMA_HandleTypeDef hdma_tim15_ch1;
-extern TIM_HandleTypeDef htim15;
+extern DMA_HandleTypeDef FDS_WRITE_DMA;
+extern TIM_HandleTypeDef FDS_WRITE_CAPTURE_TIMER;
 
 #endif /* INC_FDSEMU_H_ */

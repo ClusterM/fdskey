@@ -5,6 +5,7 @@
 
 #define SPLASH_LOADING_IMAGE IMAGE_MICROSD
 
+void show_message(char *text);
 void show_loading_screen();
 void show_saving_screen();
 void show_error_screen(char *text, uint8_t fatal);

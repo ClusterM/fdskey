@@ -16,6 +16,7 @@ static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int
 
   switch (side)
   {
+  default:
   case 0:
     text = "SIDE A";
     break;
@@ -90,6 +91,9 @@ static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int
 //        0, 0);
 }
 
+static char full_path[4096];
+static char game_name[256];
+
 FRESULT fds_side_select(char *directory, char *filename)
 {
   show_loading_screen();
@@ -98,8 +102,8 @@ FRESULT fds_side_select(char *directory, char *filename)
   uint8_t side_count, side = 0;
   FILINFO fileinfo;
   int fl = strlen(filename);
-  char full_path[strlen(directory) + 1 + fl + 1];
-  char game_name[fl + 1];
+  //char full_path[strlen(directory) + 1 + fl + 1];
+//  char game_name[fl + 1];
   int i, text_scroll = 0;
 
   strcpy(full_path, directory);

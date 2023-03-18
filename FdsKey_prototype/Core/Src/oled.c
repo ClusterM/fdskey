@@ -319,32 +319,55 @@ void oled_draw_text_cropped(const DotMatrixFont *font, char *text, int x, int y,
 			if (font->char_height <= 8)
 				char_data_casted = *((uint8_t*) (char_data + c + size_offset));
 			else if (font->char_height <= 16)
-				char_data_casted = *((uint16_t*) (char_data
-						+ c * sizeof(uint16_t) + size_offset));
-			else if (font->char_height <= 24)
-				char_data_casted = *((uint32_t*) (char_data + c * 3 + size_offset))
-						& 0xFFFFFFUL;
-			else if (font->char_height <= 32)
-				char_data_casted = *((uint32_t*) (char_data
-						+ c * sizeof(uint32_t) + size_offset));
-			else if (font->char_height <= 40) {
-				uint32_t l = *((uint32_t*) (char_data + c * 5 + size_offset));
-				uint32_t h = *((uint32_t*) (char_data + c * 5 + size_offset + 4));
-				char_data_casted = (h & 0xFFULL) << 32 | l;
+			{
+        uint8_t b1 = *(char_data + c * 2 + size_offset);
+        uint8_t b2 = *(char_data + c * 2 + size_offset + 1);
+        char_data_casted = b1 | (b2 << 8);
+			} else if (font->char_height <= 24) {
+        uint8_t b1 = *(char_data + c * 3 + size_offset);
+        uint8_t b2 = *(char_data + c * 3 + size_offset + 1);
+        uint8_t b3 = *(char_data + c * 3 + size_offset + 2);
+        char_data_casted = b1 | (b2 << 8) | (b3 << 16);
+			} else if (font->char_height <= 32) {
+        uint8_t b1 = *(char_data + c * 4 + size_offset);
+        uint8_t b2 = *(char_data + c * 4 + size_offset + 1);
+        uint8_t b3 = *(char_data + c * 4 + size_offset + 2);
+        uint8_t b4 = *(char_data + c * 4 + size_offset + 3);
+        char_data_casted = b1 | (b2 << 8) | (b3 << 16) | (b4 << 24);
+			} else if (font->char_height <= 40) {
+        uint8_t b1 = *(char_data + c * 5 + size_offset);
+        uint8_t b2 = *(char_data + c * 5 + size_offset + 1);
+        uint8_t b3 = *(char_data + c * 5 + size_offset + 2);
+        uint8_t b4 = *(char_data + c * 5 + size_offset + 3);
+        uint8_t b5 = *(char_data + c * 5 + size_offset + 4);
+        char_data_casted = (uint64_t)b1 | ((uint64_t)b2 << 8) | ((uint64_t)b3 << 16) | ((uint64_t)b4 << 24) | ((uint64_t)b5 << 32);
 			} else if (font->char_height <= 48) {
-				uint32_t l = *((uint32_t*) (char_data + c * 6 + size_offset));
-				uint32_t h = *((uint32_t*) (char_data + c * 6 + size_offset + 4));
-				char_data_casted = (h & 0xFFFFULL) << 32 | l;
+        uint8_t b1 = *(char_data + c * 6 + size_offset);
+        uint8_t b2 = *(char_data + c * 6 + size_offset + 1);
+        uint8_t b3 = *(char_data + c * 6 + size_offset + 2);
+        uint8_t b4 = *(char_data + c * 6 + size_offset + 3);
+        uint8_t b5 = *(char_data + c * 6 + size_offset + 4);
+        uint8_t b6 = *(char_data + c * 6 + size_offset + 5);
+        char_data_casted = (uint64_t)b1 | ((uint64_t)b2 << 8) | ((uint64_t)b3 << 16) | ((uint64_t)b4 << 24) | ((uint64_t)b5 << 32) | ((uint64_t)b6 << 40);
 			} else if (font->char_height <= 56) {
-				uint32_t l = *((uint32_t*) (char_data + c * 7 + size_offset));
-				uint32_t h = *((uint32_t*) (char_data + c * 7 + size_offset + 4));
-				char_data_casted = (h & 0xFFFFFFULL) << 32 | l;
+        uint8_t b1 = *(char_data + c * 7 + size_offset);
+        uint8_t b2 = *(char_data + c * 7 + size_offset + 1);
+        uint8_t b3 = *(char_data + c * 7 + size_offset + 2);
+        uint8_t b4 = *(char_data + c * 7 + size_offset + 3);
+        uint8_t b5 = *(char_data + c * 7 + size_offset + 4);
+        uint8_t b6 = *(char_data + c * 7 + size_offset + 5);
+        uint8_t b7 = *(char_data + c * 7 + size_offset + 6);
+        char_data_casted = (uint64_t)b1 | ((uint64_t)b2 << 8) | ((uint64_t)b3 << 16) | ((uint64_t)b4 << 24) | ((uint64_t)b5 << 32) | ((uint64_t)b6 << 40) | ((uint64_t)b7 << 48);
 			} else {
-				uint32_t l =
-						*((uint32_t*) (char_data + c * sizeof(uint64_t) + size_offset));
-				uint32_t h = *((uint32_t*) (char_data + c * sizeof(uint64_t) + size_offset
-						+ 4));
-				char_data_casted = (uint64_t) h << 32 | l;
+        uint8_t b1 = *(char_data + c * 8 + size_offset);
+        uint8_t b2 = *(char_data + c * 8 + size_offset + 1);
+        uint8_t b3 = *(char_data + c * 8 + size_offset + 2);
+        uint8_t b4 = *(char_data + c * 8 + size_offset + 3);
+        uint8_t b5 = *(char_data + c * 8 + size_offset + 4);
+        uint8_t b6 = *(char_data + c * 8 + size_offset + 5);
+        uint8_t b7 = *(char_data + c * 8 + size_offset + 6);
+        uint8_t b8 = *(char_data + c * 8 + size_offset + 7);
+        char_data_casted = (uint64_t)b1 | ((uint64_t)b2 << 8) | ((uint64_t)b3 << 16) | ((uint64_t)b4 << 24) | ((uint64_t)b5 << 32) | ((uint64_t)b6 << 40) | ((uint64_t)b7 << 48) | ((uint64_t)b8 << 56);
 			}
 
 			// for every line of character (or until max height)

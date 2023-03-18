@@ -59,8 +59,38 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define WRITE_Pin GPIO_PIN_2
-#define WRITE_GPIO_Port GPIOB
+#define FDS_STOP_MOTOR_Pin GPIO_PIN_2
+#define FDS_STOP_MOTOR_GPIO_Port GPIOA
+#define FDS_READY_Pin GPIO_PIN_3
+#define FDS_READY_GPIO_Port GPIOA
+#define FDS_MEDIA_SET_Pin GPIO_PIN_4
+#define FDS_MEDIA_SET_GPIO_Port GPIOA
+#define FDS_WRITABLE_MEDIA_Pin GPIO_PIN_5
+#define FDS_WRITABLE_MEDIA_GPIO_Port GPIOA
+#define FDS_READ_DATA_Pin GPIO_PIN_6
+#define FDS_READ_DATA_GPIO_Port GPIOA
+#define FDS_WRITE_DATA_Pin GPIO_PIN_7
+#define FDS_WRITE_DATA_GPIO_Port GPIOA
+#define FDS_MOTOR_ON_Pin GPIO_PIN_0
+#define FDS_MOTOR_ON_GPIO_Port GPIOB
+#define FDS_SCAN_MEDIA_Pin GPIO_PIN_1
+#define FDS_SCAN_MEDIA_GPIO_Port GPIOB
+#define FDS_SCAN_MEDIA_EXTI_IRQn EXTI0_1_IRQn
+#define FDS_WRITE_Pin GPIO_PIN_2
+#define FDS_WRITE_GPIO_Port GPIOB
+#define FDS_WRITE_EXTI_IRQn EXTI2_3_IRQn
+#define BUTTON_DOWN_Pin GPIO_PIN_15
+#define BUTTON_DOWN_GPIO_Port GPIOA
+#define BUTTON_RIGHT_Pin GPIO_PIN_0
+#define BUTTON_RIGHT_GPIO_Port GPIOD
+#define BUTTON_LEFT_Pin GPIO_PIN_1
+#define BUTTON_LEFT_GPIO_Port GPIOD
+#define BUTTON_UP_Pin GPIO_PIN_2
+#define BUTTON_UP_GPIO_Port GPIOD
+#define SD_DTCT_Pin GPIO_PIN_3
+#define SD_DTCT_GPIO_Port GPIOD
+#define SD_CS_Pin GPIO_PIN_6
+#define SD_CS_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
