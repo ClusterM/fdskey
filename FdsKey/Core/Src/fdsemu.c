@@ -180,7 +180,7 @@ static void fds_write_bit(uint8_t bit)
   }
 }
 
-static void fds_write_impulse(uint16_t pulse)
+static uint8_t fds_write_impulse(uint16_t pulse)
 {
   switch (fds_state)
   {
@@ -189,27 +189,24 @@ static void fds_write_impulse(uint16_t pulse)
     break;
   case FDS_WRITING_STOPPING:
     // additional check for writing stop
-//    if (HAL_GPIO_ReadPin(FDS_WRITE_GPIO_Port, FDS_WRITE_Pin))
-//    {
-//      fds_stop_writing();
-//      fds_start_reading();
-//      return;
-//    }
+    if (HAL_GPIO_ReadPin(FDS_WRITE_GPIO_Port, FDS_WRITE_Pin))
+    {
+      fds_stop_writing();
+      fds_start_reading();
+      return 0;
+    }
     // some unlicensed software can write multiple blocks at once without /write toggling
     if (pulse < FDS_THRESHOLD_1)
       fds_write_gap_skip++;
     else
       fds_write_gap_skip = 0;
     if (fds_write_gap_skip >= FDS_MULTI_WRITE_UNLICENSED_BITS)
-    {
       // start writing of the next block
-      fds_stop_writing();
       fds_start_writing();
-    }
-    return;
+    return 1;
   default:
     fds_stop_writing();
-    return;
+    return 0;
   }
   if (fds_state == FDS_WRITING_GAP)
   {
@@ -261,6 +258,7 @@ static void fds_write_impulse(uint16_t pulse)
       break;
     }
   }
+  return 1;
 }
 
 static void fds_dma_parse_write_buffer(int pos, int length)
@@ -268,10 +266,10 @@ static void fds_dma_parse_write_buffer(int pos, int length)
   uint16_t pulse;
   while (length)
   {
-    if (fds_state == FDS_WRITING_STOPPING && HAL_GPIO_ReadPin(FDS_WRITE_GPIO_Port, FDS_WRITE_Pin))
-      return;
+//    if (fds_state == FDS_WRITING_STOPPING && HAL_GPIO_ReadPin(FDS_WRITE_GPIO_Port, FDS_WRITE_Pin))
+//      return;
     pulse = fds_write_buffer[pos] - fds_last_write_impulse;
-    fds_write_impulse(pulse);
+    if (!fds_write_impulse(pulse)) return;
     fds_last_write_impulse = fds_write_buffer[pos];
     length--;
     pos++;
@@ -370,25 +368,8 @@ static void fds_start_writing()
 
 static void fds_stop_writing()
 {
-  int block;
-  uint8_t block_type;
-
   HAL_DMA_Abort_IT(&FDS_WRITE_DMA);
   HAL_TIM_IC_Stop_IT(&FDS_WRITE_CAPTURE_TIMER, FDS_WRITE_CAPTURE_TIMER_CHANNEL_CONST);
-  // check for garbage block
-  /*
-  block = fds_get_block();
-  if (block == fds_block_count - 1)
-  {
-    block_type = fds_raw_data[fds_block_offsets[block] + FDS_NEXT_GAPS_READ_BITS / 8];
-    if (!block_type || block_type > 4)
-    {
-      // discard block
-      memset((uint8_t*)fds_raw_data + fds_block_offsets[block], 0, FDS_SIDE_SIZE - fds_block_offsets[block]);
-      fds_block_count--;
-    }
-  }
-  */
 }
 
 static void fds_stop()
@@ -541,6 +522,7 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
   f_size = f_size(&fp);
   if (f_size % FDS_SIDE_SIZE != 0 && f_size % FDS_SIDE_SIZE != 16)
   {
+    f_close(&fp);
     fds_close(0);
     return FDSR_INVALID_ROM;
   }
@@ -678,7 +660,7 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
 
 //  strcat(filename, ".good.bin");
 //  fds_dump(filename);
-  fds_dump("good.bin");
+//  fds_dump("good.bin");
 
   if (!HAL_GPIO_ReadPin(FDS_SCAN_MEDIA_GPIO_Port, FDS_SCAN_MEDIA_Pin))
   {
@@ -700,11 +682,10 @@ FRESULT fds_save()
   uint8_t buff[4096];
   UINT br, bw;
   int i;
+  char backup_filename[_MAX_LFN + 5];
 
   if (!fds_changed)
     return FR_OK;
-
-  fds_dump("bad.bin");
 
   // check CRC of every block
   for (i = 0; i < fds_block_count; i++)
@@ -713,13 +694,17 @@ FRESULT fds_save()
     uint16_t valid_crc = fds_crc((uint8_t*)(fds_raw_data + fds_block_offsets[i] + (i == 0 ? FDS_FIRST_GAP_READ_BITS : FDS_NEXT_GAPS_READ_BITS) / 8), block_size);
     uint8_t* crc = (uint8_t*)(fds_raw_data + fds_block_offsets[i] + (i == 0 ? FDS_FIRST_GAP_READ_BITS : FDS_NEXT_GAPS_READ_BITS) / 8 + block_size);
     if (valid_crc != (*crc | (*(crc + 1) << 8)))
+    {
+//      strcpy(backup_filename, fds_filename);
+//      strcat(backup_filename, ".bad.bin");
+//      fds_dump(backup_filename);
       return FDSR_WRONG_CRC;
+    }
   }
 
   if (fds_config_backup_original)
   {
     // combine backup filename
-    char backup_filename[_MAX_LFN + 5];
     strcpy(backup_filename, fds_filename);
     strcat(backup_filename, ".bak");
     // check if exists

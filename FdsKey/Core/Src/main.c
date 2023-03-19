@@ -535,7 +535,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin : FDS_WRITE_Pin */
   GPIO_InitStruct.Pin = FDS_WRITE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(FDS_WRITE_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : BUTTON_RIGHT_Pin BUTTON_LEFT_Pin BUTTON_UP_Pin SD_DTCT_Pin */
