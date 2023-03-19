@@ -806,14 +806,15 @@ FRESULT fds_close(uint8_t save)
 {
   FRESULT fr = FR_OK;
 
+  // remove disk
+  HAL_GPIO_WritePin(FDS_MEDIA_SET_GPIO_Port, FDS_MEDIA_SET_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(FDS_WRITABLE_MEDIA_GPIO_Port, FDS_WRITABLE_MEDIA_Pin, GPIO_PIN_SET);
+
   if (save)
     fr = fds_save();
 
   fds_stop();
   fds_state = FDS_OFF;
-  // remove disk
-  HAL_GPIO_WritePin(FDS_MEDIA_SET_GPIO_Port, FDS_MEDIA_SET_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(FDS_WRITABLE_MEDIA_GPIO_Port, FDS_WRITABLE_MEDIA_Pin, GPIO_PIN_SET);
 
   fds_used_space = 0;
   fds_block_count = 0;
