@@ -124,6 +124,7 @@ FRESULT fds_side_select(char *directory, FILINFO *fno)
       fno->fsize -= FDS_HEADER_SIZE;
     if (fno->fsize % FDS_SIDE_SIZE != 0)
       return FDSR_INVALID_ROM;
+    side_count = fno->fsize / FDS_SIDE_SIZE;
   }
   if (side_count > 7) side_count = 7;
 

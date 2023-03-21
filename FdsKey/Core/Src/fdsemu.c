@@ -30,6 +30,7 @@ static volatile uint16_t fds_current_block_end = 0;
 static volatile uint16_t fds_write_gap_skip = 0;
 static volatile uint8_t fds_changed = 0;
 static volatile uint32_t fds_last_action_time = 0;
+static volatile uint8_t fds_readonly = 0;
 
 static uint8_t fds_config_fast_rewind = 1;
 static uint8_t fds_config_backup_original = 1;
@@ -498,6 +499,7 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
   // but media is inserted
   HAL_GPIO_WritePin(FDS_MEDIA_SET_GPIO_Port, FDS_MEDIA_SET_Pin, GPIO_PIN_RESET);
   // writable maybe
+  fds_readonly = ro;
   HAL_GPIO_WritePin(FDS_WRITABLE_MEDIA_GPIO_Port, FDS_WRITABLE_MEDIA_Pin, ro ? GPIO_PIN_SET : GPIO_PIN_RESET);
 
   strncpy(fds_filename, filename, sizeof(fds_filename));
@@ -676,6 +678,8 @@ FRESULT fds_save()
   if (!fds_changed)
     return FR_OK;
 
+  if (fds_readonly)
+    return FDSR_READ_ONLY;
 //  fds_dump("bad.bin");
 
   // check CRC of every block
