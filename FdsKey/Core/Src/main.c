@@ -166,7 +166,9 @@ int main(void)
   while (1)
   {
     BROWSER_RESULT br;
-    fr = browser_tree(selected_dir, 4096, selected_file, 256, &br);
+    FILINFO selected_file;
+    selected_file.fname[0] = 0;
+    fr = browser_tree(selected_dir, 4096, &selected_file, &br);
     show_error_screen_fr(fr, 1);
 
     if (br == BROWSER_BACK)
@@ -175,7 +177,7 @@ int main(void)
       while (1) {}
     }
 
-    fr = fds_side_select(selected_dir, selected_file);
+    fr = fds_side_select(selected_dir, &selected_file);
     show_error_screen_fr(fr, 1);
     /* USER CODE END WHILE */
 

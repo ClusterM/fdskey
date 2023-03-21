@@ -17,6 +17,13 @@ typedef enum {
   BROWSER_FILE_LONGPRESS
 } BROWSER_RESULT;
 
-FRESULT browser_tree(char *directory, int dir_max_len, char *filename, int filename_max_len, BROWSER_RESULT *br);
+// struct like FILINFO but with dynamic filename
+typedef struct {
+  char* filename;
+  FSIZE_t fsize;
+  uint8_t fattrib;
+} DYN_FILINFO;
+
+FRESULT browser_tree(char *directory, int dir_max_len, FILINFO *fno, BROWSER_RESULT *br);
 
 #endif /* INC_BROWSER_H_ */

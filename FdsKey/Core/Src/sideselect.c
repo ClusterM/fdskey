@@ -16,6 +16,7 @@ static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int
 
   switch (side)
   {
+  default:
   case 0:
     text = "SIDE A";
     break;
@@ -93,20 +94,17 @@ static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int
 static char full_path[4096];
 static char game_name[256];
 
-FRESULT fds_side_select(char *directory, char *filename)
+FRESULT fds_side_select(char *directory, FILINFO *fno)
 {
-  show_loading_screen();
-
   FRESULT fr;
   uint8_t side_count, side = 0;
-  FILINFO fileinfo;
-  int fl = strlen(filename);
+  int fl = strlen(fno->fname);
   int i, text_scroll = 0;
 
   strcpy(full_path, directory);
   strcat(full_path, "\\");
-  strcat(full_path, filename);
-  strcpy(game_name, filename);
+  strcat(full_path, fno->fname);
+  strcpy(game_name, fno->fname);
   // trim extension
   for (i = fl - 1; i >= 0; i--)
   {
@@ -117,13 +115,21 @@ FRESULT fds_side_select(char *directory, char *filename)
     }
   }
 
-  fr = fds_get_side_count(full_path, &side_count, &fileinfo);
-  if (fr != FR_OK) return fr;
+  if (!fno->fsize)
+  {
+    fr = fds_get_side_count(full_path, &side_count, fno);
+    if (fr != FR_OK) return fr;
+  } else {
+    if (fno->fsize % FDS_SIDE_SIZE == FDS_HEADER_SIZE)
+      fno->fsize -= FDS_HEADER_SIZE;
+    if (fno->fsize % FDS_SIDE_SIZE != 0)
+      return FDSR_INVALID_ROM;
+  }
   if (side_count > 7) side_count = 7;
 
   if (side_count == 1)
   {
-    return fds_gui_load_side(full_path, game_name, side, fileinfo.fattrib & AM_RDO);
+    return fds_gui_load_side(full_path, game_name, side, fno->fattrib & AM_RDO);
   }
 
   while (1)
@@ -157,7 +163,7 @@ FRESULT fds_side_select(char *directory, char *filename)
     }
     if (button_right_newpress())
     {
-      fr = fds_gui_load_side(full_path, game_name, side, fileinfo.fattrib & AM_RDO);
+      fr = fds_gui_load_side(full_path, game_name, side, fno->fattrib & AM_RDO);
       if (fr != FR_OK) return fr;
       // back to side select
       fds_side_draw(side, side_count, game_name, text_scroll);

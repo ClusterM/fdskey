@@ -7,8 +7,8 @@
 #include "splash.h"
 #include "fdsemu.h"
 
-static char** dir_list = 0;
-static char** file_list = 0;
+static DYN_FILINFO** dir_list = 0;
+static DYN_FILINFO** file_list = 0;
 static int dir_count = 0;
 static int file_count = 0;
 
@@ -21,14 +21,14 @@ static void browser_free();
 // Left source half is A[iBegin:iMiddle-1].
 // Right source half is A[iMiddle:iEnd-1].
 // Result is B[ iBegin:iEnd-1   ].
-static void top_down_merge(char** A, int iBegin, int iMiddle, int iEnd, char** B)
+static void top_down_merge(DYN_FILINFO** A, int iBegin, int iMiddle, int iEnd, DYN_FILINFO** B)
 {
   int i = iBegin, j = iMiddle, k;
 
   // While there are elements in the left or right runs...
   for (k = iBegin; k < iEnd; k++) {
     // If left run head exists and is <= existing right run head.
-    if (i < iMiddle && (j >= iEnd || strcasecmp(A[i], A[j]) <= 0)) {
+    if (i < iMiddle && (j >= iEnd || strcasecmp(A[i]->filename, A[j]->filename) <= 0)) {
       B[k] = A[i];
       i = i + 1;
     } else {
@@ -39,7 +39,7 @@ static void top_down_merge(char** A, int iBegin, int iMiddle, int iEnd, char** B
 }
 // Split A[] into 2 runs, sort both runs into B[], merge both runs from B[] to A[]
 // iBegin is inclusive; iEnd is exclusive (A[iEnd] is not in the set).
-static void top_down_split_merge(char** B, int iBegin, int iEnd, char** A)
+static void top_down_split_merge(DYN_FILINFO** B, int iBegin, int iEnd, DYN_FILINFO** A)
 {
   if (iEnd - iBegin <= 1)                     // if run size == 1
       return;                                 //   consider it sorted
@@ -51,10 +51,10 @@ static void top_down_split_merge(char** B, int iBegin, int iEnd, char** A)
   // merge the resulting runs from array B[] into A[]
   top_down_merge(B, iBegin, iMiddle, iEnd, A);
 }
-static void top_down_merge_sort(char** A, int n)
+static void top_down_merge_sort(DYN_FILINFO** A, int n)
 {
-  char* B[n];
-  memcpy(B, A, sizeof(char*) * n);
+  DYN_FILINFO* B[n];
+  memcpy(B, A, sizeof(DYN_FILINFO*) * n);
   top_down_split_merge(B, 0, n, A); // sort data from B[] into A[]
 }
 
@@ -64,10 +64,10 @@ static void draw_item(uint8_t line, int item, uint8_t is_selected, int text_scro
   int i, offset, max_width, text_width, total_scroll;
   char* text;
   if (item < dir_count)
-    text = dir_list[item];
+    text = dir_list[item]->filename;
   else if (item < dir_count + file_count)
   {
-    text = file_list[item - dir_count];
+    text = file_list[item - dir_count]->filename;
     if (browser_config_hide_extensions)
     {
       char trimmed[_MAX_LFN + 1];
@@ -177,7 +177,7 @@ static int browser_menu(int selection)
   }
 }
 
-FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, char *select)
+FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *select)
 {
   FRESULT fr;
   DIR dir;
@@ -219,9 +219,11 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
           if (!dir_list)
             return FDSR_OUT_OF_MEMORY;
         }
-        dir_list[dir_count] = malloc(strlen(fno.fname) + 1);
+        dir_list[dir_count] = malloc(sizeof(DYN_FILINFO));
         if (!dir_list[dir_count]) return FDSR_OUT_OF_MEMORY;
-        strcpy(dir_list[dir_count], fno.fname);
+        dir_list[dir_count]->filename = malloc(strlen(fno.fname) + 1);
+        if (!dir_list[dir_count]->filename) return FDSR_OUT_OF_MEMORY;
+        strcpy(dir_list[dir_count]->filename, fno.fname);
         dir_count++;
       } else {
         if (browser_config_hide_non_fds)
@@ -236,9 +238,13 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
           if (!file_list)
             return FDSR_OUT_OF_MEMORY;
         }
-        file_list[file_count] = malloc(strlen(fno.fname) + 1);
+        file_list[file_count] = malloc(sizeof(DYN_FILINFO));
         if (!file_list[file_count]) return FDSR_OUT_OF_MEMORY;
-        strcpy(file_list[file_count], fno.fname);
+        file_list[file_count]->filename = malloc(strlen(fno.fname) + 1);
+        if (!file_list[file_count]->filename) return FDSR_OUT_OF_MEMORY;
+        strcpy(file_list[file_count]->filename, fno.fname);
+        file_list[file_count]->fsize = fno.fsize;
+        file_list[file_count]->fattrib = fno.fattrib;
         file_count++;
       }
     }
@@ -262,7 +268,7 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
   {
     for (i = 0; i < dir_count + file_count; i++)
     {
-      char* name = i < dir_count ? dir_list[i] : file_list[i - dir_count];
+      char* name = i < dir_count ? dir_list[i]->filename : file_list[i - dir_count]->filename;
       if (strcmp(name, select) == 0)
       {
         selection = i;
@@ -277,7 +283,8 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
   else if (r < dir_count)
   {
     *result = BROWSER_DIRECTORY;
-    strncpy(output, dir_list[r], max_len);
+    strncpy(output->fname, dir_list[r]->filename, sizeof(output->fname));
+    output->fname[sizeof(output->fname) - 1] = 0;
   } else {
     *result = BROWSER_FILE;
     while (button_right_holding())
@@ -288,7 +295,10 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
         break;
       }
     }
-    strncpy(output, file_list[r - dir_count], max_len);
+    strncpy(output->fname, file_list[r - dir_count]->filename, sizeof(output->fname));
+    output->fname[sizeof(output->fname) - 1] = 0;
+    output->fsize = file_list[r - dir_count]->fsize;
+    output->fattrib = file_list[r - dir_count]->fattrib;
   }
 
   browser_free();
@@ -296,15 +306,14 @@ FRESULT browser(char *path, char *output, int max_len, BROWSER_RESULT *result, c
   return FR_OK;
 }
 
-FRESULT browser_tree(char *directory, int dir_max_len, char *filename, int filename_max_len, BROWSER_RESULT *br)
+FRESULT browser_tree(char *directory, int dir_max_len, FILINFO *fno, BROWSER_RESULT *br)
 {
   FRESULT fr;
   int i;
-  char new_filename[_MAX_LFN + 1];
 
   while (1)
   {
-    fr = browser(directory, new_filename, _MAX_LFN, br, filename);
+    fr = browser(directory, fno, br, fno->fname);
     if (fr != FR_OK) return fr;
     switch (*br)
     {
@@ -318,15 +327,15 @@ FRESULT browser_tree(char *directory, int dir_max_len, char *filename, int filen
       {
         if (i <= 0)
         {
-          strncpy(filename, directory + (*directory == '\\' ? 1 : 0), filename_max_len);
-          filename[filename_max_len - 1] = 0;
+          strncpy(fno->fname, directory + (*directory == '\\' ? 1 : 0), sizeof(fno->fname));
+          fno->fname[sizeof(fno->fname) - 1] = 0;
           directory[0] = 0;
         }
         if (directory[i] == '\\')
         {
           directory[i] = 0;
-          strncpy(filename, &directory[i + 1], filename_max_len);
-          filename[filename_max_len - 1] = 0;
+          strncpy(fno->fname, &directory[i + 1], sizeof(fno->fname));
+          fno->fname[sizeof(fno->fname) - 1] = 0;
           if (i < dir_max_len) directory[i + 1] = 0;
           break;
         }
@@ -335,13 +344,13 @@ FRESULT browser_tree(char *directory, int dir_max_len, char *filename, int filen
     case BROWSER_DIRECTORY:
     case BROWSER_FILE_LONGPRESS:
       strncat(directory, "\\", dir_max_len);
-      strncat(directory, new_filename, dir_max_len);
+      strncat(directory, fno->fname, dir_max_len);
       directory[dir_max_len - 1] = 0;
-      *filename = 0;
+      fno->fname[0] = 0;
       break;
     case BROWSER_FILE:
-      strncpy(filename, new_filename, filename_max_len);
-      filename[filename_max_len - 1] = 0;
+//      strncpy(filename, new_filename, filename_max_len);
+//      filename[filename_max_len - 1] = 0;
       return FR_OK;
     }
   }
@@ -351,9 +360,14 @@ void browser_free()
 {
   int i;
   for (i = 0; i < dir_count; i++)
+  {
+    free(dir_list[i]->filename);
     free(dir_list[i]);
-  for (i = 0; i < file_count; i++)
+  }for (i = 0; i < file_count; i++)
+  {
+    free(file_list[i]->filename);
     free(file_list[i]);
+  }
   if (dir_list)
     free(dir_list);
   if (file_list)

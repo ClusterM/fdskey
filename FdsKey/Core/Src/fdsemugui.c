@@ -90,7 +90,7 @@ void fds_gui_draw(uint8_t side, char *game_name, int text_scroll)
       state_image,
       1, line + 21,
       0, 0);
-  char file_str[16];
+  char file_str[32];
   if (block > 1)
     sprintf(file_str, "FILE %02d/", (block - 2) / 2 + 1);
   else if (block < 0)

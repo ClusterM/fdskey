@@ -8,7 +8,7 @@
 #define SIDE_SELECT_HORIZONTAL_SCROLL_SPEED 1
 #define SIDE_SELECT_HORIZONTAL_SCROLL_PAUSE 12
 
-FRESULT fds_side_select(char *directory, char *filename);
+FRESULT fds_side_select(char *directory, FILINFO *fno);
 DotMatrixImage* side_select_get_disk_image(uint8_t side);
 
 #endif /* INC_SIDESELECT_H_ */
