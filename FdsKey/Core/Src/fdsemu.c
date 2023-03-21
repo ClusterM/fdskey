@@ -324,7 +324,10 @@ static void fds_reset_writing()
     }
   }
   // update used space
+  // TODO: overflow check
   fds_used_space = fds_block_offsets[fds_block_count - 1] + fds_get_block_size(fds_block_count - 1, 1, 1);
+  if (fds_used_space > FDS_MAX_SIDE_SIZE)
+    fds_stop();
 
   fds_current_byte = fds_block_offsets[fds_current_block];
   gap_length = fds_current_block == 0 ? FDS_FIRST_GAP_READ_BITS / 8 : FDS_NEXT_GAPS_READ_BITS / 8;
