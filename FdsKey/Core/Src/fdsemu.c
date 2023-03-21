@@ -188,13 +188,6 @@ static uint8_t fds_write_impulse(uint16_t pulse)
   case FDS_WRITING:
     break;
   case FDS_WRITING_STOPPING:
-    // additional check for writing stop
-    if (HAL_GPIO_ReadPin(FDS_WRITE_GPIO_Port, FDS_WRITE_Pin))
-    {
-      fds_stop_writing();
-      fds_start_reading();
-      return 0;
-    }
     // some unlicensed software can write multiple blocks at once without /write toggling
     if (pulse < FDS_THRESHOLD_1)
       fds_write_gap_skip++;
