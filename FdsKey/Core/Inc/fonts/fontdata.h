@@ -443,7 +443,7 @@ const DotMatrixFont FONT_VERDANA_14_BOLD = {
   .char_width = FONT_VERDANA_14_BOLD_CHAR_WIDTH,
   .char_height = FONT_VERDANA_14_BOLD_CHAR_HEIGHT,
   .spacing = 1,
-  .space_length = 0,
+  .space_length = 8,
   .font_data = font_verdana_14_bold
 };
 

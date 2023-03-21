@@ -18,28 +18,34 @@ static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int
   {
   default:
   case 0:
-    text = "SIDE A";
+    if (side_count <= 2)
+      text = "SIDE A";
+    else
+      text = "SIDE 1A";
     break;
   case 1:
-    text = "SIDE B";
+    if (side_count <= 2)
+      text = "SIDE B";
+    else
+      text = "SIDE 1B";
     break;
   case 2:
-    text = "SIDE C";
+    text = "SIDE 2A";
     break;
   case 3:
-    text = "SIDE D";
+    text = "SIDE 2B";
     break;
   case 4:
-    text = "SIDE E";
+    text = "SIDE 3A";
     break;
   case 5:
-    text = "SIDE F";
+    text = "SIDE 3B";
     break;
   case 6:
-    text = "SIDE G";
+    text = "SIDE 4A";
     break;
   case 7:
-    text = "SIDE H";
+    text = "SIDE 4B";
     break;
   }
 
