@@ -157,7 +157,7 @@ static void fds_write_bit(uint8_t bit)
     fds_current_bit = 0;
     fds_current_byte = (fds_current_byte + 1) % FDS_MAX_SIDE_SIZE;
 
-    if (fds_current_byte > fds_current_block_end)
+    if (fds_current_byte >= fds_current_block_end)
     {
       // end of block
       if (!HAL_GPIO_ReadPin(FDS_SCAN_MEDIA_GPIO_Port, FDS_SCAN_MEDIA_Pin))
