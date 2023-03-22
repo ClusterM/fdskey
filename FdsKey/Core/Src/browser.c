@@ -66,7 +66,8 @@ static void draw_item(uint8_t line, int item, uint8_t is_selected, int text_scro
   else if (item < dir_count + file_count)
   {
     text = file_list[item - dir_count]->filename;
-    if (fdskey_settings.hide_extensions)
+    // hide extension if enabled and .fds file
+    if (fdskey_settings.hide_extensions && (strcasecmp(text + strlen(text) - 4, ".fds") == 0))
     {
       char trimmed[_MAX_LFN + 1];
       strncpy(trimmed, text, _MAX_LFN);

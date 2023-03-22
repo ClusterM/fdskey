@@ -27,7 +27,7 @@ void main_menu_draw(uint8_t selection)
   // version number
   sprintf(buf, "v%d.%d", FDSKEY_VERION_MAJOR, FDSKEY_VERION_MINOR);
   oled_draw_text(&MAIN_MENU_VERSION_FONT, buf,
-      OLED_WIDTH - oled_get_text_length(&MAIN_MENU_VERSION_FONT, buf), line + OLED_HEIGHT - MAIN_MENU_VERSION_FONT.char_height + 1,
+      OLED_WIDTH - oled_get_text_length(&MAIN_MENU_VERSION_FONT, buf) - 1, line + OLED_HEIGHT - MAIN_MENU_VERSION_FONT.char_height,
       0, 0);
 
   oled_update_invisible();
