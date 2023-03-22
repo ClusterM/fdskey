@@ -17,7 +17,7 @@ static void SD_Unselect()
 
 static HAL_StatusTypeDef SPI_TransmitReceive(uint8_t* tx, uint8_t* rx, size_t buff_size)
 {
-  uint8_t i, o, bit;
+//  uint8_t i, o, bit;
   return HAL_SPI_TransmitReceive(&SD_SPI_PORT, tx, rx, buff_size, SD_TIMEOUT);
 //  while (buff_size)
 //  {
@@ -41,7 +41,7 @@ static HAL_StatusTypeDef SPI_TransmitReceive(uint8_t* tx, uint8_t* rx, size_t bu
 
 static HAL_StatusTypeDef SPI_Transmit(uint8_t* tx, size_t buff_size)
 {
-  uint8_t i, bit;
+//  uint8_t i, bit;
   return HAL_SPI_Transmit(&SD_SPI_PORT, tx, buff_size, SD_TIMEOUT);
 //  while (buff_size)
 //  {

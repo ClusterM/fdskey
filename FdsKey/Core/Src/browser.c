@@ -6,18 +6,16 @@
 #include "buttons.h"
 #include "splash.h"
 #include "fdsemu.h"
+#include "settings.h"
 
 static DYN_FILINFO** dir_list = 0;
 static DYN_FILINFO** file_list = 0;
 static int dir_count = 0;
 static int file_count = 0;
 
-static uint8_t browser_config_show_hidden = 0;
-static uint8_t browser_config_hide_extensions = 1;
-static uint8_t browser_config_hide_non_fds = 1;
-
 static void browser_free();
 
+// Merge sort
 // Left source half is A[iBegin:iMiddle-1].
 // Right source half is A[iMiddle:iEnd-1].
 // Result is B[ iBegin:iEnd-1   ].
@@ -68,7 +66,7 @@ static void draw_item(uint8_t line, int item, uint8_t is_selected, int text_scro
   else if (item < dir_count + file_count)
   {
     text = file_list[item - dir_count]->filename;
-    if (browser_config_hide_extensions)
+    if (fdskey_settings.hide_extensions)
     {
       char trimmed[_MAX_LFN + 1];
       strncpy(trimmed, text, _MAX_LFN);
@@ -90,10 +88,10 @@ static void draw_item(uint8_t line, int item, uint8_t is_selected, int text_scro
   oled_draw_rectangle(0, line * 8, OLED_WIDTH - 1, line * 8 + 7, 1, 0);
   if (is_selected)
     oled_draw_image(&IMAGE_CURSOR, 0, line * 8, 0, 0);
-  offset = IMAGE_CURSOR.width + (is_dir ? BROWSER_FOLDER_IMAGE.width + 2: 0);
+  offset = IMAGE_CURSOR.width + (is_dir ? BROWSER_FOLDER_IMAGE.width + 1: 0);
   max_width = OLED_WIDTH - offset - 1;
   if (is_dir)
-    oled_draw_image(item < 0 ? &IMAGE_FOLDER_UP : &BROWSER_FOLDER_IMAGE, IMAGE_CURSOR.width, line * 8, 0, 0);
+    oled_draw_image(&BROWSER_FOLDER_IMAGE, IMAGE_CURSOR.width, line * 8, 0, 0);
 
   text_width = oled_get_text_length(&BROWSER_FONT, text) - 1 /*spacing*/;
   if (text_width > max_width)
@@ -173,6 +171,7 @@ static int browser_menu(int selection)
     }
     draw_item(oled_get_line() / 8 + selection - line, selection, 1, text_scroll);
     text_scroll++;
+    button_check_screen_off();
     HAL_Delay(1);
   }
 }
@@ -208,7 +207,7 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
     fr = f_readdir(&dir, &fno);
     if (fr != FR_OK || !fno.fname[0])
       break;
-    if (browser_config_show_hidden || !(fno.fattrib & AM_HID))
+    if (!fdskey_settings.hide_hidden || !(fno.fattrib & AM_HID))
     {
       if (fno.fattrib & AM_DIR)
       {
@@ -226,7 +225,7 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
         strcpy(dir_list[dir_count]->filename, fno.fname);
         dir_count++;
       } else {
-        if (browser_config_hide_non_fds)
+        if (fdskey_settings.hide_non_fds)
         {
           if (strcasecmp(fno.fname + strlen(fno.fname) - 4, ".fds") != 0)
               continue;
@@ -314,6 +313,12 @@ FRESULT browser_tree(char *directory, int dir_max_len, FILINFO *fno, BROWSER_RES
   while (1)
   {
     fr = browser(directory, fno, br, fno->fname);
+    if (fr == FR_NO_PATH) // directory not exists (anymore?)
+    {
+      // repeat from root
+      directory[0] = 0;
+      fr = browser(directory, fno, br, fno->fname);
+    }
     if (fr != FR_OK) return fr;
     switch (*br)
     {

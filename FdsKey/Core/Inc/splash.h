@@ -3,7 +3,7 @@
 
 #include "app_fatfs.h"
 
-#define SPLASH_LOADING_IMAGE IMAGE_MICROSD
+#define SPLASH_LOADING_IMAGE IMAGE_MICROSD_HOR
 
 void show_message(char *text);
 void show_loading_screen();

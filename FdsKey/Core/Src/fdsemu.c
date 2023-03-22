@@ -1,6 +1,7 @@
 #include <string.h>
 #include "main.h"
 #include "fdsemu.h"
+#include "settings.h"
 #include "app_fatfs.h"
 
 static char fds_filename[_MAX_LFN + 1];
@@ -31,10 +32,6 @@ static volatile uint16_t fds_write_gap_skip = 0;
 static volatile uint8_t fds_changed = 0;
 static volatile uint32_t fds_last_action_time = 0;
 static volatile uint8_t fds_readonly = 0;
-
-static uint8_t fds_config_fast_rewind = 1;
-static uint8_t fds_config_backup_original = 1;
-static uint32_t fds_config_autosave_time = 5000;
 
 static void fds_start_reading();
 static void fds_start_writing();
@@ -125,7 +122,7 @@ static void fds_dma_fill_read_buffer(int pos, int length)
       fds_current_bit = 0;
       fds_current_byte = (fds_current_byte + 1) % FDS_MAX_SIDE_SIZE;
       if ((fds_current_byte == 0) ||
-          (fds_config_fast_rewind && fds_current_byte > fds_used_space + FDS_NOT_READY_BYTES))
+          (fdskey_settings.fast_rewind && fds_current_byte > fds_used_space + FDS_NOT_READY_BYTES))
       {
         // pause before ready
         HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_SET);
@@ -402,7 +399,7 @@ void fds_check_pins()
       break;
     case FDS_IDLE:
       // schedule file saving if need and idle time exceeded
-      if (fds_changed && fds_last_action_time + fds_config_autosave_time < HAL_GetTick())
+      if (fds_changed && fds_last_action_time + fdskey_settings.autosave_time * 1000 < HAL_GetTick())
         fds_state = FDS_SAVE_PENDING;
       break;
     case FDS_SAVE_PENDING:
@@ -411,7 +408,7 @@ void fds_check_pins()
       break;
     default:
       fds_stop();
-      if (fds_config_fast_rewind)
+      if (fdskey_settings.fast_rewind)
         fds_reset();
     }
   } else
@@ -425,7 +422,7 @@ void fds_check_pins()
       switch (fds_state)
       {
       case FDS_IDLE:
-        if (fds_config_fast_rewind || fds_current_byte == 0)
+        if (fdskey_settings.fast_rewind || fds_current_byte == 0)
         {
           fds_not_ready_time = HAL_GetTick();
           fds_state = FDS_READ_WAIT_READY_TIMER;
@@ -692,7 +689,7 @@ FRESULT fds_save()
       return FDSR_WRONG_CRC;
   }
 
-  if (fds_config_backup_original)
+  if (fdskey_settings.backup_original)
   {
     // combine backup filename
     char backup_filename[_MAX_LFN + 5];

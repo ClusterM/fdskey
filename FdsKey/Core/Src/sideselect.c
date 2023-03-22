@@ -81,7 +81,7 @@ static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int
       disk_image, OLED_WIDTH - disk_image->width - 1, line + 1,
       0, 0);
   oled_draw_text(&FONT_VERDANA_14_BOLD, text,
-      1, line + 11,
+      1, line + 12,
       0, 0);
 
 //  oled_draw_text(&FONT_VERDANA_13_BOLD, text,
@@ -179,7 +179,7 @@ FRESULT fds_side_select(char *directory, FILINFO *fno)
     }
     if (button_left_newpress())
       return FR_OK;
-    //HAL_Delay(1);
+    button_check_screen_off();
   }
 }
 

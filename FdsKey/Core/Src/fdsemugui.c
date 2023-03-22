@@ -61,7 +61,7 @@ void fds_gui_draw(uint8_t side, char *game_name, int text_scroll)
     break;
   }
 
-  // clean screen
+  // clear screen
   oled_draw_rectangle(0, line, OLED_WIDTH - 1, line + OLED_HEIGHT - 1, 1, 0);
   // game name
   oled_draw_text_cropped(&FDS_GUI_GAME_NAME_FONT, game_name,
@@ -146,7 +146,7 @@ FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t
     }
 
     fds_gui_draw(side, game_name, text_scroll);
-
+    button_check_screen_off();
     text_scroll++;
   }
 

@@ -31,6 +31,8 @@
 #include "buttons.h"
 #include "splash.h"
 #include "sideselect.h"
+#include "mainmenu.h"
+#include "settings.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -104,6 +106,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 char selected_dir[4096] = "";
 char selected_file[256] = "";
+uint8_t menu_selection = 0xFF;
 /* USER CODE END 0 */
 
 /**
@@ -129,7 +132,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  settings_load();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -165,21 +168,42 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   BROWSER_RESULT br;
   FILINFO selected_file;
-  selected_file.fname[0] = 0;
+
+  if (!fdskey_settings.remember_last_file || !fdskey_settings.last_file[0])
+  {
+    fdskey_settings.last_directory[0] = 0;
+    fdskey_settings.last_file[0] = 0;
+  } else {
+    menu_selection = MAIN_MENU_BROWSE_ROMS;
+  }
+  strcpy(selected_file.fname, fdskey_settings.last_file);
 
   while (1)
   {
-    fr = browser_tree(selected_dir, 4096, &selected_file, &br);
-    show_error_screen_fr(fr, 1);
-
-    if (br == BROWSER_BACK)
+    switch (menu_selection)
     {
-      show_message("back");
-      while (1) {}
+    case MAIN_MENU_BROWSE_ROMS:
+      while (1)
+      {
+        fr = browser_tree(fdskey_settings.last_directory, 4096, &selected_file, &br);
+        show_error_screen_fr(fr, 1);
+        if (br == BROWSER_BACK)
+          break;
+        // remember last directory and file
+        strcpy(fdskey_settings.last_file, selected_file.fname);
+        settings_save();
+        // load ROM
+        fr = fds_side_select(fdskey_settings.last_directory, &selected_file);
+        show_error_screen_fr(fr, 1);
+      }
+      fdskey_settings.last_file[0] = 0; // remember last state as main menu
+      settings_save();
+      break;
+    case MAIN_MENU_SETTINGS:
+      settings_menu();
+      break;
     }
-
-    fr = fds_side_select(selected_dir, &selected_file);
-    show_error_screen_fr(fr, 1);
+    menu_selection = main_menu(menu_selection);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -277,7 +301,7 @@ static void MX_I2C1_Init(void)
   }
   /* USER CODE BEGIN I2C1_Init 2 */
   HAL_Delay(100);
-  oled_init(1, 0, 0x80);
+  oled_init(fdskey_settings.lefty_mode ? 0 : 1, fdskey_settings.invert_screen, 0xFF * fdskey_settings.brightness / SETTINGS_BRIGHTNESS_MAX);
   oled_draw_rectangle(0, 0, OLED_WIDTH - 1, OLED_HEIGHT - 1, 1, 0);
   oled_update_full();
   oled_set_line(0);

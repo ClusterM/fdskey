@@ -71,6 +71,7 @@ void oled_draw_image_cropped(const DotMatrixImage *img, int x, int y,
     uint8_t start_x, uint8_t max_width,
     uint8_t start_y, uint8_t max_height,
     uint8_t replace, uint8_t invert);
+void oled_rotate(uint8_t rotate_screen);
 
 extern I2C_HandleTypeDef OLED_I2C;
 

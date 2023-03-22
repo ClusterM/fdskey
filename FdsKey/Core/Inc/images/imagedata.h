@@ -17,8 +17,11 @@
 #include "folder6.h"
 #include "folder_up.h"
 #include "head_cursor.h"
+#include "large_cursor.h"
 #include "microsd.h"
 #include "microsd2.h"
+#include "microsd_hor.h"
+#include "microsd_hor2.h"
 #include "state_ff.h"
 #include "state_pause.h"
 #include "state_play.h"
@@ -139,6 +142,12 @@ const DotMatrixImage IMAGE_HEAD_CURSOR = {
   .image_data = image_head_cursor
 };
 
+const DotMatrixImage IMAGE_LARGE_CURSOR = {
+  .width = IMAGE_LARGE_CURSOR_WIDTH,
+  .height = IMAGE_LARGE_CURSOR_HEIGHT,
+  .image_data = image_large_cursor
+};
+
 const DotMatrixImage IMAGE_MICROSD = {
   .width = IMAGE_MICROSD_WIDTH,
   .height = IMAGE_MICROSD_HEIGHT,
@@ -149,6 +158,18 @@ const DotMatrixImage IMAGE_MICROSD2 = {
   .width = IMAGE_MICROSD2_WIDTH,
   .height = IMAGE_MICROSD2_HEIGHT,
   .image_data = image_microsd2
+};
+
+const DotMatrixImage IMAGE_MICROSD_HOR = {
+  .width = IMAGE_MICROSD_HOR_WIDTH,
+  .height = IMAGE_MICROSD_HOR_HEIGHT,
+  .image_data = image_microsd_hor
+};
+
+const DotMatrixImage IMAGE_MICROSD_HOR2 = {
+  .width = IMAGE_MICROSD_HOR2_WIDTH,
+  .height = IMAGE_MICROSD_HOR2_HEIGHT,
+  .image_data = image_microsd_hor2
 };
 
 const DotMatrixImage IMAGE_STATE_FF = {

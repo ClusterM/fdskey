@@ -13,22 +13,22 @@ static uint8_t image[OLED_HEIGHT * 2 * OLED_WIDTH];
 
 void oled_init( uint8_t rotate_screen, uint8_t reverse, uint8_t contrast)
 {
-	padding_left = rotate_screen ? 0 : 4;
+	padding_left = 0; // rotate_screen ? 0 : 4;
 	padding_top = rotate_screen ? 32 : 0;
 
 	oled_send_commands(11,
-	OLED_CMD_SET_OFF, 0x8D,
-			0x14, // turn on pump (???)
-			reverse ? OLED_CMD_SET_REVERSE_ON : OLED_CMD_SET_REVERSE_OFF,
-			OLED_CMD_SET_START_LINE(current_line + padding_top),
-			OLED_CMD_SET_PADS_MODE, OLED_CMD_SET_PADS_MODE_SEQUENTIAL,
-			rotate_screen ?
-					OLED_CMD_SET_VERTICAL_FLIP_ON :
-					OLED_CMD_SET_VERTICAL_FLIP_OFF,
-			rotate_screen ?
-					OLED_CMD_SET_HORIZONTAL_FLIP_ON :
-					OLED_CMD_SET_HORIZONTAL_FLIP_OFF,
-			OLED_CMD_SET_CONTRAST_MODE, contrast);
+	OLED_CMD_SET_OFF,
+    0x8D, 0x14, // turn on pump (???)
+    reverse ? OLED_CMD_SET_REVERSE_ON : OLED_CMD_SET_REVERSE_OFF,
+    OLED_CMD_SET_START_LINE(current_line + padding_top),
+    OLED_CMD_SET_PADS_MODE, OLED_CMD_SET_PADS_MODE_SEQUENTIAL,
+    rotate_screen ?
+        OLED_CMD_SET_VERTICAL_FLIP_ON :
+        OLED_CMD_SET_VERTICAL_FLIP_OFF,
+    rotate_screen ?
+        OLED_CMD_SET_HORIZONTAL_FLIP_ON :
+        OLED_CMD_SET_HORIZONTAL_FLIP_OFF,
+    OLED_CMD_SET_CONTRAST_MODE, contrast);
 	memset(image, 0, sizeof(image));
 	oled_update_full();
 	oled_send_commands(1, OLED_CMD_SET_ON);
@@ -497,4 +497,21 @@ void oled_draw_image_cropped(const DotMatrixImage *img, int x, int y,
 			}
 		}
 	}
+}
+
+void oled_rotate(uint8_t rotate_screen)
+{
+  oled_send_command(OLED_CMD_SET_OFF);
+  padding_left = 0; //rotate_screen ? 0 : 4;
+  padding_top = rotate_screen ? 32 : 0;
+  oled_send_commands(2,
+      rotate_screen ?
+          OLED_CMD_SET_VERTICAL_FLIP_ON :
+          OLED_CMD_SET_VERTICAL_FLIP_OFF,
+      rotate_screen ?
+          OLED_CMD_SET_HORIZONTAL_FLIP_ON :
+          OLED_CMD_SET_HORIZONTAL_FLIP_OFF
+  );
+  oled_update_full();
+  oled_send_command(OLED_CMD_SET_ON);
 }
