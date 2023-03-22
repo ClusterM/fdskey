@@ -13,47 +13,28 @@ static uint32_t down_hold_time = 0;
 static uint32_t left_hold_time = 0;
 static uint32_t right_hold_time = 0;
 static uint32_t last_active_time = 0;
-static uint8_t screen_on = 1;
-
-static void button_screen_on();
 
 uint8_t button_up_holding()
 {
   uint8_t v = !HAL_GPIO_ReadPin(!fdskey_settings.lefty_mode ? BUTTON_UP_GPIO_Port : BUTTON_DOWN_GPIO_Port, !fdskey_settings.lefty_mode ? BUTTON_UP_Pin : BUTTON_DOWN_Pin);
-  if (v) {
-    last_active_time = HAL_GetTick();
-    button_screen_on();
-  }
   return v;
 }
 
 uint8_t button_down_holding()
 {
   uint8_t v = !HAL_GPIO_ReadPin(!fdskey_settings.lefty_mode ? BUTTON_DOWN_GPIO_Port : BUTTON_UP_GPIO_Port, !fdskey_settings.lefty_mode ? BUTTON_DOWN_Pin : BUTTON_UP_Pin);
-  if (v) {
-    last_active_time = HAL_GetTick();
-    button_screen_on();
-  }
   return v;
 }
 
 uint8_t button_left_holding()
 {
   uint8_t v = !HAL_GPIO_ReadPin(!fdskey_settings.lefty_mode ? BUTTON_LEFT_GPIO_Port : BUTTON_RIGHT_GPIO_Port, !fdskey_settings.lefty_mode ? BUTTON_LEFT_Pin : BUTTON_RIGHT_Pin);
-  if (v) {
-    last_active_time = HAL_GetTick();
-    button_screen_on();
-  }
   return v;
 }
 
 uint8_t button_right_holding()
 {
   uint8_t v = !HAL_GPIO_ReadPin(!fdskey_settings.lefty_mode ? BUTTON_RIGHT_GPIO_Port : BUTTON_LEFT_GPIO_Port, !fdskey_settings.lefty_mode ? BUTTON_RIGHT_Pin : BUTTON_LEFT_Pin);
-  if (v) {
-    last_active_time = HAL_GetTick();
-    button_screen_on();
-  }
   return v;
 }
 
@@ -125,33 +106,28 @@ uint32_t button_right_hold_time()
 
 void button_check_screen_off()
 {
-  if (!screen_on && fds_get_state() != FDS_OFF && fds_get_state() != FDS_IDLE)
-  {
-    last_active_time = HAL_GetTick();
-    button_screen_on();
+  if (!fdskey_settings.auto_off_screen_time)
     return;
-  }
 
-  if (!fdskey_settings.auto_off_screen_time || !screen_on)
-    return;
+  if (button_left_holding() || button_right_holding() ||
+      button_up_holding() || button_left_holding() ||
+      (fds_get_state() != FDS_OFF && fds_get_state() != FDS_IDLE))
+    last_active_time = HAL_GetTick();
 
   if (last_active_time + fdskey_settings.auto_off_screen_time * 1000 < HAL_GetTick())
   {
-    screen_on = 0;
+    // time to sleep
     oled_send_command(OLED_CMD_SET_OFF);
-  }
-}
-
-static void button_screen_on()
-{
-  if (!screen_on)
-  {
+    while (!(button_left_holding() || button_right_holding() ||
+          button_up_holding() || button_left_holding() ||
+          (fds_get_state() != FDS_OFF && fds_get_state() != FDS_IDLE)));
+    // time to wake up
     oled_send_command(OLED_CMD_SET_ON);
+    last_active_time = HAL_GetTick();
     // no newpresses!
     up_pressed = 1;
     down_pressed = 1;
     left_pressed = 1;
     right_pressed = 1;
-    screen_on = 1;
   }
 }
