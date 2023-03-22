@@ -138,12 +138,16 @@ static void fds_dma_fill_read_buffer(int pos, int length)
 
 static void fds_dma_read_half_callback(DMA_HandleTypeDef *hdma)
 {
+  __disable_irq();
   fds_dma_fill_read_buffer(0, FDS_READ_BUFFER_SIZE / 2);
+  __enable_irq();
 }
 
 static void fds_dma_read_full_callback(DMA_HandleTypeDef *hdma)
 {
+  __disable_irq();
   fds_dma_fill_read_buffer(FDS_READ_BUFFER_SIZE / 2, FDS_READ_BUFFER_SIZE / 2);
+  __enable_irq();
 }
 
 static void fds_write_bit(uint8_t bit)
@@ -268,12 +272,16 @@ static void fds_dma_parse_write_buffer(int pos, int length)
 
 static void fds_dma_write_half_callback(DMA_HandleTypeDef *hdma)
 {
+  __disable_irq();
   fds_dma_parse_write_buffer(0, FDS_WRITE_BUFFER_SIZE / 2);
+  __enable_irq();
 }
 
 static void fds_dma_write_full_callback(DMA_HandleTypeDef *hdma)
 {
+  __disable_irq();
   fds_dma_parse_write_buffer(FDS_WRITE_BUFFER_SIZE / 2, FDS_WRITE_BUFFER_SIZE / 2);
+  __enable_irq();
 }
 
 static void fds_start_reading()

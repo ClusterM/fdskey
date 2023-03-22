@@ -6,7 +6,7 @@
 #include "app_fatfs.h"
 
 #define SETTINGS_FLASH_OFFSET 0x0807F800
-#define SETTINGS_SIGNATURE "FDS!"
+#define SETTINGS_SIGNATURE "FDSKEY"
 #define SETTINGS_VERSION 0
 #define SETTINGS_FONT FONT_SLIMFONT_8
 #define SETTINGS_BRIGHTNESS_MAX 10
@@ -29,9 +29,9 @@ typedef enum
   SETTING_BACKUP_ORIGINAL
 } SETTING_ID;
 
-typedef struct
+typedef struct __attribute__((packed))
 {
-  char sig[sizeof(SETTINGS_SIGNATURE)];
+  char sig[sizeof(SETTINGS_SIGNATURE) + 1];
   uint8_t version;
   uint8_t remember_last_file;
   uint8_t fast_rewind;
@@ -39,7 +39,7 @@ typedef struct
   uint8_t hide_extensions;
   uint8_t hide_hidden;
   uint16_t autosave_time;
-  int8_t brightness;
+  uint8_t brightness;
   uint8_t lefty_mode;
   uint8_t invert_screen;
   int16_t auto_off_screen_time;

@@ -5,7 +5,6 @@
 #include "oled.h"
 #include "buttons.h"
 
-
 FDSKEY_SETTINGS fdskey_settings;
 
 void settings_load()
@@ -15,6 +14,7 @@ void settings_load()
   if (strcmp(fdskey_settings.sig, SETTINGS_SIGNATURE))
   {
     // config is empty, load defaults
+    memset(&fdskey_settings, 0, sizeof(fdskey_settings));
     strcpy(fdskey_settings.sig, SETTINGS_SIGNATURE);
     fdskey_settings.version = SETTINGS_VERSION;
     fdskey_settings.remember_last_file = 1;
@@ -33,13 +33,13 @@ void settings_load()
   }
 }
 
-HAL_StatusTypeDef settings_save()
+HAL_StatusTypeDef __attribute__((optimize("O0"))) settings_save()
 {
   HAL_StatusTypeDef r;
   FLASH_EraseInitTypeDef erase_init_struct;
   uint32_t sector_error = 0;
-  uint64_t value;
   int i;
+  uint64_t buffer[sizeof(fdskey_settings) / sizeof(uint64_t) + 1];
 
   // unlock flash
   r = HAL_FLASH_Unlock();
@@ -52,11 +52,11 @@ HAL_StatusTypeDef settings_save()
   r = HAL_FLASHEx_Erase(&erase_init_struct, &sector_error);
   if (r != HAL_OK) return r;
 
+  memcpy(buffer, &fdskey_settings, sizeof(fdskey_settings));
   // writing
-  for (i = 0; i < sizeof(FDSKEY_SETTINGS); i += sizeof(uint64_t))
+  for (i = 0; i < sizeof(buffer); i += sizeof(uint64_t))
   {
-    value = ((uint64_t*)&(fdskey_settings))[i / sizeof(uint64_t)];
-    r = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, SETTINGS_FLASH_OFFSET + i, value);
+    r = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, SETTINGS_FLASH_OFFSET + i, buffer[i / sizeof(uint64_t)]);
     if (r != HAL_OK) return r;
   }
 
