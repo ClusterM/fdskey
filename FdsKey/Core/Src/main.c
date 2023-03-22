@@ -22,18 +22,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <string.h>
-#include <stdio.h>
 #include "oled.h"
-#include "sdcard.h"
-#include "fdsemu.h"
-#include "browser.h"
-#include "buttons.h"
-#include "splash.h"
-#include "sideselect.h"
 #include "mainmenu.h"
 #include "settings.h"
-#include "newdisk.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -102,12 +93,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-
-
-char selected_dir[4096] = "";
-char selected_file[256] = "";
-uint8_t menu_selection = 0xFF;
 /* USER CODE END 0 */
 
 /**
@@ -149,88 +134,15 @@ int main(void)
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 
-  if (HAL_GPIO_ReadPin(SD_DTCT_GPIO_Port, SD_DTCT_Pin))
-    show_error_screen("No SD card", 1);
-
-  HAL_StatusTypeDef r = SD_init();
-  if (r != HAL_OK)
-    show_error_screen("Can't init SD card", 1);
-
-  FATFS FatFs;
-  FRESULT fr;
-  fr = f_mount(&FatFs, "", 1);
-  show_error_screen_fr(fr, 1);
-
   HAL_TIM_Base_Start_IT(&htim1);
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  BROWSER_RESULT br;
-  FILINFO selected_file;
-
-  menu_selection = 0xFF;
-  if (!fdskey_settings.remember_last_file)
-  {
-    fdskey_settings.last_directory[0] = 0;
-    fdskey_settings.last_file[0] = 0;
-  } else if (!fdskey_settings.last_state_menu) {
-    menu_selection = MAIN_MENU_BROWSE_ROMS;
-  }
-  strcpy(selected_file.fname, fdskey_settings.last_file);
-
+  main_menu_loop();
   while (1)
   {
-    switch (menu_selection)
-    {
-    case MAIN_MENU_BROWSE_ROMS:
-      while (1)
-      {
-        fr = browser_tree(fdskey_settings.last_directory, sizeof(fdskey_settings.last_directory), &selected_file, &br);
-        show_error_screen_fr(fr, 1);
-        // remember last directory (root) and file
-        strcpy(fdskey_settings.last_file, selected_file.fname);
-        if (br == BROWSER_BACK)
-          break;
-        fdskey_settings.last_state_menu = 0;
-        settings_save();
-        if (br == BROWSER_FILE)
-        {
-          // load ROM
-          fr = fds_side_select(fdskey_settings.last_directory, &selected_file);
-          show_error_screen_fr(fr, 1);
-        }
-        if (br == BROWSER_FILE_LONGPRESS)
-        {
-          file_properties(fdskey_settings.last_directory, &selected_file);
-        }
-      }
-      fdskey_settings.last_state_menu = 1; // remember last state as main menu
-      settings_save();
-      break;
-    case MAIN_MENU_NEW_ROM:
-      fr = new_disk();
-      if (fr != FDSR_CANCELLED)
-      {
-        if (fr == FR_OK)
-        {
-          // show browser and select file
-          strcpy(selected_file.fname, fdskey_settings.last_file);
-          menu_selection = MAIN_MENU_BROWSE_ROMS;
-          continue;
-        } else {
-          show_error_screen_fr(fr, 0);
-        }
-      }
-      break;
-    case MAIN_MENU_SETTINGS:
-      settings_menu();
-      break;
-    }
-    menu_selection = main_menu(menu_selection);
     /* USER CODE END WHILE */
-
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

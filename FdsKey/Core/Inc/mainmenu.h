@@ -8,6 +8,6 @@
 #define MAIN_MENU_FONT FONT_STANDARD_6
 #define MAIN_MENU_VERSION_FONT FONT_ULTRASLIMFONT_8
 
-uint8_t main_menu(uint8_t selection);
+void main_menu_loop();
 
 #endif /* INC_MAINMENU_H_ */
