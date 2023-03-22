@@ -102,14 +102,14 @@ static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int
       0, 0);
 }
 
-static char full_path[4096];
-static char game_name[256];
-
 FRESULT fds_side_select(char *directory, FILINFO *fno)
 {
   FRESULT fr;
   uint8_t side_count, side = 0;
+  char game_name[256];
+  int dl = strlen(directory);
   int fl = strlen(fno->fname);
+  char full_path[dl + fl + 2];
   int i, text_scroll = 0;
 
   strcpy(full_path, directory);

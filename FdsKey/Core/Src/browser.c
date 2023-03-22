@@ -120,7 +120,7 @@ static void draw_item(uint8_t line, int item, uint8_t is_selected, int text_scro
   oled_update(line, line);
 }
 
-static int browser_menu(int selection)
+static int browser_menu(int selection, uint8_t *is_selected)
 {
   int i;
   int text_scroll = 0;
@@ -151,8 +151,14 @@ static int browser_menu(int selection)
       draw_item(oled_get_line() / 8 + selection - line, selection, 1, 0);
       text_scroll = 0;
     }
-    if (button_left_newpress()) return -1; // back
-    if (button_right_newpress()) return selection;
+    if (button_left_newpress()) {
+      *is_selected = 0;
+      return selection; // back
+    }
+    if (button_right_newpress()) {
+      *is_selected = 1;
+      return selection;
+    }
     while (selection < line && line)
     {
       line--;
@@ -184,6 +190,7 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
   int mem_dir_count = 512;
   int mem_file_count = 512;
   int i, r, selection;
+  uint8_t is_selected = 0;
   dir_count = 0;
   file_count = 0;
 
@@ -260,6 +267,7 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
 
   if (!dir_count && !file_count)
   {
+    browser_free();
     show_message("Directory is empty");
     *result = BROWSER_BACK;
     return FR_OK;
@@ -283,10 +291,8 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
     }
   }
 
-  r = browser_menu(selection);
-  if (r < 0)
-    *result = BROWSER_BACK;
-  else if (r < dir_count)
+  r = browser_menu(selection, &is_selected);
+  if (r < dir_count)
   {
     *result = BROWSER_DIRECTORY;
     strncpy(output->fname, dir_list[r]->filename, sizeof(output->fname));
@@ -306,6 +312,8 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
     output->fsize = file_list[r - dir_count]->fsize;
     output->fattrib = file_list[r - dir_count]->fattrib;
   }
+  if (!is_selected)
+    *result = BROWSER_BACK;
 
   browser_free();
 
@@ -354,13 +362,13 @@ FRESULT browser_tree(char *directory, int dir_max_len, FILINFO *fno, BROWSER_RES
       }
       break;
     case BROWSER_DIRECTORY:
-    case BROWSER_FILE_LONGPRESS:
       strncat(directory, "\\", dir_max_len);
       strncat(directory, fno->fname, dir_max_len);
       directory[dir_max_len - 1] = 0;
       fno->fname[0] = 0;
       break;
     case BROWSER_FILE:
+    case BROWSER_FILE_LONGPRESS:
 //      strncpy(filename, new_filename, filename_max_len);
 //      filename[filename_max_len - 1] = 0;
       return FR_OK;

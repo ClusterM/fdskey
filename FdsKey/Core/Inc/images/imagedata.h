@@ -20,6 +20,7 @@
 #include "folder_up.h"
 #include "head_cursor.h"
 #include "large_cursor.h"
+#include "medium_cursor.h"
 #include "microsd.h"
 #include "microsd2.h"
 #include "microsd_hor.h"
@@ -160,6 +161,12 @@ const DotMatrixImage IMAGE_LARGE_CURSOR = {
   .width = IMAGE_LARGE_CURSOR_WIDTH,
   .height = IMAGE_LARGE_CURSOR_HEIGHT,
   .image_data = image_large_cursor
+};
+
+const DotMatrixImage IMAGE_MEDIUM_CURSOR = {
+  .width = IMAGE_MEDIUM_CURSOR_WIDTH,
+  .height = IMAGE_MEDIUM_CURSOR_HEIGHT,
+  .image_data = image_medium_cursor
 };
 
 const DotMatrixImage IMAGE_MICROSD = {

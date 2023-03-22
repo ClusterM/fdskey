@@ -20,6 +20,7 @@ extern const DotMatrixImage IMAGE_FOLDER6;
 extern const DotMatrixImage IMAGE_FOLDER_UP;
 extern const DotMatrixImage IMAGE_HEAD_CURSOR;
 extern const DotMatrixImage IMAGE_LARGE_CURSOR;
+extern const DotMatrixImage IMAGE_MEDIUM_CURSOR;
 extern const DotMatrixImage IMAGE_MICROSD;
 extern const DotMatrixImage IMAGE_MICROSD2;
 extern const DotMatrixImage IMAGE_MICROSD_HOR;

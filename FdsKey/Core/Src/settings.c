@@ -30,6 +30,7 @@ void settings_load()
     fdskey_settings.backup_original = 1;
     fdskey_settings.last_directory[0] = 0;
     fdskey_settings.last_file[0] = 0;
+    fdskey_settings.last_state_menu = 1;
   }
 }
 

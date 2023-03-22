@@ -5,7 +5,7 @@
 #include "main.h"
 #include "app_fatfs.h"
 
-#define SETTINGS_FLASH_OFFSET 0x0807F800
+#define SETTINGS_FLASH_OFFSET (0x08080000 - FLASH_PAGE_SIZE * 2) // reserved two pages
 #define SETTINGS_SIGNATURE "FDSKEY"
 #define SETTINGS_VERSION 0
 #define SETTINGS_FONT FONT_SLIMFONT_8
@@ -46,6 +46,7 @@ typedef struct __attribute__((packed))
   uint8_t backup_original;
   char last_directory[1024];
   char last_file[_MAX_LFN + 1 /*256*/];
+  uint8_t last_state_menu;
 } FDSKEY_SETTINGS;
 
 void settings_load();

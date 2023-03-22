@@ -6,6 +6,7 @@
 #include "fdsemu.h"
 #include "settings.h"
 #include "splash.h"
+#include "confirm.h"
 
 static FRESULT new_disk_create(char *filename, int sides)
 {
@@ -17,12 +18,22 @@ static FRESULT new_disk_create(char *filename, int sides)
 
   show_saving_screen();
 
-  memset(buff, 0, sizeof(buff));
+  fr = f_open(&fp, filename, FA_CREATE_NEW | FA_WRITE);
+  if (fr == FR_EXIST)
+  {
+    // replace file?
+    if (confirm("File exists. Overwrite?"))
+    {
+      fr = f_open(&fp, filename, FA_CREATE_ALWAYS | FA_WRITE);
+      show_saving_screen();
+    } else {
+      return FDSR_CANCELLED;
+    }
+  }
+  if (fr != FR_OK) return fr;
 
-  fr = f_open(&fp, filename, FA_CREATE_ALWAYS | FA_WRITE);
-  if (fr != FR_OK)
-    return fr;
   // just fill file with zeros
+  memset(buff, 0, sizeof(buff));
   for (i = 0; i < FDS_SIDE_SIZE * sides; i += sizeof(buff))
   {
     fr = f_write(&fp, buff, sizeof(buff), &bw);

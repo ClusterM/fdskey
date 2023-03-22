@@ -33,6 +33,7 @@
 #include "sideselect.h"
 #include "mainmenu.h"
 #include "settings.h"
+#include "newdisk.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -169,11 +170,12 @@ int main(void)
   BROWSER_RESULT br;
   FILINFO selected_file;
 
+  menu_selection = 0xFF;
   if (!fdskey_settings.remember_last_file)
   {
     fdskey_settings.last_directory[0] = 0;
     fdskey_settings.last_file[0] = 0;
-  } else {
+  } else if (!fdskey_settings.last_state_menu) {
     menu_selection = MAIN_MENU_BROWSE_ROMS;
   }
   strcpy(selected_file.fname, fdskey_settings.last_file);
@@ -187,16 +189,24 @@ int main(void)
       {
         fr = browser_tree(fdskey_settings.last_directory, sizeof(fdskey_settings.last_directory), &selected_file, &br);
         show_error_screen_fr(fr, 1);
+        // remember last directory (root) and file
+        strcpy(fdskey_settings.last_file, selected_file.fname);
         if (br == BROWSER_BACK)
           break;
-        // remember last directory and file
-        strcpy(fdskey_settings.last_file, selected_file.fname);
+        fdskey_settings.last_state_menu = 0;
         settings_save();
-        // load ROM
-        fr = fds_side_select(fdskey_settings.last_directory, &selected_file);
-        show_error_screen_fr(fr, 1);
+        if (br == BROWSER_FILE)
+        {
+          // load ROM
+          fr = fds_side_select(fdskey_settings.last_directory, &selected_file);
+          show_error_screen_fr(fr, 1);
+        }
+        if (br == BROWSER_FILE_LONGPRESS)
+        {
+          file_properties(fdskey_settings.last_directory, &selected_file);
+        }
       }
-      fdskey_settings.last_file[0] = 0; // remember last state as main menu
+      fdskey_settings.last_state_menu = 1; // remember last state as main menu
       settings_save();
       break;
     case MAIN_MENU_NEW_ROM:
