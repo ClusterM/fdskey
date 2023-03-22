@@ -41,7 +41,8 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-
+#define FDSKEY_VERION_MAJOR 1
+#define FDSKEY_VERION_MINOR 0
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

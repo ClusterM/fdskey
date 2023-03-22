@@ -5,6 +5,9 @@
 #define MAIN_MENU_NEW_ROM 1
 #define MAIN_MENU_SETTINGS 2
 
+#define MAIN_MENU_FONT FONT_STANDARD_6
+#define MAIN_MENU_VERSION_FONT FONT_ULTRASLIMFONT_8
+
 uint8_t main_menu(uint8_t selection);
 
 #endif /* INC_MAINMENU_H_ */

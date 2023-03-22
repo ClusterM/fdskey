@@ -9,45 +9,48 @@
 
 static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int text_scroll)
 {
-  char *text;
+  char *side_name;
   DotMatrixImage *disk_image;
   int max_width, text_width, total_scroll;
   int line = oled_get_line() + OLED_HEIGHT;
+  int init_text_scroll = text_scroll;
+  int l;
 
   switch (side)
   {
   default:
   case 0:
     if (side_count <= 2)
-      text = "SIDE A";
+      side_name = "A";
     else
-      text = "SIDE 1A";
+      side_name = "1A";
     break;
   case 1:
     if (side_count <= 2)
-      text = "SIDE B";
+      side_name = "B";
     else
-      text = "SIDE 1B";
+      side_name = "1B";
     break;
   case 2:
-    text = "SIDE 2A";
+    side_name = "2A";
     break;
   case 3:
-    text = "SIDE 2B";
+    side_name = "2B";
     break;
   case 4:
-    text = "SIDE 3A";
+    side_name = "3A";
     break;
   case 5:
-    text = "SIDE 3B";
+    side_name = "3B";
     break;
   case 6:
-    text = "SIDE 4A";
+    side_name = "4A";
     break;
   case 7:
-    text = "SIDE 4B";
+    side_name = "4B";
     break;
   }
+  l = strlen(side_name);
 
   disk_image = side_select_get_disk_image(side);
 
@@ -58,6 +61,7 @@ static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int
     total_scroll = SIDE_SELECT_HORIZONTAL_SCROLL_PAUSE + (text_width - max_width) + SIDE_SELECT_HORIZONTAL_SCROLL_PAUSE;
     text_scroll /= SIDE_SELECT_HORIZONTAL_SCROLL_SPEED;
     text_scroll %= total_scroll * 2;
+
     // two-directional
     if (text_scroll > total_scroll)
       text_scroll = total_scroll * 2 - text_scroll;
@@ -80,21 +84,21 @@ static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int
   oled_draw_image(
       disk_image, OLED_WIDTH - disk_image->width - 1, line + 1,
       0, 0);
-  oled_draw_text(&FONT_VERDANA_14_BOLD, text,
+  oled_draw_text(&SIDE_SELECT_SIDE_NAME_FONT, "SIDE",
       1, line + 12,
       0, 0);
+  oled_draw_text(&SIDE_SELECT_SIDE_NAME_FONT, side_name,
+      l > 1 ? 55 : 60, line + 12,
+      0, 0);
 
-//  oled_draw_text(&FONT_VERDANA_13_BOLD, text,
-//      16, line + 10,
-//      0, 0);
-//  if (side + 1 < side_count)
-//    oled_draw_image(
-//        &IMAGE_CURSOR_DOWN, OLED_WIDTH  / 2 - 1, line + OLED_HEIGHT - 3,
-//        0, 0);
-//  if (side > 0)
-//    oled_draw_image(
-//        &IMAGE_CURSOR_UP, OLED_WIDTH  / 2 - 2, line + 10,
-//        0, 0);
+  // arrows
+  if ((init_text_scroll / 4) % 2)
+  {
+    if (side + 1 < side_count)
+      oled_draw_image(&IMAGE_CURSOR_DOWN, l > 1 ? 85 : 81, line + OLED_HEIGHT - IMAGE_CURSOR_DOWN.height, 0, 0);
+    if (side > 0)
+      oled_draw_image(&IMAGE_CURSOR_UP, l > 1 ? 85 : 81, line + 15, 0, 0);
+  }
 }
 
 static char full_path[4096];
