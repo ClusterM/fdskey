@@ -169,7 +169,7 @@ int main(void)
   BROWSER_RESULT br;
   FILINFO selected_file;
 
-  if (!fdskey_settings.remember_last_file || !fdskey_settings.last_file[0])
+  if (!fdskey_settings.remember_last_file)
   {
     fdskey_settings.last_directory[0] = 0;
     fdskey_settings.last_file[0] = 0;
@@ -185,7 +185,7 @@ int main(void)
     case MAIN_MENU_BROWSE_ROMS:
       while (1)
       {
-        fr = browser_tree(fdskey_settings.last_directory, 4096, &selected_file, &br);
+        fr = browser_tree(fdskey_settings.last_directory, sizeof(fdskey_settings.last_directory), &selected_file, &br);
         show_error_screen_fr(fr, 1);
         if (br == BROWSER_BACK)
           break;
@@ -198,6 +198,21 @@ int main(void)
       }
       fdskey_settings.last_file[0] = 0; // remember last state as main menu
       settings_save();
+      break;
+    case MAIN_MENU_NEW_ROM:
+      fr = new_disk();
+      if (fr != FDSR_CANCELLED)
+      {
+        if (fr == FR_OK)
+        {
+          // show browser and select file
+          strcpy(selected_file.fname, fdskey_settings.last_file);
+          menu_selection = MAIN_MENU_BROWSE_ROMS;
+          continue;
+        } else {
+          show_error_screen_fr(fr, 0);
+        }
+      }
       break;
     case MAIN_MENU_SETTINGS:
       settings_menu();

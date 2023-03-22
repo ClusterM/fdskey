@@ -11,6 +11,7 @@
 #include "diskun28_bold_font.h"
 #include "diskun_22_font.h"
 #include "diskun_28_font.h"
+#include "gamegirl_classic_12_font.h"
 #include "gamegirl_classic_6_font.h"
 #include "haettenschweiler_18_font.h"
 #include "haettenschweiler_23_font.h"
@@ -192,6 +193,17 @@ const DotMatrixFont FONT_DISKUN_28 = {
   .spacing = 1,
   .space_length = 0,
   .font_data = font_diskun_28
+};
+
+const DotMatrixFont FONT_GAMEGIRL_CLASSIC_12 = {
+  .font_type = FONT_GAMEGIRL_CLASSIC_12_FONT_TYPE,
+  .start_char = FONT_GAMEGIRL_CLASSIC_12_START_CHAR,
+  .font_length = FONT_GAMEGIRL_CLASSIC_12_LENGTH,
+  .char_width = FONT_GAMEGIRL_CLASSIC_12_CHAR_WIDTH,
+  .char_height = FONT_GAMEGIRL_CLASSIC_12_CHAR_HEIGHT,
+  .spacing = 0,
+  .space_length = 0,
+  .font_data = font_gamegirl_classic_12
 };
 
 const DotMatrixFont FONT_GAMEGIRL_CLASSIC_6 = {
@@ -443,7 +455,7 @@ const DotMatrixFont FONT_VERDANA_14_BOLD = {
   .char_width = FONT_VERDANA_14_BOLD_CHAR_WIDTH,
   .char_height = FONT_VERDANA_14_BOLD_CHAR_HEIGHT,
   .spacing = 1,
-  .space_length = 8,
+  .space_length = 0,
   .font_data = font_verdana_14_bold
 };
 

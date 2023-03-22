@@ -13,8 +13,10 @@ static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int
   DotMatrixImage *disk_image;
   int max_width, text_width, total_scroll;
   int line = oled_get_line() + OLED_HEIGHT;
-  int init_text_scroll = text_scroll;
   int l;
+
+  // clear screen
+  oled_draw_rectangle(0, line, OLED_WIDTH - 1, line + OLED_HEIGHT - 1, 1, 0);
 
   switch (side)
   {
@@ -54,6 +56,15 @@ static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int
 
   disk_image = side_select_get_disk_image(side);
 
+  // arrows
+  if ((text_scroll / 4) % 2)
+  {
+    if (side + 1 < side_count)
+      oled_draw_image(&IMAGE_CURSOR_DOWN, l > 1 ? 85 : 81, line + OLED_HEIGHT - IMAGE_CURSOR_DOWN.height, 0, 0);
+    if (side > 0)
+      oled_draw_image(&IMAGE_CURSOR_UP, l > 1 ? 85 : 81, line + 15, 0, 0);
+  }
+
   max_width = OLED_WIDTH - disk_image->width - 4;
   text_width = oled_get_text_length(&SIDE_SELECT_GAME_NAME_FONT, game_name) - 1 /*spacing*/;
   if (text_width > max_width)
@@ -75,7 +86,6 @@ static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int
     text_scroll = 0;
   }
 
-  oled_draw_rectangle(0, line, OLED_WIDTH - 1, line + OLED_HEIGHT - 1, 1, 0);
   oled_draw_text_cropped(&SIDE_SELECT_GAME_NAME_FONT, game_name,
       1, line,
       text_scroll, max_width,
@@ -90,15 +100,6 @@ static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int
   oled_draw_text(&SIDE_SELECT_SIDE_NAME_FONT, side_name,
       l > 1 ? 55 : 60, line + 12,
       0, 0);
-
-  // arrows
-  if ((init_text_scroll / 4) % 2)
-  {
-    if (side + 1 < side_count)
-      oled_draw_image(&IMAGE_CURSOR_DOWN, l > 1 ? 85 : 81, line + OLED_HEIGHT - IMAGE_CURSOR_DOWN.height, 0, 0);
-    if (side > 0)
-      oled_draw_image(&IMAGE_CURSOR_UP, l > 1 ? 85 : 81, line + 15, 0, 0);
-  }
 }
 
 static char full_path[4096];

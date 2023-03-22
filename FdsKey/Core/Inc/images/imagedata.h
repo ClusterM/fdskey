@@ -8,7 +8,9 @@
 #include "card_h.h"
 #include "cursor.h"
 #include "cursor_down.h"
+#include "cursor_down_w.h"
 #include "cursor_up.h"
+#include "cursor_up_w.h"
 #include "folder.h"
 #include "folder2.h"
 #include "folder3.h"
@@ -88,10 +90,22 @@ const DotMatrixImage IMAGE_CURSOR_DOWN = {
   .image_data = image_cursor_down
 };
 
+const DotMatrixImage IMAGE_CURSOR_DOWN_W = {
+  .width = IMAGE_CURSOR_DOWN_W_WIDTH,
+  .height = IMAGE_CURSOR_DOWN_W_HEIGHT,
+  .image_data = image_cursor_down_w
+};
+
 const DotMatrixImage IMAGE_CURSOR_UP = {
   .width = IMAGE_CURSOR_UP_WIDTH,
   .height = IMAGE_CURSOR_UP_HEIGHT,
   .image_data = image_cursor_up
+};
+
+const DotMatrixImage IMAGE_CURSOR_UP_W = {
+  .width = IMAGE_CURSOR_UP_W_WIDTH,
+  .height = IMAGE_CURSOR_UP_W_HEIGHT,
+  .image_data = image_cursor_up_w
 };
 
 const DotMatrixImage IMAGE_FOLDER = {

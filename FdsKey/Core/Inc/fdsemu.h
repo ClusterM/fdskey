@@ -63,6 +63,7 @@ typedef enum {
 #define FDSR_OUT_OF_MEMORY 0x82
 #define FDSR_ROM_TOO_LARGE 0x83
 #define FDSR_READ_ONLY 0x84
+#define FDSR_CANCELLED 0x85
 
 FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro);
 FRESULT fds_close(uint8_t save);

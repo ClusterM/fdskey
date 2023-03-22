@@ -258,6 +258,13 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
   file_list = realloc(file_list, file_count * sizeof(char*));
   if (file_count && !file_list) return FDSR_OUT_OF_MEMORY;
 
+  if (!dir_count && !file_count)
+  {
+    show_message("Directory is empty");
+    *result = BROWSER_BACK;
+    return FR_OK;
+  }
+
   // sort them
   top_down_merge_sort(dir_list, dir_count);
   top_down_merge_sort(file_list, file_count);

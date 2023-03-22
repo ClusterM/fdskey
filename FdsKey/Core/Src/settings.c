@@ -18,7 +18,7 @@ void settings_load()
     strcpy(fdskey_settings.sig, SETTINGS_SIGNATURE);
     fdskey_settings.version = SETTINGS_VERSION;
     fdskey_settings.remember_last_file = 1;
-    fdskey_settings.fast_rewind = 1;
+    fdskey_settings.fast_rewind = 0;
     fdskey_settings.hide_non_fds = 1;
     fdskey_settings.hide_extensions = 1;
     fdskey_settings.hide_hidden = 1;
@@ -33,7 +33,7 @@ void settings_load()
   }
 }
 
-HAL_StatusTypeDef __attribute__((optimize("O0"))) settings_save()
+HAL_StatusTypeDef settings_save()
 {
   HAL_StatusTypeDef r;
   FLASH_EraseInitTypeDef erase_init_struct;
