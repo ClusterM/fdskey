@@ -6,6 +6,7 @@
 #include "main.h"
 #include "oled.h"
 
+static uint8_t rotate = 0;
 static uint8_t padding_left = 0;
 static uint8_t padding_top = 0;
 static uint8_t current_line = 0;
@@ -15,6 +16,7 @@ void oled_init( uint8_t rotate_screen, uint8_t reverse, uint8_t contrast)
 {
 	padding_left = 0; // rotate_screen ? 0 : 4;
 	padding_top = rotate_screen ? 32 : 0;
+	rotate = rotate_screen;
 
 	oled_send_commands(11,
 	OLED_CMD_SET_OFF,
@@ -501,9 +503,12 @@ void oled_draw_image_cropped(const DotMatrixImage *img, int x, int y,
 
 void oled_rotate(uint8_t rotate_screen)
 {
+  if (!!rotate == !!rotate_screen)
+    return;
   oled_send_command(OLED_CMD_SET_OFF);
   padding_left = 0; //rotate_screen ? 0 : 4;
   padding_top = rotate_screen ? 32 : 0;
+  oled_send_command(OLED_CMD_SET_START_LINE(current_line + padding_top));
   oled_send_commands(2,
       rotate_screen ?
           OLED_CMD_SET_VERTICAL_FLIP_ON :
@@ -514,4 +519,5 @@ void oled_rotate(uint8_t rotate_screen)
   );
   oled_update_full();
   oled_send_command(OLED_CMD_SET_ON);
+  rotate = rotate_screen;
 }

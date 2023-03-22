@@ -146,9 +146,7 @@ void settings_menu()
   int i;
 
   for (i = 0; i < 4; i++)
-  {
     draw_item((oled_get_line() + OLED_HEIGHT) / 8 + i, line + i, line + i == selection);
-  }
   oled_switch_to_invisible();
 
   while (1)
