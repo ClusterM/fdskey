@@ -391,7 +391,7 @@ void fds_check_pins()
   if (HAL_GPIO_ReadPin(FDS_SCAN_MEDIA_GPIO_Port, FDS_SCAN_MEDIA_Pin))
   {
     // motor stop
-    //HAL_GPIO_WritePin(FDS_MOTOR_ON_GPIO_Port, FDS_MOTOR_ON_Pin, GPIO_PIN_RESET); // do i really need this?
+    HAL_GPIO_WritePin(FDS_MOTOR_ON_GPIO_Port, FDS_MOTOR_ON_Pin, GPIO_PIN_RESET); // do i really need this?
     switch (fds_state)
     {
     case FDS_OFF:
@@ -413,7 +413,7 @@ void fds_check_pins()
     }
   } else
   {
-    //HAL_GPIO_WritePin(FDS_MOTOR_ON_GPIO_Port, FDS_MOTOR_ON_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(FDS_MOTOR_ON_GPIO_Port, FDS_MOTOR_ON_Pin, GPIO_PIN_SET);
     // return from saving state if saved
     if ((fds_state == FDS_SAVE_PENDING) && !fds_changed) fds_state = FDS_IDLE;
     if (HAL_GPIO_ReadPin(FDS_WRITE_GPIO_Port, FDS_WRITE_Pin))
