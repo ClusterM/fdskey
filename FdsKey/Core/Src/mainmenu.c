@@ -11,9 +11,7 @@
 #include "sideselect.h"
 #include "settings.h"
 #include "newdisk.h"
-
-static char selected_dir[4096] = "";
-static char selected_file[256] = "";
+#include "fileproperties.h"
 
 void main_menu_draw(uint8_t selection)
 {
@@ -23,7 +21,7 @@ void main_menu_draw(uint8_t selection)
   // clear screen
   oled_draw_rectangle(0, line, OLED_WIDTH - 1, line + OLED_HEIGHT - 1, 1, 0);
   // draw text
-  oled_draw_text(&MAIN_MENU_FONT, "Browse ROMs",
+  oled_draw_text(&MAIN_MENU_FONT, "Browse disk images",
       10, line + 1,
       0, 0);
   oled_draw_text(&MAIN_MENU_FONT, "Create blank disk",

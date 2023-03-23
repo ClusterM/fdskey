@@ -110,7 +110,7 @@ void button_check_screen_off()
     return;
 
   if (button_left_holding() || button_right_holding() ||
-      button_up_holding() || button_left_holding() ||
+      button_up_holding() || button_down_holding() ||
       (fds_get_state() != FDS_OFF && fds_get_state() != FDS_IDLE))
     last_active_time = HAL_GetTick();
 
@@ -119,7 +119,7 @@ void button_check_screen_off()
     // time to sleep
     oled_send_command(OLED_CMD_SET_OFF);
     while (!(button_left_holding() || button_right_holding() ||
-          button_up_holding() || button_left_holding() ||
+          button_up_holding() || button_down_holding() ||
           (fds_get_state() != FDS_OFF && fds_get_state() != FDS_IDLE)));
     // time to wake up
     oled_send_command(OLED_CMD_SET_ON);

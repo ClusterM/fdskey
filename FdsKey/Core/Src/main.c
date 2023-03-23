@@ -25,6 +25,8 @@
 #include "oled.h"
 #include "mainmenu.h"
 #include "settings.h"
+#include "fdsemu.h"
+#include "splash.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
