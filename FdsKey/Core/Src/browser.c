@@ -313,7 +313,7 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
   if (!dir_count && !file_count)
   {
     browser_free();
-    show_message("Directory is empty");
+    show_message("The directory is empty");
     *result = BROWSER_BACK;
     return FR_OK;
   }

@@ -57,7 +57,7 @@ static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int
   disk_image = side_select_get_disk_image(side);
 
   // arrows
-  if ((text_scroll / 4) % 2)
+  if ((text_scroll / 8) % 2)
   {
     if (side + 1 < side_count)
       oled_draw_image(&IMAGE_CURSOR_DOWN, l > 1 ? 85 : 81, line + OLED_HEIGHT - IMAGE_CURSOR_DOWN.height, 0, 0);

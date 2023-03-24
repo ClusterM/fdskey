@@ -502,7 +502,7 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
   fds_readonly = ro;
   HAL_GPIO_WritePin(FDS_WRITABLE_MEDIA_GPIO_Port, FDS_WRITABLE_MEDIA_Pin, ro ? GPIO_PIN_SET : GPIO_PIN_RESET);
 
-  strncpy(fds_filename, filename, sizeof(fds_filename));
+  strncpy(fds_filename, filename, sizeof(fds_filename) - 1);
   filename[sizeof(fds_filename) - 1] = 0;
   fds_side = side;
 
