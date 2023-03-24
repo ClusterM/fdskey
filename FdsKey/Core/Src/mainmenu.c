@@ -110,15 +110,10 @@ void main_menu_loop()
         fdskey_settings.last_state_menu = 0;
         settings_save();
         if (br == BROWSER_FILE)
-        {
           // load ROM
-          fr = fds_side_select(fdskey_settings.last_directory, &selected_file);
-          show_error_screen_fr(fr, 1);
-        }
-        if (br == BROWSER_FILE_LONGPRESS)
-        {
+          fds_side_select(fdskey_settings.last_directory, &selected_file);
+        else if (br == BROWSER_FILE_LONGPRESS)
           file_properties(fdskey_settings.last_directory, &selected_file);
-        }
       }
       fdskey_settings.last_state_menu = 1; // remember last state as main menu
       settings_save();

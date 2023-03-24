@@ -864,22 +864,3 @@ int fds_get_used_space()
 {
   return fds_used_space;
 }
-
-FRESULT fds_get_side_count(char *filename, uint8_t *count, FILINFO *fileinfo)
-{
-  FILINFO fno;
-  FRESULT fr;
-
-  fr = f_stat(filename, &fno);
-  if (fr != FR_OK)
-    return fr;
-  if (fno.fsize % FDS_ROM_SIDE_SIZE == FDS_ROM_HEADER_SIZE)
-    fno.fsize -= FDS_ROM_HEADER_SIZE;
-  if (fno.fsize % FDS_ROM_SIDE_SIZE != 0)
-    return FDSR_INVALID_ROM;
-  if (count)
-    *count = fno.fsize / FDS_ROM_SIDE_SIZE;
-  if (fileinfo)
-    *fileinfo = fno;
-  return fr;
-}

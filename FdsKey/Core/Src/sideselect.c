@@ -102,7 +102,7 @@ static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int
       0, 0);
 }
 
-FRESULT fds_side_select(char *directory, FILINFO *fno)
+void fds_side_select(char *directory, FILINFO *fno)
 {
   FRESULT fr;
   uint8_t side_count, side = 0;
@@ -126,22 +126,28 @@ FRESULT fds_side_select(char *directory, FILINFO *fno)
     }
   }
 
-  if (!fno->fsize)
+  if (fno->fsize % FDS_ROM_SIDE_SIZE == FDS_ROM_HEADER_SIZE)
+    fno->fsize -= FDS_ROM_HEADER_SIZE;
+  if (fno->fsize % FDS_ROM_SIDE_SIZE != 0)
   {
-    fr = fds_get_side_count(full_path, &side_count, fno);
-    if (fr != FR_OK) return fr;
-  } else {
-    if (fno->fsize % FDS_ROM_SIDE_SIZE == FDS_ROM_HEADER_SIZE)
-      fno->fsize -= FDS_ROM_HEADER_SIZE;
-    if (fno->fsize % FDS_ROM_SIDE_SIZE != 0)
-      return FDSR_INVALID_ROM;
-    side_count = fno->fsize / FDS_ROM_SIDE_SIZE;
+    show_error_screen_fr(FDSR_INVALID_ROM, 0);
+    return;
+  }
+  side_count = fno->fsize / FDS_ROM_SIDE_SIZE;
+  if (!side_count)
+  {
+    // empty ROM
+    show_error_screen_fr(FDSR_INVALID_ROM, 0);
+    return;
   }
   if (side_count > 7) side_count = 7;
 
   if (side_count == 1)
   {
-    return fds_gui_load_side(full_path, game_name, side, fno->fattrib & AM_RDO);
+    // Single sided ROM, do not show side select dialog
+    fr = fds_gui_load_side(full_path, game_name, side, fno->fattrib & AM_RDO);
+    show_error_screen_fr(fr, 0);
+    return;
   }
 
   while (1)
@@ -176,14 +182,14 @@ FRESULT fds_side_select(char *directory, FILINFO *fno)
     if (button_right_newpress())
     {
       fr = fds_gui_load_side(full_path, game_name, side, fno->fattrib & AM_RDO);
-      if (fr != FR_OK) return fr;
+      show_error_screen_fr(fr, 0);
       // back to side select
       fds_side_draw(side, side_count, game_name, text_scroll);
       oled_update_invisible();
       oled_switch_to_invisible();
     }
     if (button_left_newpress())
-      return FR_OK;
+      return;
     button_check_screen_off();
   }
 }

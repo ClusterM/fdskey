@@ -68,7 +68,6 @@ typedef enum {
 FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro);
 FRESULT fds_close(uint8_t save);
 FRESULT fds_save();
-FRESULT fds_get_side_count(char *filename, uint8_t *count, FILINFO *fileinfo);
 void fds_check_pins();
 void fds_tick_100ms();
 FDS_STATE fds_get_state();
