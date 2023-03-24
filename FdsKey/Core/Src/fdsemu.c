@@ -27,7 +27,7 @@ static volatile uint8_t fds_last_value = 0;
 static volatile uint32_t fds_not_ready_time = 0;
 static volatile uint8_t fds_write_carrier = 0;
 static volatile uint16_t fds_last_write_impulse = 0;
-static volatile uint16_t fds_current_block_end = 0;
+static volatile uint32_t fds_current_block_end = 0;
 static volatile uint16_t fds_write_gap_skip = 0;
 static volatile uint8_t fds_changed = 0;
 static volatile uint32_t fds_last_action_time = 0;
@@ -325,14 +325,17 @@ static void fds_reset_writing()
   // TODO: overflow check
   fds_used_space = fds_block_offsets[fds_block_count - 1] + fds_get_block_size(fds_block_count - 1, 1, 1);
   if (fds_used_space > FDS_MAX_SIDE_SIZE)
+  {
+    fds_block_count--;
     fds_stop();
+  }
 
   fds_current_byte = fds_block_offsets[fds_current_block];
   gap_length = fds_current_block == 0 ? FDS_FIRST_GAP_READ_BITS / 8 : FDS_NEXT_GAPS_READ_BITS / 8;
   fds_current_block_end = (fds_current_byte + gap_length + fds_get_block_size(fds_current_block, 0, 1)) % FDS_MAX_SIDE_SIZE;
   if (fds_current_block_end < fds_current_byte)
   {
-    // seems like "end of head" meet
+    // this should not happen
     HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_SET);
     return;
   }
