@@ -4,6 +4,8 @@
 #include "app_fatfs.h"
 
 #define SPLASH_LOADING_IMAGE IMAGE_MICROSD_HOR
+#define SPLASH_REGULAR_FONT FONT_STANDARD_6
+#define SPLASH_ERROR_TITLE_FONT FONT_VERDANA_12_BOLD
 
 void show_message(char *text);
 void show_loading_screen();

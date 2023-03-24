@@ -48,7 +48,8 @@ HAL_StatusTypeDef settings_save()
 
   // erase flash page
   erase_init_struct.TypeErase = FLASH_TYPEERASE_PAGES;
-  erase_init_struct.Page = SETTINGS_FLASH_OFFSET / FLASH_PAGE_SIZE;
+  erase_init_struct.Banks = ((SETTINGS_FLASH_OFFSET - 0x08000000) / FLASH_BANK_SIZE == 0) ? FLASH_BANK_1 : FLASH_BANK_2;
+  erase_init_struct.Page = ((SETTINGS_FLASH_OFFSET - 0x08000000) / FLASH_PAGE_SIZE) % FLASH_PAGE_NB;
   erase_init_struct.NbPages = 1;
   r = HAL_FLASHEx_Erase(&erase_init_struct, &sector_error);
   if (r != HAL_OK) return r;
@@ -58,7 +59,8 @@ HAL_StatusTypeDef settings_save()
   for (i = 0; i < sizeof(buffer); i += sizeof(uint64_t))
   {
     r = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, SETTINGS_FLASH_OFFSET + i, buffer[i / sizeof(uint64_t)]);
-    if (r != HAL_OK) return r;
+    if (r != HAL_OK)
+      return r;
   }
 
   return HAL_FLASH_Lock();

@@ -1,0 +1,122 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v6.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v6.0": {
+      "Images2Code/1.0.0": {
+        "dependencies": {
+          "SkiaSharp": "2.88.3",
+          "SkiaSharp.NativeAssets.Linux.NoDependencies": "2.88.3"
+        },
+        "runtime": {
+          "Images2Code.dll": {}
+        }
+      },
+      "SkiaSharp/2.88.3": {
+        "dependencies": {
+          "SkiaSharp.NativeAssets.Win32": "2.88.3",
+          "SkiaSharp.NativeAssets.macOS": "2.88.3"
+        },
+        "runtime": {
+          "lib/net6.0/SkiaSharp.dll": {
+            "assemblyVersion": "2.88.0.0",
+            "fileVersion": "2.88.3.0"
+          }
+        }
+      },
+      "SkiaSharp.NativeAssets.Linux.NoDependencies/2.88.3": {
+        "dependencies": {
+          "SkiaSharp": "2.88.3"
+        },
+        "runtimeTargets": {
+          "runtimes/linux-arm/native/libSkiaSharp.so": {
+            "rid": "linux-arm",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-arm64/native/libSkiaSharp.so": {
+            "rid": "linux-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-musl-x64/native/libSkiaSharp.so": {
+            "rid": "linux-musl-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-x64/native/libSkiaSharp.so": {
+            "rid": "linux-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "SkiaSharp.NativeAssets.macOS/2.88.3": {
+        "runtimeTargets": {
+          "runtimes/osx/native/libSkiaSharp.dylib": {
+            "rid": "osx",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "SkiaSharp.NativeAssets.Win32/2.88.3": {
+        "runtimeTargets": {
+          "runtimes/win-arm64/native/libSkiaSharp.dll": {
+            "rid": "win-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x64/native/libSkiaSharp.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x86/native/libSkiaSharp.dll": {
+            "rid": "win-x86",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Images2Code/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SkiaSharp/2.88.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-GG8X3EdfwyBfwjl639UIiOVOKEdeoqDgYrz0P1MUCnefXt9cofN+AK8YB/v1+5cLMr03ieWCQdDmPqnFIzSxZw==",
+      "path": "skiasharp/2.88.3",
+      "hashPath": "skiasharp.2.88.3.nupkg.sha512"
+    },
+    "SkiaSharp.NativeAssets.Linux.NoDependencies/2.88.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-jBDBOw1Xwqi+1fRRDLNhBwiREvYMDM1N+A2FvjJ7F1Bg37PFrQIKOfYpf7RKD6vvMzS2oTvSQMC7RN1rfKbMrg==",
+      "path": "skiasharp.nativeassets.linux.nodependencies/2.88.3",
+      "hashPath": "skiasharp.nativeassets.linux.nodependencies.2.88.3.nupkg.sha512"
+    },
+    "SkiaSharp.NativeAssets.macOS/2.88.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-CEbWAXMGFkPV3S1snBKK7jEG3+xud/9kmSAhu0BEUKKtlMdxx+Qal0U9bntQREM9QpqP5xLWZooodi8IlV8MEg==",
+      "path": "skiasharp.nativeassets.macos/2.88.3",
+      "hashPath": "skiasharp.nativeassets.macos.2.88.3.nupkg.sha512"
+    },
+    "SkiaSharp.NativeAssets.Win32/2.88.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-MU4ASL8VAbTv5vSw1PoiWjjjpjtGhWtFYuJnrN4sNHFCePb2ohQij9JhSdqLLxk7RpRtWPdV93fbA53Pt+J0yw==",
+      "path": "skiasharp.nativeassets.win32/2.88.3",
+      "hashPath": "skiasharp.nativeassets.win32.2.88.3.nupkg.sha512"
+    }
+  }
+}

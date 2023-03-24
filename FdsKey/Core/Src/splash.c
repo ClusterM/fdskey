@@ -8,8 +8,8 @@
 void show_message(char *text)
 {
   oled_draw_rectangle(0, oled_get_line() + OLED_HEIGHT, OLED_WIDTH - 1, oled_get_line() + OLED_HEIGHT * 2 - 1, 1, 0);
-  oled_draw_text(&FONT_STANDARD_6, text, OLED_WIDTH / 2 - oled_get_text_length(&FONT_STANDARD_6, text) / 2,
-      oled_get_line() + OLED_HEIGHT + OLED_HEIGHT / 2 - FONT_STANDARD_6.char_height / 2, 0, 0);
+  oled_draw_text(&SPLASH_REGULAR_FONT, text, OLED_WIDTH / 2 - oled_get_text_length(&SPLASH_REGULAR_FONT, text) / 2,
+      oled_get_line() + OLED_HEIGHT + OLED_HEIGHT / 2 - SPLASH_REGULAR_FONT.char_height / 2, 0, 0);
   oled_update_invisible();
   oled_switch_to_invisible();
 
@@ -20,7 +20,7 @@ void show_loading_screen()
 {
   oled_draw_rectangle(0, oled_get_line() + OLED_HEIGHT, OLED_WIDTH - 1, oled_get_line() + OLED_HEIGHT * 2 - 1, 1, 0);
   oled_draw_image(&SPLASH_LOADING_IMAGE, OLED_WIDTH - SPLASH_LOADING_IMAGE.width - 10, oled_get_line() + OLED_HEIGHT + (OLED_HEIGHT - SPLASH_LOADING_IMAGE.height) / 2, 0, 0);
-  oled_draw_text(&FONT_STANDARD_6, "Loading", 10, oled_get_line() + OLED_HEIGHT + 11, 0, 0);
+  oled_draw_text(&SPLASH_REGULAR_FONT, "Loading", 10, oled_get_line() + OLED_HEIGHT + 11, 0, 0);
   oled_update_invisible();
   oled_switch_to_invisible();
 }
@@ -29,7 +29,7 @@ void show_saving_screen()
 {
   oled_draw_rectangle(0, oled_get_line() + OLED_HEIGHT, OLED_WIDTH - 1, oled_get_line() + OLED_HEIGHT * 2 - 1, 1, 0);
   oled_draw_image(&SPLASH_LOADING_IMAGE, OLED_WIDTH - SPLASH_LOADING_IMAGE.width - 10, oled_get_line() + OLED_HEIGHT + (OLED_HEIGHT - SPLASH_LOADING_IMAGE.height) / 2, 0, 0);
-  oled_draw_text(&FONT_STANDARD_6, "Saving", 10, oled_get_line() + OLED_HEIGHT + 11, 0, 0);
+  oled_draw_text(&SPLASH_REGULAR_FONT, "Saving", 10, oled_get_line() + OLED_HEIGHT + 11, 0, 0);
   oled_update_invisible();
   oled_switch_to_invisible();
 }
@@ -39,8 +39,8 @@ void show_error_screen(char *text, uint8_t fatal)
   if (fatal)
     __disable_irq();
   oled_draw_rectangle(0, oled_get_line() + OLED_HEIGHT, OLED_WIDTH - 1, oled_get_line() + OLED_HEIGHT * 2 - 1, 1, 0);
-  oled_draw_text(&FONT_GAMEGIRL_CLASSIC_6, "Error :(", 3, oled_get_line() + OLED_HEIGHT + 3, 0, 0);
-  oled_draw_text(&FONT_STANDARD_6, text, 4, oled_get_line() + OLED_HEIGHT + 20, 0, 0);
+  oled_draw_text(&SPLASH_ERROR_TITLE_FONT, "Error :(", 4, oled_get_line() + OLED_HEIGHT, 0, 0);
+  oled_draw_text(&SPLASH_REGULAR_FONT, text, 4, oled_get_line() + OLED_HEIGHT + 20, 0, 0);
   oled_update_invisible();
   oled_switch_to_invisible();
   HAL_GPIO_WritePin(FDS_MEDIA_SET_GPIO_Port, FDS_MEDIA_SET_Pin, GPIO_PIN_SET);
@@ -110,7 +110,6 @@ void show_free_memory()
   free(pointers);
 
   oled_draw_rectangle(0, oled_get_line() + OLED_HEIGHT, OLED_WIDTH - 1, oled_get_line() + OLED_HEIGHT * 2 - 1, 1, 0);
-  oled_draw_image(&SPLASH_LOADING_IMAGE, OLED_WIDTH - SPLASH_LOADING_IMAGE.width - 10, oled_get_line() + OLED_HEIGHT + (OLED_HEIGHT - SPLASH_LOADING_IMAGE.height) / 2, 0, 0);
   oled_draw_text(&FONT_GAMEGIRL_CLASSIC_6, "FREE MEMORY", 3, oled_get_line() + OLED_HEIGHT + 3, 0, 0);
   sprintf(text, "%d KiB", mem);
   oled_draw_text(&FONT_GAMEGIRL_CLASSIC_6, text, 3, oled_get_line() + OLED_HEIGHT + 20, 0, 0);
