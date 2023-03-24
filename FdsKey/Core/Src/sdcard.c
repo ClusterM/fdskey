@@ -218,7 +218,7 @@ HAL_StatusTypeDef SD_init()
   SD_Select();
 
   // CMD0 - reset card
-  for (i = 0; i < 5; i++)
+  for (i = 0; ; i++)
   {
     r = SD_send_cmd(0, 0x00000000, 0x4A);
     if (r != HAL_OK)
@@ -228,7 +228,7 @@ HAL_StatusTypeDef SD_init()
       return r;
     if (r1 == SD_R1_IDLE)
       break;
-    else if (i == 5 - 1)
+    else if (i == SD_INIT_TRIES - 1)
       return HAL_ERROR;
   }
 

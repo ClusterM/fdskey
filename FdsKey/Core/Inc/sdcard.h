@@ -8,6 +8,7 @@
 //#define SD_CS_GPIO_Port  GPIOA
 
 #define SD_TIMEOUT       100 // milliseconds
+#define SD_INIT_TRIES    512
 
 #define SD_R1_IDLE (1 << 0)
 #define SD_R1_ERASE_CLEARED (1 << 1)
