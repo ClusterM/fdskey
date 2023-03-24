@@ -15,6 +15,40 @@ static int file_count = 0;
 
 static void browser_free();
 
+#ifdef BROWSER_USE_RUSSIAN
+static void cp866to1251(char *text)
+{
+  while (*text)
+  {
+    if (*text >= 0x80 && *text <= 0xAF) // А-Я, а-п
+      *text += 0x40;
+    else if (*text >= 0xE0 && *text <= 0xEF) // р-я
+      *text += 0x10;
+    else if (*text == 0xF0) // Ё
+      *text = 0xA8;
+    else if (*text == 0xF1) // ё
+      *text = 0xB8;
+    text++;
+  }
+}
+
+static void cp1251to866(char *text)
+{
+  while (*text)
+  {
+    if (*text >= 0xC0 && *text <= 0xEF) // А-Я, а-п
+      *text -= 0x40;
+    else if (*text >= 0xF0 && *text <= 0xFF) // р-я
+      *text -= 0x10;
+    else if (*text == 0xA8) // Ё
+      *text = 0xF0;
+    else if (*text == 0xB8) // ё
+      *text = 0xF1;
+    text++;
+  }
+}
+#endif
+
 // Merge sort
 // Left source half is A[iBegin:iMiddle-1].
 // Right source half is A[iMiddle:iEnd-1].
@@ -85,6 +119,11 @@ static void draw_item(uint8_t line, int item, uint8_t is_selected, int text_scro
   else
     text = "";
 
+#ifdef BROWSER_USE_RUSSIAN
+  // temporary convert to cp1251
+  cp866to1251(text);
+#endif
+
   is_dir = item < dir_count;
   oled_draw_rectangle(0, line * 8, OLED_WIDTH - 1, line * 8 + 7, 1, 0);
   if (is_selected)
@@ -119,6 +158,11 @@ static void draw_item(uint8_t line, int item, uint8_t is_selected, int text_scro
       0, 0,
       0, 0);
   oled_update(line, line);
+
+#ifdef BROWSER_USE_RUSSIAN
+  // convert back
+  cp1251to866(text);
+#endif
 }
 
 static int browser_menu(int selection, uint8_t *is_selected)

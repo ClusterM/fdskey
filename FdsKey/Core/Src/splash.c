@@ -90,6 +90,7 @@ void show_error_screen_fr(FRESULT fr, uint8_t fatal)
 
 void show_free_memory()
 {
+  // for debugging only
   int i;
   void ** pointers;
   i = 0;

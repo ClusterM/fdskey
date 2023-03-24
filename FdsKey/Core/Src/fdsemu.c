@@ -41,8 +41,7 @@ static void fds_stop_writing();
 static void fds_reset();
 static void fds_stop();
 
-int wr_count = 0;
-
+/*
 // debug dumping
 void fds_dump(char *filename)
 {
@@ -53,6 +52,7 @@ void fds_dump(char *filename)
   f_write(&fp, (uint8_t*) fds_raw_data, FDS_MAX_SIDE_SIZE, &l);
   f_close(&fp);
 }
+*/
 
 static uint16_t fds_crc(uint8_t *data, unsigned size)
 {
