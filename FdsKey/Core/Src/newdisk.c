@@ -34,7 +34,7 @@ static FRESULT new_disk_create(char *filename, int sides)
 
   // just fill file with zeros
   memset(buff, 0, sizeof(buff));
-  for (i = 0; i < FDS_SIDE_SIZE * sides; i += sizeof(buff))
+  for (i = 0; i < FDS_ROM_SIDE_SIZE * sides; i += sizeof(buff))
   {
     fr = f_write(&fp, buff, sizeof(buff), &bw);
     if (fr != FR_OK)

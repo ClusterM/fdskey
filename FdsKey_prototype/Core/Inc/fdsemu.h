@@ -32,8 +32,8 @@
 #define FDS_MULTI_WRITE_UNLICENSED_BITS 32 // some unlicensed software can write multiple blocks at once
 
 // do not touch it
-#define FDS_HEADER_SIZE 16    // header in ROM
-#define FDS_SIDE_SIZE 65500   // disk side size in ROM
+#define FDS_ROM_HEADER_SIZE 16    // header in ROM
+#define FDS_ROM_SIDE_SIZE 65500   // disk side size in ROM
 
 // special subdefines
 #define FDS_GLUE(a, b) a##b

@@ -71,9 +71,9 @@ FRESULT file_restore_backup(char *path)
     return FR_OK;
 
   show_saving_screen();
-  fr = f_open(&fp, path, FA_READ);
+  fr = f_open(&fp_backup, backup_path, FA_READ);
   if (fr != FR_OK) return fr;
-  fr = f_open(&fp_backup, backup_path, FA_CREATE_ALWAYS | FA_WRITE);
+  fr = f_open(&fp, path, FA_CREATE_ALWAYS | FA_WRITE);
   if (fr != FR_OK)
   {
     f_close(&fp);
@@ -82,14 +82,14 @@ FRESULT file_restore_backup(char *path)
 
   do
   {
-    fr = f_read(&fp, buff, sizeof(buff), &br);
+    fr = f_read(&fp_backup, buff, sizeof(buff), &br);
     if (fr != FR_OK)
     {
       f_close(&fp);
       f_close(&fp_backup);
       return fr;
     }
-    fr = f_write(&fp_backup, buff, br, &bw);
+    fr = f_write(&fp, buff, br, &bw);
     if (bw != br)
     {
       f_close(&fp);

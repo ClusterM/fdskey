@@ -131,11 +131,11 @@ FRESULT fds_side_select(char *directory, FILINFO *fno)
     fr = fds_get_side_count(full_path, &side_count, fno);
     if (fr != FR_OK) return fr;
   } else {
-    if (fno->fsize % FDS_SIDE_SIZE == FDS_HEADER_SIZE)
-      fno->fsize -= FDS_HEADER_SIZE;
-    if (fno->fsize % FDS_SIDE_SIZE != 0)
+    if (fno->fsize % FDS_ROM_SIDE_SIZE == FDS_ROM_HEADER_SIZE)
+      fno->fsize -= FDS_ROM_HEADER_SIZE;
+    if (fno->fsize % FDS_ROM_SIDE_SIZE != 0)
       return FDSR_INVALID_ROM;
-    side_count = fno->fsize / FDS_SIDE_SIZE;
+    side_count = fno->fsize / FDS_ROM_SIDE_SIZE;
   }
   if (side_count > 7) side_count = 7;
 

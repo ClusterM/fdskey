@@ -341,7 +341,7 @@ static void fds_start_writing()
     // oops, next block overwrited or disaligned
     // trimming and erasing
     fds_block_count = fds_current_block + 1;
-    memset((uint8_t*)fds_raw_data + fds_block_offsets[fds_current_block + 1], 0, FDS_SIDE_SIZE - fds_block_offsets[fds_current_block + 1]);
+    memset((uint8_t*)fds_raw_data + fds_block_offsets[fds_current_block + 1], 0, FDS_ROM_SIDE_SIZE - fds_block_offsets[fds_current_block + 1]);
   }
   // gap before data
   for (i = 0; i < gap_length - 1; i++)
@@ -513,12 +513,12 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
     return fr;
   }
   f_size = f_size(&fp);
-  if (f_size % FDS_SIDE_SIZE != 0 && f_size % FDS_SIDE_SIZE != 16)
+  if (f_size % FDS_ROM_SIDE_SIZE != 0 && f_size % FDS_ROM_SIDE_SIZE != 16)
   {
     fds_close(0);
     return FDSR_INVALID_ROM;
   }
-  fr = f_lseek(&fp, ((f_size % FDS_SIDE_SIZE == FDS_HEADER_SIZE) ? FDS_HEADER_SIZE : 0) + side * FDS_SIDE_SIZE);
+  fr = f_lseek(&fp, ((f_size % FDS_ROM_SIDE_SIZE == FDS_ROM_HEADER_SIZE) ? FDS_ROM_HEADER_SIZE : 0) + side * FDS_ROM_SIDE_SIZE);
   if (fr != FR_OK)
     return fr;
 
@@ -536,7 +536,7 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
       min_blocks = fds_raw_data[fds_block_offsets[1] + FDS_NEXT_GAPS_READ_BITS / 8 + 1] * 2 + 2; // files * 2 + header blocks;
     fds_block_offsets[fds_block_count] = fds_used_space;
     gap_length = fds_block_count == 0 ? FDS_FIRST_GAP_READ_BITS / 8 : FDS_NEXT_GAPS_READ_BITS / 8;
-    if (fds_used_space + gap_length > FDS_SIDE_SIZE)
+    if (fds_used_space + gap_length > FDS_ROM_SIDE_SIZE)
     {
       if (fds_block_count + 1 < min_blocks)
       {
@@ -580,7 +580,7 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
     block_size = fds_get_block_size(fds_block_count, 0, 0);
 
     // check size
-    if (fds_used_space + block_size + 2 /*CRC*/> FDS_SIDE_SIZE)
+    if (fds_used_space + block_size + 2 /*CRC*/> FDS_ROM_SIDE_SIZE)
     {
       if (fds_block_count + 1 < min_blocks)
       {
@@ -745,14 +745,14 @@ FRESULT fds_save()
     fds_state = FDS_IDLE;
     return fr;
   }
-  int header_offset = fno.fsize % FDS_SIDE_SIZE;
+  int header_offset = fno.fsize % FDS_ROM_SIDE_SIZE;
   fr = f_open(&fp, fds_filename, FA_READ | FA_WRITE);
   if (fr != FR_OK)
   {
     fds_state = FDS_IDLE;
     return fr;
   }
-  fr = f_lseek(&fp, header_offset + fds_side * FDS_SIDE_SIZE);
+  fr = f_lseek(&fp, header_offset + fds_side * FDS_ROM_SIDE_SIZE);
   if (fr != FR_OK)
   {
     fds_state = FDS_IDLE;
@@ -870,12 +870,12 @@ FRESULT fds_get_side_count(char *filename, uint8_t *count, FILINFO *fileinfo)
   fr = f_stat(filename, &fno);
   if (fr != FR_OK)
     return fr;
-  if (fno.fsize % FDS_SIDE_SIZE == FDS_HEADER_SIZE)
-    fno.fsize -= FDS_HEADER_SIZE;
-  if (fno.fsize % FDS_SIDE_SIZE != 0)
+  if (fno.fsize % FDS_ROM_SIDE_SIZE == FDS_ROM_HEADER_SIZE)
+    fno.fsize -= FDS_ROM_HEADER_SIZE;
+  if (fno.fsize % FDS_ROM_SIDE_SIZE != 0)
     return FDSR_INVALID_ROM;
   if (count)
-    *count = fno.fsize / FDS_SIDE_SIZE;
+    *count = fno.fsize / FDS_ROM_SIDE_SIZE;
   if (fileinfo)
     *fileinfo = fno;
   return fr;
