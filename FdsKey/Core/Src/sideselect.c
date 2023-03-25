@@ -1,5 +1,6 @@
 #include <fdsemugui.h>
 #include <string.h>
+#include <stdio.h>
 #include "sideselect.h"
 #include "fdsemu.h"
 #include "oled.h"
@@ -9,7 +10,7 @@
 
 static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int text_scroll)
 {
-  char *side_name;
+  char side_name[8];
   DotMatrixImage *disk_image;
   int max_width, text_width, total_scroll;
   int line = oled_get_line() + OLED_HEIGHT;
@@ -18,39 +19,12 @@ static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int
   // clear screen
   oled_draw_rectangle(0, line, OLED_WIDTH - 1, line + OLED_HEIGHT - 1, 1, 0);
 
-  switch (side)
+  if (side_count <= 2)
   {
-  default:
-  case 0:
-    if (side_count <= 2)
-      side_name = "A";
-    else
-      side_name = "1A";
-    break;
-  case 1:
-    if (side_count <= 2)
-      side_name = "B";
-    else
-      side_name = "1B";
-    break;
-  case 2:
-    side_name = "2A";
-    break;
-  case 3:
-    side_name = "2B";
-    break;
-  case 4:
-    side_name = "3A";
-    break;
-  case 5:
-    side_name = "3B";
-    break;
-  case 6:
-    side_name = "4A";
-    break;
-  case 7:
-    side_name = "4B";
-    break;
+    side_name[0] = 'A' + side;
+    side_name[1] = 0;
+  } else {
+    sprintf(side_name, "%d%c", side / 2 + 1, 'A' + (side % 2));
   }
   l = strlen(side_name);
 
@@ -140,7 +114,6 @@ void fds_side_select(char *directory, FILINFO *fno)
     show_error_screen_fr(FDSR_INVALID_ROM, 0);
     return;
   }
-  if (side_count > 7) side_count = 7;
 
   if (side_count == 1)
   {
