@@ -54,7 +54,7 @@ static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int
   }
   l = strlen(side_name);
 
-  disk_image = side_select_get_disk_image(side);
+  disk_image = side_select_get_disk_image(side, side_count);
 
   // arrows
   if ((text_scroll / 8) % 2)
@@ -145,7 +145,7 @@ void fds_side_select(char *directory, FILINFO *fno)
   if (side_count == 1)
   {
     // Single sided ROM, do not show side select dialog
-    fr = fds_gui_load_side(full_path, game_name, side, fno->fattrib & AM_RDO);
+    fr = fds_gui_load_side(full_path, game_name, side, side_count, fno->fattrib & AM_RDO);
     show_error_screen_fr(fr, 0);
     return;
   }
@@ -181,7 +181,7 @@ void fds_side_select(char *directory, FILINFO *fno)
     }
     if (button_right_newpress())
     {
-      fr = fds_gui_load_side(full_path, game_name, side, fno->fattrib & AM_RDO);
+      fr = fds_gui_load_side(full_path, game_name, side, side_count, fno->fattrib & AM_RDO);
       show_error_screen_fr(fr, 0);
       // back to side select
       fds_side_draw(side, side_count, game_name, text_scroll);
@@ -194,26 +194,33 @@ void fds_side_select(char *directory, FILINFO *fno)
   }
 }
 
-DotMatrixImage* side_select_get_disk_image(uint8_t side)
+DotMatrixImage* side_select_get_disk_image(uint8_t side, uint8_t side_count)
 {
   switch (side)
   {
-  default:
   case 0:
-    return (DotMatrixImage*)&IMAGE_CARD_A;
+    if (side_count <= 2)
+      return (DotMatrixImage*)&IMAGE_CARD_A;
+    else
+      return (DotMatrixImage*)&IMAGE_CARD_1A;
   case 1:
-    return (DotMatrixImage*)&IMAGE_CARD_B;
+    if (side_count <= 2)
+      return (DotMatrixImage*)&IMAGE_CARD_B;
+    else
+      return (DotMatrixImage*)&IMAGE_CARD_1B;
   case 2:
-    return (DotMatrixImage*)&IMAGE_CARD_C;
+    return (DotMatrixImage*)&IMAGE_CARD_2A;
   case 3:
-    return (DotMatrixImage*)&IMAGE_CARD_D;
+    return (DotMatrixImage*)&IMAGE_CARD_2B;
   case 4:
-    return (DotMatrixImage*)&IMAGE_CARD_E;
+    return (DotMatrixImage*)&IMAGE_CARD_3A;
   case 5:
-    return (DotMatrixImage*)&IMAGE_CARD_F;
+    return (DotMatrixImage*)&IMAGE_CARD_3B;
   case 6:
-    return (DotMatrixImage*)&IMAGE_CARD_G;
+    return (DotMatrixImage*)&IMAGE_CARD_4A;
   case 7:
-    return (DotMatrixImage*)&IMAGE_CARD_H;
+    return (DotMatrixImage*)&IMAGE_CARD_4B;
+  default:
+    return (DotMatrixImage*)&IMAGE_CARD_UNKNOWN;
   }
 }

@@ -1,3 +1,11 @@
+#include "card_1a.h"
+#include "card_1b.h"
+#include "card_2a.h"
+#include "card_2b.h"
+#include "card_3a.h"
+#include "card_3b.h"
+#include "card_4a.h"
+#include "card_4b.h"
 #include "card_a.h"
 #include "card_b.h"
 #include "card_c.h"
@@ -6,6 +14,7 @@
 #include "card_f.h"
 #include "card_g.h"
 #include "card_h.h"
+#include "card_unknown.h"
 #include "cursor.h"
 #include "cursor_down.h"
 #include "cursor_down_w.h"
@@ -30,6 +39,54 @@
 #include "state_play.h"
 #include "state_rec.h"
 #include "../images.h"
+
+const DotMatrixImage IMAGE_CARD_1A = {
+  .width = IMAGE_CARD_1A_WIDTH,
+  .height = IMAGE_CARD_1A_HEIGHT,
+  .image_data = image_card_1a
+};
+
+const DotMatrixImage IMAGE_CARD_1B = {
+  .width = IMAGE_CARD_1B_WIDTH,
+  .height = IMAGE_CARD_1B_HEIGHT,
+  .image_data = image_card_1b
+};
+
+const DotMatrixImage IMAGE_CARD_2A = {
+  .width = IMAGE_CARD_2A_WIDTH,
+  .height = IMAGE_CARD_2A_HEIGHT,
+  .image_data = image_card_2a
+};
+
+const DotMatrixImage IMAGE_CARD_2B = {
+  .width = IMAGE_CARD_2B_WIDTH,
+  .height = IMAGE_CARD_2B_HEIGHT,
+  .image_data = image_card_2b
+};
+
+const DotMatrixImage IMAGE_CARD_3A = {
+  .width = IMAGE_CARD_3A_WIDTH,
+  .height = IMAGE_CARD_3A_HEIGHT,
+  .image_data = image_card_3a
+};
+
+const DotMatrixImage IMAGE_CARD_3B = {
+  .width = IMAGE_CARD_3B_WIDTH,
+  .height = IMAGE_CARD_3B_HEIGHT,
+  .image_data = image_card_3b
+};
+
+const DotMatrixImage IMAGE_CARD_4A = {
+  .width = IMAGE_CARD_4A_WIDTH,
+  .height = IMAGE_CARD_4A_HEIGHT,
+  .image_data = image_card_4a
+};
+
+const DotMatrixImage IMAGE_CARD_4B = {
+  .width = IMAGE_CARD_4B_WIDTH,
+  .height = IMAGE_CARD_4B_HEIGHT,
+  .image_data = image_card_4b
+};
 
 const DotMatrixImage IMAGE_CARD_A = {
   .width = IMAGE_CARD_A_WIDTH,
@@ -77,6 +134,12 @@ const DotMatrixImage IMAGE_CARD_H = {
   .width = IMAGE_CARD_H_WIDTH,
   .height = IMAGE_CARD_H_HEIGHT,
   .image_data = image_card_h
+};
+
+const DotMatrixImage IMAGE_CARD_UNKNOWN = {
+  .width = IMAGE_CARD_UNKNOWN_WIDTH,
+  .height = IMAGE_CARD_UNKNOWN_HEIGHT,
+  .image_data = image_card_unknown
 };
 
 const DotMatrixImage IMAGE_CURSOR = {

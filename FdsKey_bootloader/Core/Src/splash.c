@@ -33,7 +33,6 @@ void show_error_screen(char *text, uint8_t fatal)
   oled_draw_text(&SPLASH_REGULAR_FONT, text, 4, oled_get_line() + OLED_HEIGHT + 20, 0, 0);
   oled_update_invisible();
   oled_switch_to_invisible();
-  HAL_GPIO_WritePin(FDS_MEDIA_SET_GPIO_Port, FDS_MEDIA_SET_Pin, GPIO_PIN_SET);
 
   if (fatal)
   {

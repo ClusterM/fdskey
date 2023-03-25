@@ -8,7 +8,7 @@
 #include "sideselect.h"
 #include "splash.h"
 
-void fds_gui_draw(uint8_t side, char *game_name, int text_scroll)
+void fds_gui_draw(uint8_t side, uint8_t side_count, char *game_name, int text_scroll)
 {
   DotMatrixImage *disk_image;
   DotMatrixImage *state_image;
@@ -21,7 +21,7 @@ void fds_gui_draw(uint8_t side, char *game_name, int text_scroll)
   int block = fds_get_block();
   int block_count = fds_get_block_count();
 
-  disk_image = side_select_get_disk_image(side);
+  disk_image = side_select_get_disk_image(side, side_count);
 
   max_width = OLED_WIDTH - disk_image->width - 4;
   text_width = oled_get_text_length(&FDS_GUI_GAME_NAME_FONT, game_name) - 1 /*spacing*/;
@@ -126,7 +126,7 @@ void fds_gui_draw(uint8_t side, char *game_name, int text_scroll)
   oled_switch_to_invisible();
 }
 
-FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t ro)
+FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t side_count, uint8_t ro)
 {
   FRESULT fr;
   int text_scroll = 0;
@@ -145,7 +145,7 @@ FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t
         show_error_screen_fr(fr, 1);
     }
 
-    fds_gui_draw(side, game_name, text_scroll);
+    fds_gui_draw(side, side_count, game_name, text_scroll);
     button_check_screen_off();
     text_scroll++;
   }

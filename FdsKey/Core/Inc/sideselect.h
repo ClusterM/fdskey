@@ -10,6 +10,6 @@
 #define SIDE_SELECT_HORIZONTAL_SCROLL_PAUSE 12
 
 void fds_side_select(char *directory, FILINFO *fno);
-DotMatrixImage* side_select_get_disk_image(uint8_t side);
+DotMatrixImage* side_select_get_disk_image(uint8_t side, uint8_t side_count);
 
 #endif /* INC_SIDESELECT_H_ */
