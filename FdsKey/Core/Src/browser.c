@@ -248,7 +248,7 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
   if (!file_list)
     return FDSR_OUT_OF_MEMORY;
 
-  // load files and directories names
+  // load file and directory names
   fr = f_opendir(&dir, path);
   if (fr != FR_OK) {
     browser_free();
@@ -257,7 +257,12 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
   while (1)
   {
     fr = f_readdir(&dir, &fno);
-    if (fr != FR_OK || !fno.fname[0])
+    if (fr != FR_OK)
+    {
+      browser_free();
+      return fr;
+    }
+    if (!fno.fname[0])
       break;
     if (!fdskey_settings.hide_hidden || !(fno.fattrib & AM_HID))
     {
