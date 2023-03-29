@@ -82,7 +82,7 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim == &htim1)
-      fds_tick_100ms();
+    fds_check_pins();
 }
 
 

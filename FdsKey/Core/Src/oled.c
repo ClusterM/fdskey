@@ -12,15 +12,19 @@ static uint8_t padding_top = 0;
 static uint8_t current_line = 0;
 static uint8_t image[OLED_HEIGHT * 2 * OLED_WIDTH];
 
+// init OLED and buffer
 void oled_init( uint8_t rotate_screen, uint8_t reverse, uint8_t contrast)
 {
+  // padding_left depends on OLED controller version
+  // can be SH1106 (132x64) or SSD1306 (128x64)
+  // TODO: make display controller selection
 	padding_left = 0; // rotate_screen ? 0 : 4;
 	padding_top = rotate_screen ? 32 : 0;
 	rotate = rotate_screen;
 
 	oled_send_commands(11,
 	OLED_CMD_SET_OFF,
-    0x8D, 0x14, // turn on pump (???)
+    0x8D, 0x14, // enable charge pump (???)
     reverse ? OLED_CMD_SET_REVERSE_ON : OLED_CMD_SET_REVERSE_OFF,
     OLED_CMD_SET_START_LINE(current_line + padding_top),
     OLED_CMD_SET_PADS_MODE, OLED_CMD_SET_PADS_MODE_SEQUENTIAL,
@@ -36,18 +40,22 @@ void oled_init( uint8_t rotate_screen, uint8_t reverse, uint8_t contrast)
 	oled_send_commands(1, OLED_CMD_SET_ON);
 }
 
+// return pointer to a pixel
 uint8_t* oled_pixel(int x, int y) {
 	return image + (y % (OLED_HEIGHT * 2)) * OLED_WIDTH + (x % OLED_WIDTH);
 }
 
+// set single pixel
 void oled_set_pixel(int x, int y, uint8_t value) {
 	*oled_pixel(x, y) = value;
 }
 
+// get pixel value
 uint8_t oled_get_pixel(int x, int y) {
 	return *oled_pixel(x, y);
 }
 
+// send commads to OLED controller
 HAL_StatusTypeDef oled_send_commands(int len, ...) {
 	uint8_t buffer[len * 2];
 	va_list valist;
@@ -63,10 +71,12 @@ HAL_StatusTypeDef oled_send_commands(int len, ...) {
 	return r;
 }
 
+// send single command to OLED controller
 HAL_StatusTypeDef oled_send_command(uint8_t command) {
 	return oled_send_commands(1, command);
 }
 
+// write data to OLED
 HAL_StatusTypeDef oled_write_data(uint8_t *data, uint8_t len) {
 	uint8_t buffer[len + 1];
 	buffer[0] = OLED_COMMAND_DATA;
@@ -75,6 +85,7 @@ HAL_StatusTypeDef oled_write_data(uint8_t *data, uint8_t len) {
 			OLED_TIMEOUT);
 }
 
+// transfer data from our buffer to OLED buffer
 HAL_StatusTypeDef oled_update(uint8_t start_page, uint8_t end_page) {
 	uint8_t p, x, y, l, bt, buffer[256], bpos;
 	HAL_StatusTypeDef r = HAL_OK;
@@ -108,10 +119,12 @@ HAL_StatusTypeDef oled_update(uint8_t start_page, uint8_t end_page) {
 	return r;
 }
 
+// transfer all data from our buffer to OLED buffer
 HAL_StatusTypeDef oled_update_full() {
 	return oled_update(0, OLED_HEIGHT * 2 / 8 - 1);
 }
 
+// transfer invisible data from our buffer to OLED buffer
 HAL_StatusTypeDef oled_update_invisible() {
 	uint8_t start_page = ((current_line + OLED_HEIGHT) % (OLED_HEIGHT * 2)) / 8;
 	uint8_t end_page = start_page
@@ -119,16 +132,19 @@ HAL_StatusTypeDef oled_update_invisible() {
 	return oled_update(start_page, end_page);
 }
 
+// scroll to line
 HAL_StatusTypeDef oled_set_line(int y) {
 	current_line = y % (OLED_HEIGHT * 2);
 	return oled_send_command(
 			OLED_CMD_SET_START_LINE(current_line + padding_top));
 }
 
+// get current scrolling
 uint8_t oled_get_line() {
 	return current_line;
 }
 
+// copy visible buffer to invisible
 void oled_copy_to_invisible() {
 	int y;
 	for (y = 0; y < OLED_HEIGHT; y++) {
@@ -137,44 +153,12 @@ void oled_copy_to_invisible() {
 	}
 }
 
+// switch OLED to invisible buffer
 void oled_switch_to_invisible() {
 	oled_set_line(current_line + OLED_HEIGHT);
 }
 
-void oled_scroll_right() {
-	// very slow scrolling :(
-	int x, y, pos;
-	uint8_t *target_img = malloc(OLED_WIDTH * OLED_HEIGHT);
-
-	// copy invisible part to the temporary buffer
-	for (y = 0; y < OLED_HEIGHT; y++) {
-		memcpy(target_img + y * OLED_WIDTH,
-				oled_pixel(0, current_line + y + OLED_HEIGHT), OLED_WIDTH);
-	}
-
-	for (pos = OLED_WIDTH; pos >= 0; pos--) {
-		for (x = 0; x < OLED_WIDTH; x++) {
-			for (y = 0; y < OLED_HEIGHT; y++) {
-				if (x < pos) {
-					// copy current buffer shifted to to invisible buffer
-					if (x + 1 < OLED_WIDTH)
-						*oled_pixel(x, current_line + y + OLED_HEIGHT) =
-								*oled_pixel(x + 1, current_line + y);
-				} else {
-					// copy new image to invisible buffer
-					*oled_pixel(x, current_line + y + OLED_HEIGHT) =
-							*(target_img + y * OLED_WIDTH + x - pos);
-				}
-			}
-		}
-
-		oled_update_invisible();
-		oled_switch_to_invisible();
-	}
-
-	free(target_img);
-}
-
+// draw rectangle
 void oled_draw_rectangle(int x1, int y1, int x2, int y2,
 		uint8_t fill, uint8_t value) {
 	int x, y;
@@ -201,6 +185,7 @@ void oled_draw_rectangle(int x1, int y1, int x2, int y2,
 	}
 }
 
+// draw line
 void oled_draw_line(int x1, int y1, int x2, int y2,
 		uint8_t value) {
 	int x, y;
@@ -248,11 +233,13 @@ void oled_draw_line(int x1, int y1, int x2, int y2,
 	}
 }
 
+// draw text
 void oled_draw_text(const DotMatrixFont *font, char *text, int x, int y,
 		uint8_t replace, uint8_t invert) {
 	oled_draw_text_cropped(font, text, x, y, 0, 0, 0, 0, replace, invert);
 }
 
+// draw cropped text
 void oled_draw_text_cropped(const DotMatrixFont *font, char *text, int x, int y,
 		uint8_t start_x, uint8_t max_width, uint8_t start_y, uint8_t max_height,
 		uint8_t replace, uint8_t invert) {
@@ -398,6 +385,7 @@ void oled_draw_text_cropped(const DotMatrixFont *font, char *text, int x, int y,
 	}
 }
 
+// calculate text length
 int oled_get_text_length(const DotMatrixFont *font, char *text) {
   int len = 0; // total text length
   uint8_t *char_data; // pointer for character data
@@ -451,8 +439,10 @@ int oled_get_text_length(const DotMatrixFont *font, char *text) {
   return len;
 }
 
+// draw image
 void oled_draw_image(const DotMatrixImage *img, int x, int y,
     uint8_t replace, uint8_t invert) {
+  oled_draw_image_cropped(img, x, y, 0, 0, 0, 0, replace, invert);
   int c, l;
   uint8_t bit = 0;
   int pos = 0;
@@ -472,6 +462,7 @@ void oled_draw_image(const DotMatrixImage *img, int x, int y,
   }
 }
 
+// draw cropped image
 void oled_draw_image_cropped(const DotMatrixImage *img, int x, int y,
 		uint8_t start_x, uint8_t max_width, uint8_t start_y, uint8_t max_height,
 		uint8_t replace, uint8_t invert) {
@@ -501,11 +492,13 @@ void oled_draw_image_cropped(const DotMatrixImage *img, int x, int y,
 	}
 }
 
+// rotate screen, keep buffer and update screen
 void oled_rotate(uint8_t rotate_screen)
 {
   if (!!rotate == !!rotate_screen)
     return;
   oled_send_command(OLED_CMD_SET_OFF);
+  // TODO: OLED controller selection
   padding_left = 0; //rotate_screen ? 0 : 4;
   padding_top = rotate_screen ? 32 : 0;
   oled_send_command(OLED_CMD_SET_START_LINE(current_line + padding_top));

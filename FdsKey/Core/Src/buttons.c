@@ -104,6 +104,7 @@ uint32_t button_right_hold_time()
   return HAL_GetTick() - right_hold_time;
 }
 
+// check if buttons are not pressed for a long time and turn off the screen
 void button_check_screen_off()
 {
   if (!fdskey_settings.auto_off_screen_time)

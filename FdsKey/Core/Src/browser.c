@@ -50,9 +50,9 @@ static void cp1251to866(char *text)
 #endif
 
 // Merge sort
-// Left source half is A[iBegin:iMiddle-1].
-// Right source half is A[iMiddle:iEnd-1].
-// Result is B[ iBegin:iEnd-1   ].
+// left source half is A[iBegin:iMiddle-1]
+// right source half is A[iMiddle:iEnd-1]
+// result is B[iBegin:iEnd-1]
 static void top_down_merge(DYN_FILINFO** A, int iBegin, int iMiddle, int iEnd, DYN_FILINFO** B)
 {
   int i = iBegin, j = iMiddle, k;
@@ -69,7 +69,7 @@ static void top_down_merge(DYN_FILINFO** A, int iBegin, int iMiddle, int iEnd, D
     }
   }
 }
-// Split A[] into 2 runs, sort both runs into B[], merge both runs from B[] to A[]
+// split A[] into 2 runs, sort both runs into B[], merge both runs from B[] to A[]
 // iBegin is inclusive; iEnd is exclusive (A[iEnd] is not in the set).
 static void top_down_split_merge(DYN_FILINFO** B, int iBegin, int iEnd, DYN_FILINFO** A)
 {
@@ -83,6 +83,7 @@ static void top_down_split_merge(DYN_FILINFO** B, int iBegin, int iEnd, DYN_FILI
   // merge the resulting runs from array B[] into A[]
   top_down_merge(B, iBegin, iMiddle, iEnd, A);
 }
+// start sort
 static void top_down_merge_sort(DYN_FILINFO** A, int n)
 {
   DYN_FILINFO* B[n];
@@ -90,7 +91,8 @@ static void top_down_merge_sort(DYN_FILINFO** A, int n)
   top_down_split_merge(B, 0, n, A); // sort data from B[] into A[]
 }
 
-static void draw_item(uint8_t line, int item, uint8_t is_selected, int text_scroll)
+// draw single menu item
+static void browser_draw_item(uint8_t line, int item, uint8_t is_selected, int text_scroll)
 {
   uint8_t is_dir;
   int i, offset, max_width, text_width, total_scroll;
@@ -165,6 +167,10 @@ static void draw_item(uint8_t line, int item, uint8_t is_selected, int text_scro
 #endif
 }
 
+// show single directory menu
+// selection - start selection
+// is_selected - non-zero value written if right button pressed
+// returns selected item id
 static int browser_menu(int selection, uint8_t *is_selected)
 {
   int i;
@@ -176,7 +182,7 @@ static int browser_menu(int selection, uint8_t *is_selected)
 
   for (i = 0; i < 4; i++)
   {
-    draw_item((oled_get_line() + OLED_HEIGHT) / 8 + i, line + i, line + i == selection, 0);
+    browser_draw_item((oled_get_line() + OLED_HEIGHT) / 8 + i, line + i, line + i == selection, 0);
   }
   oled_switch_to_invisible();
 
@@ -184,16 +190,16 @@ static int browser_menu(int selection, uint8_t *is_selected)
   {
     if (button_up_newpress() && selection > 0)
     {
-      draw_item(oled_get_line() / 8 + selection - line, selection, 0, 0);
+      browser_draw_item(oled_get_line() / 8 + selection - line, selection, 0, 0);
       selection--;
-      draw_item(oled_get_line() / 8 + selection - line, selection, 1, 0);
+      browser_draw_item(oled_get_line() / 8 + selection - line, selection, 1, 0);
       text_scroll = 0;
     }
     if (button_down_newpress() && selection + 1 < item_count)
     {
-      draw_item(oled_get_line() / 8 + selection - line, selection, 0, 0);
+      browser_draw_item(oled_get_line() / 8 + selection - line, selection, 0, 0);
       selection++;
-      draw_item(oled_get_line() / 8 + selection - line, selection, 1, 0);
+      browser_draw_item(oled_get_line() / 8 + selection - line, selection, 1, 0);
       text_scroll = 0;
     }
     if (button_left_newpress()) {
@@ -220,13 +226,18 @@ static int browser_menu(int selection, uint8_t *is_selected)
         HAL_Delay(5);
       }
     }
-    draw_item(oled_get_line() / 8 + selection - line, selection, 1, text_scroll);
+    browser_draw_item(oled_get_line() / 8 + selection - line, selection, 1, text_scroll);
     text_scroll++;
     button_check_screen_off();
     HAL_Delay(1);
   }
 }
 
+// load single directory
+// path - directory
+// output - output file/directory info
+// result - output result
+// select - default item to select
 FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *select)
 {
   FRESULT fr;
@@ -268,13 +279,16 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
     {
       if (fno.fattrib & AM_DIR)
       {
+        // directory
         if (dir_count + 1 > mem_dir_count)
         {
+          // reallocate memory for directories list
           mem_dir_count *= 2;
           dir_list = realloc(dir_list, mem_dir_count * sizeof(char*));
           if (!dir_list)
             return FDSR_OUT_OF_MEMORY;
         }
+        // allocate memory for new directory entry
         dir_list[dir_count] = malloc(sizeof(DYN_FILINFO));
         if (!dir_list[dir_count]) return FDSR_OUT_OF_MEMORY;
         dir_list[dir_count]->filename = malloc(strlen(fno.fname) + 1);
@@ -289,11 +303,13 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
         }
         if (file_count + 1 > mem_file_count)
         {
+          // reallocate memory for file list
           mem_file_count *= 2;
           file_list = realloc(file_list, mem_file_count * sizeof(char*));
           if (!file_list)
             return FDSR_OUT_OF_MEMORY;
         }
+        // allocate memory for file entry
         file_list[file_count] = malloc(sizeof(DYN_FILINFO));
         if (!file_list[file_count]) return FDSR_OUT_OF_MEMORY;
         file_list[file_count]->filename = malloc(strlen(fno.fname) + 1);
@@ -317,6 +333,7 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
 
   if (!dir_count && !file_count)
   {
+    // nothing to show
     browser_free();
     show_message("The directory is empty");
     *result = BROWSER_BACK;
@@ -330,6 +347,7 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
   selection = 0;
   if (select && select[0])
   {
+    // find default selection entry
     for (i = 0; i < dir_count + file_count; i++)
     {
       char* name = i < dir_count ? dir_list[i]->filename : file_list[i - dir_count]->filename;
@@ -370,6 +388,11 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
   return FR_OK;
 }
 
+// state file tree browser
+// directory - start directory and new directory path output
+// dir_max_len - size of "directory"
+// fno - start file and selected file output
+// br - output with selection result
 FRESULT browser_tree(char *directory, int dir_max_len, FILINFO *fno, BROWSER_RESULT *br)
 {
   FRESULT fr;
@@ -388,21 +411,26 @@ FRESULT browser_tree(char *directory, int dir_max_len, FILINFO *fno, BROWSER_RES
     switch (*br)
     {
     case BROWSER_BACK:
+      // "back" button pressed
       if (!*directory)
       {
+        // we are at root already, return
         *br = BROWSER_BACK;
         return FR_OK;
       }
       for (i = strlen(directory) - 2; i >= 0; i--)
       {
+        // return to previous directory
         if (i <= 0)
         {
+          // root
           strncpy(fno->fname, directory + (*directory == '\\' ? 1 : 0), sizeof(fno->fname));
           fno->fname[sizeof(fno->fname) - 1] = 0;
           directory[0] = 0;
         }
         if (directory[i] == '\\')
         {
+          // extract parent directory and current directory names
           directory[i] = 0;
           strncpy(fno->fname, &directory[i + 1], sizeof(fno->fname));
           fno->fname[sizeof(fno->fname) - 1] = 0;
@@ -412,20 +440,22 @@ FRESULT browser_tree(char *directory, int dir_max_len, FILINFO *fno, BROWSER_RES
       }
       break;
     case BROWSER_DIRECTORY:
+      // directory selected
       strncat(directory, "\\", dir_max_len);
       strncat(directory, fno->fname, dir_max_len);
       directory[dir_max_len - 1] = 0;
       fno->fname[0] = 0;
       break;
     case BROWSER_FILE:
+      // file selected
     case BROWSER_FILE_LONGPRESS:
-//      strncpy(filename, new_filename, filename_max_len);
-//      filename[filename_max_len - 1] = 0;
+      // file selected using button longpress
       return FR_OK;
     }
   }
 }
 
+// free allocated memory
 void browser_free()
 {
   int i;

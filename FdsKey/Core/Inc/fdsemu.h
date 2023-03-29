@@ -69,7 +69,6 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro);
 FRESULT fds_close(uint8_t save);
 FRESULT fds_save();
 void fds_check_pins();
-void fds_tick_100ms();
 FDS_STATE fds_get_state();
 uint8_t fds_is_changed();
 int fds_get_block();

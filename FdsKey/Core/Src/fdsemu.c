@@ -38,7 +38,7 @@ static void fds_start_writing();
 static void fds_reset_writing();
 static void fds_stop_reading();
 static void fds_stop_writing();
-static void fds_reset();
+static void fds_reset_reading();
 static void fds_stop();
 
 /*
@@ -54,6 +54,8 @@ void fds_dump(char *filename)
 }
 */
 
+// calculate block CRC
+// source: https://forums.nesdev.org/viewtopic.php?p=194867#p194867
 static uint16_t fds_crc(uint8_t *data, unsigned size)
 {
   //Do not include any existing checksum, not even the blank checksums 00 00 or FF FF.
@@ -80,7 +82,7 @@ static uint16_t fds_crc(uint8_t *data, unsigned size)
   return sum;
 }
 
-// returns block size
+// calculate block size
 static uint16_t fds_get_block_size(int i, uint8_t include_gap, uint8_t include_crc)
 {
   if (i == 0)
@@ -108,9 +110,10 @@ static void fds_dma_fill_read_buffer(int pos, int length)
   }
   while (length)
   {
-    fds_clock ^= 1;
+    fds_clock ^= 1; // carrier state
     bit = (fds_raw_data[fds_current_byte] >> (fds_current_bit / 2)) & 1;
     value = bit ^ fds_clock;
+    // send impulse when low to high transition
     if (value && !fds_last_value)
       fds_read_buffer[pos] = FDS_READ_IMPULSE_LENGTH - 1;
     else
@@ -119,8 +122,10 @@ static void fds_dma_fill_read_buffer(int pos, int length)
     fds_current_bit++;
     if (fds_current_bit > 15)
     {
+      // next byte
       fds_current_bit = 0;
       fds_current_byte = (fds_current_byte + 1) % FDS_MAX_SIDE_SIZE;
+      // check if drive is rewinded
       if ((fds_current_byte == 0) ||
           (fdskey_settings.fast_rewind && fds_current_byte > fds_used_space + FDS_NOT_READY_BYTES))
       {
@@ -128,7 +133,7 @@ static void fds_dma_fill_read_buffer(int pos, int length)
         HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_SET);
         fds_not_ready_time = HAL_GetTick();
         fds_state = FDS_READ_WAIT_READY_TIMER;
-        fds_reset();
+        fds_reset_reading();
       }
     }
     pos++;
@@ -146,12 +151,14 @@ static void fds_dma_read_full_callback(DMA_HandleTypeDef *hdma)
   fds_dma_fill_read_buffer(FDS_READ_BUFFER_SIZE / 2, FDS_READ_BUFFER_SIZE / 2);
 }
 
+// add single bit of written data
 static void fds_write_bit(uint8_t bit)
 {
   fds_raw_data[fds_current_byte] = (fds_raw_data[fds_current_byte] >> 1) | (bit << 7);
   fds_current_bit++;
   if (fds_current_bit > 7)
   {
+    // next byte
     fds_current_bit = 0;
     fds_current_byte = (fds_current_byte + 1) % FDS_MAX_SIDE_SIZE;
 
@@ -180,6 +187,8 @@ static void fds_write_bit(uint8_t bit)
   }
 }
 
+// parsing single write impulse
+// pulse - pause duration between previous and current impulses
 static void fds_write_impulse(uint16_t pulse)
 {
   switch (fds_state)
@@ -198,16 +207,18 @@ static void fds_write_impulse(uint16_t pulse)
       fds_reset_writing();
     return;
   default:
+    // invalid state, stop writing
     fds_stop_writing();
     return;
   }
   if (fds_state == FDS_WRITING_GAP)
   {
+    // gap before actual data
     if (fds_write_gap_skip < FDS_WRITE_GAP_SKIP_BITS)
-      fds_write_gap_skip++;
+      fds_write_gap_skip++; // discard first bits
     else if (pulse >= FDS_THRESHOLD_1)
     {
-      // start '1' bit
+      // gap terminated with start '1' bit (always 15us)
       fds_write_carrier = 0;
       fds_current_bit = 0;
       fds_state = FDS_WRITING;
@@ -216,12 +227,14 @@ static void fds_write_impulse(uint16_t pulse)
   {
     // some demodulation magic
     uint8_t l = fds_write_carrier;
+    // there is three possible pause durations between impulses
     if (pulse < FDS_THRESHOLD_1)
-      l |= 2;
+      l |= 2; // 10us
     else if (pulse < FDS_THRESHOLD_2)
-      l |= 3;
+      l |= 3; // 15us
     else
-      l |= 4;
+      l |= 4; // 20us
+    // data depends on pulse length and carrier state
     switch (l)
     {
     case 0x82:
@@ -253,6 +266,7 @@ static void fds_write_impulse(uint16_t pulse)
   }
 }
 
+// parse data written by DMA
 static void fds_dma_parse_write_buffer(int pos, int length)
 {
   uint16_t pulse;
@@ -276,6 +290,7 @@ static void fds_dma_write_full_callback(DMA_HandleTypeDef *hdma)
   fds_dma_parse_write_buffer(FDS_WRITE_BUFFER_SIZE / 2, FDS_WRITE_BUFFER_SIZE / 2);
 }
 
+// start FDS reading: timer, PWM and DMA
 static void fds_start_reading()
 {
   fds_current_bit = 0;
@@ -288,12 +303,23 @@ static void fds_start_reading()
   fds_state = FDS_READING;
 }
 
+// stop reading
 static void fds_stop_reading()
 {
   HAL_DMA_Abort_IT(&FDS_READ_DMA);
   HAL_TIM_PWM_Stop(&FDS_READ_PWM_TIMER, FDS_READ_PWM_TIMER_CHANNEL_CONST);
 }
 
+// reset reading state machine
+void fds_reset_reading()
+{
+  fds_clock = 0;
+  fds_current_byte = 0;
+  fds_current_bit = 0;
+  fds_last_value = 0;
+}
+
+// calculate current block for writing, update state variables
 static void fds_reset_writing()
 {
   int i;
@@ -322,7 +348,6 @@ static void fds_reset_writing()
     }
   }
   // update used space
-  // TODO: overflow check
   fds_used_space = fds_block_offsets[fds_block_count - 1] + fds_get_block_size(fds_block_count - 1, 1, 1);
   if (fds_used_space > FDS_MAX_SIDE_SIZE)
   {
@@ -354,6 +379,7 @@ static void fds_reset_writing()
   fds_changed = 1; // flag that ROM changed
 }
 
+// start writing: timer, PWM and DMA
 static void fds_start_writing()
 {
   fds_reset_writing();
@@ -366,12 +392,14 @@ static void fds_start_writing()
   HAL_TIM_IC_Start_IT(&FDS_WRITE_CAPTURE_TIMER, FDS_WRITE_CAPTURE_TIMER_CHANNEL_CONST);
 }
 
+// stop writing
 static void fds_stop_writing()
 {
   HAL_DMA_Abort_IT(&FDS_WRITE_DMA);
   HAL_TIM_IC_Stop_IT(&FDS_WRITE_CAPTURE_TIMER, FDS_WRITE_CAPTURE_TIMER_CHANNEL_CONST);
 }
 
+// full drive stop
 static void fds_stop()
 {
   fds_stop_reading();
@@ -380,15 +408,8 @@ static void fds_stop()
   fds_state = FDS_IDLE;
 }
 
-void fds_reset()
-{
-  // reset state machine
-  fds_clock = 0;
-  fds_current_byte = 0;
-  fds_current_bit = 0;
-  fds_last_value = 0;
-}
-
+// check for /SCAN_MEDIA and /WRITE pins
+// call it every pin state change and every ~100ms
 void fds_check_pins()
 {
   if (HAL_GPIO_ReadPin(FDS_SCAN_MEDIA_GPIO_Port, FDS_SCAN_MEDIA_Pin))
@@ -406,16 +427,19 @@ void fds_check_pins()
         fds_state = FDS_SAVE_PENDING;
       break;
     case FDS_SAVE_PENDING:
+      // wait until file saved by the main thread
       if (!fds_changed)
         fds_state = FDS_IDLE;
       break;
     default:
+      // just full stop
       fds_stop();
       if (fdskey_settings.fast_rewind)
-        fds_reset();
+        fds_reset_reading();
     }
   } else
   {
+    // motor on
     HAL_GPIO_WritePin(FDS_MOTOR_ON_GPIO_Port, FDS_MOTOR_ON_Pin, GPIO_PIN_SET);
     // return from saving state if saved
     if ((fds_state == FDS_SAVE_PENDING) && !fds_changed) fds_state = FDS_IDLE;
@@ -425,18 +449,22 @@ void fds_check_pins()
       switch (fds_state)
       {
       case FDS_IDLE:
+        // start reading
         if (fdskey_settings.fast_rewind || fds_current_byte == 0)
         {
+          // wait some time before ready
           fds_not_ready_time = HAL_GetTick();
           fds_state = FDS_READ_WAIT_READY_TIMER;
-          fds_reset();
+          fds_reset_reading();
         } else
         {
+          // start reading but waiting for drive to be rewinded
           fds_start_reading();
           fds_state = FDS_READ_WAIT_READY;
         }
         break;
       case FDS_READ_WAIT_READY_TIMER:
+        // check if "not-ready" pause expired
         if (fds_not_ready_time + FDS_NOT_READY_TIME < HAL_GetTick())
         {
           HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_RESET);
@@ -444,6 +472,7 @@ void fds_check_pins()
         }
         break;
       case FDS_WRITING_STOPPING:
+        // time to stop writing and start reading
         fds_stop_writing();
         fds_start_reading();
         break;
@@ -460,10 +489,12 @@ void fds_check_pins()
       case FDS_READING:
       case FDS_READ_WAIT_READY:
       case FDS_READ_WAIT_READY_TIMER:
+        // start writing if not yet
         fds_stop_reading();
         fds_start_writing();
         break;
       default:
+        // ignore any other state
         break;
       }
     }
@@ -471,13 +502,7 @@ void fds_check_pins()
   }
 }
 
-void fds_tick_100ms() // call every ~100ms, low priority task
-{
-  if (fds_state == FDS_OFF)
-    return;
-  fds_check_pins();
-}
-
+// load .fds file and start drive emulation
 FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
 {
   int i;
@@ -492,7 +517,7 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
   int min_blocks = 0;
 
   fds_close(0);
-  fds_reset();
+  fds_reset_reading();
 
   // not ready yet
   HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_SET);
@@ -666,6 +691,7 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
   return FR_OK;
 }
 
+// save disk changes to file
 FRESULT fds_save()
 {
   FRESULT fr;
@@ -793,6 +819,7 @@ FRESULT fds_save()
   return FR_OK;
 }
 
+// stop drive emulation
 FRESULT fds_close(uint8_t save)
 {
   FRESULT fr = FR_OK;
@@ -801,16 +828,20 @@ FRESULT fds_close(uint8_t save)
   HAL_GPIO_WritePin(FDS_MEDIA_SET_GPIO_Port, FDS_MEDIA_SET_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(FDS_WRITABLE_MEDIA_GPIO_Port, FDS_WRITABLE_MEDIA_Pin, GPIO_PIN_SET);
 
+  // save if need
   if (save)
     fr = fds_save();
 
+  // stop
   fds_stop();
   fds_state = FDS_OFF;
 
+  // reset state variables
   fds_used_space = 0;
   fds_block_count = 0;
   fds_changed = 0;
 #ifdef FDS_USE_DYNAMIC_MEMORY
+  // free memory if need
   if (fds_raw_data)
     free(fds_raw_data);
   fds_raw_data = 0;
@@ -819,16 +850,19 @@ FRESULT fds_close(uint8_t save)
   return fr;
 }
 
+// return current state
 FDS_STATE fds_get_state()
 {
   return fds_state;
 }
 
+// return non-zero if disk content is changed and should be saved
 uint8_t fds_is_changed()
 {
   return fds_changed;
 }
 
+// calculate and return current block number
 int fds_get_block()
 {
   int i;
@@ -848,21 +882,25 @@ int fds_get_block()
   }
 }
 
+// return current amount of blocks
 int fds_get_block_count()
 {
   return fds_block_count;
 }
 
+// return virtual head position (in bytes)
 int fds_get_head_position()
 {
   return fds_current_byte;
 }
 
+// return maximum disk capacity in bytes
 int fds_get_max_size()
 {
   return FDS_MAX_SIDE_SIZE;
 }
 
+// return actually used disk space in bytes
 int fds_get_used_space()
 {
   return fds_used_space;
