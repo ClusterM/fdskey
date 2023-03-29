@@ -10,3 +10,4 @@ output_files/
 *.qws
 *.launch
 ~*~
+commit.h
