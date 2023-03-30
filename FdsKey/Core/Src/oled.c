@@ -6,21 +6,17 @@
 #include "main.h"
 #include "oled.h"
 
+static OLED_CONTROLLER controller;
 static uint8_t rotate = 0;
-static uint8_t padding_left = 0;
-static uint8_t padding_top = 0;
 static uint8_t current_line = 0;
 static uint8_t image[OLED_HEIGHT * 2 * OLED_WIDTH];
 
 // init OLED and buffer
-void oled_init( uint8_t rotate_screen, uint8_t reverse, uint8_t contrast)
+void oled_init(OLED_CONTROLLER oled_controller, uint8_t rotate_screen, uint8_t reverse, uint8_t contrast)
 {
-  // padding_left depends on OLED controller version
-  // can be SH1106 (132x64) or SSD1306 (128x64)
-  // TODO: make display controller selection
-	padding_left = 0; // rotate_screen ? 0 : 4;
-	padding_top = rotate_screen ? 32 : 0;
+	controller = oled_controller;
 	rotate = rotate_screen;
+  uint8_t padding_top = rotate_screen ? 32 : 0;
 
 	oled_send_commands(11,
 	OLED_CMD_SET_OFF,
@@ -89,8 +85,9 @@ HAL_StatusTypeDef oled_write_data(uint8_t *data, uint8_t len) {
 HAL_StatusTypeDef oled_update(uint8_t start_page, uint8_t end_page) {
 	uint8_t p, x, y, l, bt, buffer[256], bpos;
 	HAL_StatusTypeDef r = HAL_OK;
+  uint8_t padding_left = rotate ? 0 : (controller == OLED_CONTROLLER_SSD1306 ? 0 : 4);
 
-	start_page = start_page % (OLED_HEIGHT * 2 / 8);
+  start_page = start_page % (OLED_HEIGHT * 2 / 8);
 	end_page = end_page % (OLED_HEIGHT * 2 / 8);
 	if (end_page < start_page) end_page += (OLED_HEIGHT * 2 / 8);
 
@@ -134,6 +131,7 @@ HAL_StatusTypeDef oled_update_invisible() {
 
 // scroll to line
 HAL_StatusTypeDef oled_set_line(int y) {
+  uint8_t padding_top = rotate ? 32 : 0;
 	current_line = y % (OLED_HEIGHT * 2);
 	return oled_send_command(
 			OLED_CMD_SET_START_LINE(current_line + padding_top));
@@ -497,10 +495,10 @@ void oled_rotate(uint8_t rotate_screen)
 {
   if (!!rotate == !!rotate_screen)
     return;
+
+  uint8_t padding_top = rotate_screen ? 32 : 0;
+
   oled_send_command(OLED_CMD_SET_OFF);
-  // TODO: OLED controller selection
-  padding_left = 0; //rotate_screen ? 0 : 4;
-  padding_top = rotate_screen ? 32 : 0;
   oled_send_command(OLED_CMD_SET_START_LINE(current_line + padding_top));
   oled_send_commands(2,
       rotate_screen ?

@@ -27,6 +27,7 @@
 #include "settings.h"
 #include "fdsemu.h"
 #include "splash.h"
+#include "servicemenu.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -115,6 +116,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+  service_settings_load();
   settings_load();
   /* USER CODE END SysInit */
 
@@ -236,7 +238,7 @@ static void MX_I2C1_Init(void)
   }
   /* USER CODE BEGIN I2C1_Init 2 */
   HAL_Delay(100);
-  oled_init(fdskey_settings.lefty_mode ? 0 : 1, fdskey_settings.invert_screen, 0xFF * fdskey_settings.brightness / SETTINGS_BRIGHTNESS_MAX);
+  oled_init(fdskey_service_settings.oled_controller, fdskey_settings.lefty_mode ? 0 : 1, fdskey_settings.invert_screen, 0xFF * fdskey_settings.brightness / SETTINGS_BRIGHTNESS_MAX);
   oled_draw_rectangle(0, 0, OLED_WIDTH - 1, OLED_HEIGHT - 1, 1, 0);
   oled_update_full();
   oled_set_line(0);

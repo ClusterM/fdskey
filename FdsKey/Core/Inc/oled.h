@@ -14,6 +14,12 @@
 
 #define OLED_TIMEOUT 100
 
+typedef enum
+{
+  OLED_CONTROLLER_SSD1306 = 0,
+  OLED_CONTROLLER_SH1106
+} OLED_CONTROLLER;
+
 #define OLED_COMMAND_LAST 0x00
 #define OLED_COMMAND_NOT_LAST 0x80
 #define OLED_COMMAND_DATA 0x40
@@ -43,7 +49,7 @@
 #define OLED_CMD_SET_PADS_MODE_SEQUENTIAL 0x02
 #define OLED_CMD_SET_PADS_MODE_ALTERNATIVE 0x12
 
-void oled_init(uint8_t rotate_screen, uint8_t reverse, uint8_t contrast);
+void oled_init(OLED_CONTROLLER oled_controller, uint8_t rotate_screen, uint8_t reverse, uint8_t contrast);
 uint8_t* oled_pixel(int x, int y);
 void oled_set_pixel(int x, int y, uint8_t value);
 uint8_t oled_get_pixel(int x, int y);

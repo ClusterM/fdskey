@@ -12,6 +12,7 @@
 #include "settings.h"
 #include "newdisk.h"
 #include "fileproperties.h"
+#include "servicemenu.h"
 
 void main_menu_draw(uint8_t selection)
 {
@@ -63,6 +64,9 @@ uint8_t main_menu(uint8_t selection)
     }
     if (button_right_newpress())
       return selection;
+    button_left_newpress(); // remember newpress time
+    if (button_left_hold_time() >= 3000)
+      return MAIN_MENU_SERVICE_MENU;
     button_check_screen_off();
     HAL_Delay(1);
   }
@@ -135,6 +139,10 @@ void main_menu_loop()
       break;
     case MAIN_MENU_SETTINGS:
       settings_menu();
+      break;
+    case MAIN_MENU_SERVICE_MENU:
+      service_menu();
+      menu_selection = 0;
       break;
     }
     menu_selection = main_menu(menu_selection);

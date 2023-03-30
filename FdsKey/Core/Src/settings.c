@@ -9,7 +9,7 @@ FDSKEY_SETTINGS fdskey_settings;
 
 void settings_load()
 {
-  memcpy(&fdskey_settings, (void*)SETTINGS_FLASH_OFFSET, sizeof(FDSKEY_SETTINGS));
+  memcpy(&fdskey_settings, (void*)SETTINGS_FLASH_OFFSET, sizeof(fdskey_settings));
   fdskey_settings.sig[sizeof(fdskey_settings.sig) - 1] = 0;
   if (strcmp(fdskey_settings.sig, SETTINGS_SIGNATURE))
   {
@@ -192,7 +192,7 @@ void settings_menu()
         return;
       }
     }
-    if (button_left_newpress() || button_right_newpress())
+    if (button_right_newpress())
     {
       switch (selection)
       {
@@ -242,7 +242,6 @@ void settings_menu()
         settings_save();
         return;
       }
-      draw_item(oled_get_line() / 8 + selection - line, selection, 1);
       if (selection == SETTING_LEFTY_MODE)
         while(button_left_holding() || button_right_holding())
           HAL_Delay(1);
