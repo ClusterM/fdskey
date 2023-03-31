@@ -526,6 +526,8 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
   // writable maybe
   fds_readonly = ro;
   HAL_GPIO_WritePin(FDS_WRITABLE_MEDIA_GPIO_Port, FDS_WRITABLE_MEDIA_Pin, ro ? GPIO_PIN_SET : GPIO_PIN_RESET);
+  // start ready state waiting before file loaded
+  fds_not_ready_time = HAL_GetTick();
 
   strncpy(fds_filename, filename, sizeof(fds_filename) - 1);
   filename[sizeof(fds_filename) - 1] = 0;
@@ -680,13 +682,9 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
 //  fds_dump(filename);
 
   if (!HAL_GPIO_ReadPin(FDS_SCAN_MEDIA_GPIO_Port, FDS_SCAN_MEDIA_Pin))
-  {
-    fds_start_reading();
-    HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_RESET);
-  } else
-  {
+    fds_state = FDS_READ_WAIT_READY_TIMER;
+  else
     fds_state = FDS_IDLE;
-  }
 
   return FR_OK;
 }
