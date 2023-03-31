@@ -4,7 +4,7 @@
 #include "app_fatfs.h"
 #include "buttons.h"
 
-void show_message(char *text)
+void show_message(char *text, uint8_t wait)
 {
   oled_draw_rectangle(0, oled_get_line() + OLED_HEIGHT, OLED_WIDTH - 1, oled_get_line() + OLED_HEIGHT * 2 - 1, 1, 0);
   oled_draw_text(&SPLASH_REGULAR_FONT, text, OLED_WIDTH / 2 - oled_get_text_length(&SPLASH_REGULAR_FONT, text) / 2,
@@ -12,16 +12,13 @@ void show_message(char *text)
   oled_update_invisible();
   oled_switch_to_invisible();
 
-  //while (!button_up_newpress() && !button_down_newpress() && !button_left_newpress() && !button_right_newpress());
+  if (wait)
+    while (!button_up_newpress() && !button_down_newpress() && !button_left_newpress() && !button_right_newpress());
 }
 
 void show_updating_screen()
 {
-  oled_draw_rectangle(0, oled_get_line() + OLED_HEIGHT, OLED_WIDTH - 1, oled_get_line() + OLED_HEIGHT * 2 - 1, 1, 0);
-  oled_draw_image(&SPLASH_UPDATING_IMAGE, OLED_WIDTH - SPLASH_UPDATING_IMAGE.width - 10, oled_get_line() + OLED_HEIGHT + (OLED_HEIGHT - SPLASH_UPDATING_IMAGE.height) / 2, 0, 0);
-  oled_draw_text(&SPLASH_REGULAR_FONT, "Updating", 10, oled_get_line() + OLED_HEIGHT + 11, 0, 0);
-  oled_update_invisible();
-  oled_switch_to_invisible();
+  show_message("Updating", 0);
 }
 
 void show_error_screen(char *text, uint8_t fatal)

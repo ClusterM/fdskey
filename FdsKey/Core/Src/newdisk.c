@@ -46,7 +46,7 @@ static FRESULT new_disk_create(char *filename, int sides)
   fr = f_close(&fp);
 
   if (fr == FR_OK)
-    show_message("File successfully created");
+    show_message("File successfully created", 1);
 
   return fr;
 }

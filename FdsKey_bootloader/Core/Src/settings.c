@@ -21,7 +21,7 @@ void settings_load()
     fdskey_settings.hide_non_fds = 1;
     fdskey_settings.hide_extensions = 1;
     fdskey_settings.hide_hidden = 1;
-    fdskey_settings.autosave_time = 5;
+    fdskey_settings.autosave_time = 1;
     fdskey_settings.brightness = 5;
     fdskey_settings.lefty_mode = 0;
     fdskey_settings.invert_screen = 0;

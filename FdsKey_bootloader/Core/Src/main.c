@@ -138,7 +138,7 @@ int main(void)
   oled_update_full();
   oled_set_line(0);
 
-  show_message("Please wait...");
+  show_message("Please wait...", 0);
 
   // Init SD card and FAT
   while (HAL_GPIO_ReadPin(SD_DTCT_GPIO_Port, SD_DTCT_Pin))
@@ -189,7 +189,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
   }
   HAL_FLASH_Lock();
-  show_message("Firmware updated");
+  show_message("Firmware updated", 0);
   HAL_Delay(1500);
   start_app();
   while (1);

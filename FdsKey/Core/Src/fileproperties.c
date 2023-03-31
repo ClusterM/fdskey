@@ -62,7 +62,7 @@ FRESULT file_restore_backup(char *path)
   fr = f_stat(backup_path, &fno);
   if (fr == FR_NO_FILE)
   {
-    show_message("There is no backup");
+    show_message("There is no backup", 1);
     return FR_OK;
   }
   if (fr != FR_OK) return fr;
@@ -100,7 +100,7 @@ FRESULT file_restore_backup(char *path)
   f_close(&fp);
   f_close(&fp_backup);
 
-  show_message("Backup restored");
+  show_message("Backup restored", 1);
   return FR_OK;
 }
 

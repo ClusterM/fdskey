@@ -335,7 +335,7 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
   {
     // nothing to show
     browser_free();
-    show_message("The directory is empty");
+    show_message("The directory is empty", 1);
     *result = BROWSER_BACK;
     return FR_OK;
   }
