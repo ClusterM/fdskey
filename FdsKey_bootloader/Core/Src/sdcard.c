@@ -2,8 +2,9 @@
 
 #include "sdcard.h"
 
-static uint64_t card_size;
+static uint64_t card_capacity;
 static uint8_t sd_version;
+static uint8_t sd_high_capacity;
 
 static void SD_Select()
 {
@@ -200,8 +201,6 @@ HAL_StatusTypeDef SD_init()
   uint8_t r1;
   uint8_t r3[5];
   uint8_t r7[5];
-  uint8_t csd[16];
-  uint8_t crc[2];
   int i;
 
   SD_Unselect();
@@ -243,6 +242,7 @@ HAL_StatusTypeDef SD_init()
   {
     // command not supported - old SD card version
     sd_version = 1;
+    sd_high_capacity = 0;
   } else
   {
     // new version
@@ -295,9 +295,52 @@ HAL_StatusTypeDef SD_init()
     if (r3[0] & 0b11111110)
       return HAL_ERROR;
     // check if power up ok and high capacity
-    if (!(r3[1] & 0xC0))
+    if (!(r3[1] & 0x80))
       return HAL_ERROR;
+    sd_high_capacity = (r3[1] & 0x40) >> 6;
   }
+
+  SD_CSD csd;
+  r = SD_read_csd(&csd);
+  if (r != HAL_OK)
+    return r;
+  if (sd_high_capacity)
+    card_capacity = (csd.version.v2.DeviceSize + 1) * 512 * 1024;
+  else
+    card_capacity = (csd.version.v1.DeviceSize + 1) * (1UL << (csd.version.v1.DeviceSizeMul + 2)) * (1UL << csd.RdBlockLen);
+
+  // first byte is VVxxxxxxxx where VV is csd.version
+  /*
+  if ((csd_data[0] & 0xC0) == 0x40)
+  {
+    // csd.version 2
+    uint64_t c_size = ((csd_data[7] & 0b00111111) << 16) | (csd_data[8] << 8) | csd_data[9];
+    card_size = (c_size + 1) * 512 * 1024;
+  } else
+  {
+    // csd.version 1
+    uint64_t c_size = ((uint16_t) ((csd_data[6] & 0x03) << 10) | (uint16_t) (csd_data[7] << 2) | (uint16_t) ((csd_data[8] & 0xC0) >> 6)) + 1;
+    c_size = c_size << (((uint16_t) ((csd_data[9] & 0x03) << 1) | (uint16_t) ((csd_data[10] & 0x80) >> 7)) + 2);
+    c_size = c_size << ((uint16_t) (csd_data[5] & 0x0F));
+    card_size = c_size;
+    // set block length
+    r = SD_send_cmd(16, 512, 0xFF);
+    if (r != HAL_OK)
+      return r;
+  }
+  */
+
+  SD_Unselect();
+  return HAL_OK;
+}
+
+
+HAL_StatusTypeDef SD_read_csd(SD_CSD* csd)
+{
+  HAL_StatusTypeDef r;
+  uint8_t r1;
+  uint8_t csd_data[16];
+  uint8_t crc[2];
 
   // CMD9 - read CSD register and SD card capacity
   r = SD_send_cmd(9, 0x00000000, 0xFF);
@@ -311,39 +354,72 @@ HAL_StatusTypeDef SD_init()
   r = SD_wait_data_token();
   if (r != HAL_OK)
     return r;
-  r = SD_read_bytes(csd, sizeof(csd));
+  r = SD_read_bytes(csd_data, sizeof(csd_data));
   if (r != HAL_OK)
     return r;
   r = SD_read_bytes(crc, sizeof(crc));
   if (r != HAL_OK)
     return r;
 
-  // first byte is VVxxxxxxxx where VV is csd.version
-  if ((csd[0] & 0xC0) == 0x40)
-  {
-    // csd.version 2
-    uint64_t c_size = ((csd[7] & 0b00111111) << 16) | (csd[8] << 8) | csd[9];
-    card_size = (c_size + 1) * 512 * 1024;
-  } else
-  {
-    // csd.version 1
-    uint64_t c_size = ((uint16_t) ((csd[6] & 0x03) << 10) | (uint16_t) (csd[7] << 2) | (uint16_t) ((csd[8] & 0xC0) >> 6)) + 1;
-    c_size = c_size << (((uint16_t) ((csd[9] & 0x03) << 1) | (uint16_t) ((csd[10] & 0x80) >> 7)) + 2);
-    c_size = c_size << ((uint16_t) (csd[5] & 0x0F));
-    card_size = c_size;
-    // set block length
-    r = SD_send_cmd(16, 512, 0xFF);
-    if (r != HAL_OK)
-      return r;
+  csd->CSDStruct = (csd_data[0] & 0xC0) >> 6;
+  csd->Reserved1 = csd_data[0] & 0x3F;
+  csd->TAAC = csd_data[1];
+  csd->NSAC = csd_data[2];
+  csd->MaxBusClkFrec = csd_data[3];
+  csd->CardComdClasses = (csd_data[4] << 4) | ((csd_data[5] & 0xF0) >> 4);
+  csd->RdBlockLen = csd_data[5] & 0x0F;
+  csd->PartBlockRead = (csd_data[6] & 0x80) >> 7;
+  csd->WrBlockMisalign = (csd_data[6] & 0x40) >> 6;
+  csd->RdBlockMisalign = (csd_data[6] & 0x20) >> 5;
+  csd->DSRImpl = (csd_data[6] & 0x10) >> 4;
+  switch (csd->CSDStruct) {
+  case 0:
+    // CSD version 1
+    csd->version.v1.Reserved1 = ((csd_data[6] & 0x0C) >> 2);
+    csd->version.v1.DeviceSize = ((csd_data[6] & 0x03) << 10) | (csd_data[7] << 2) |
+                                 ((csd_data[8] & 0xC0) >> 6);
+    csd->version.v1.MaxRdCurrentVDDMin = (csd_data[8] & 0x38) >> 3;
+    csd->version.v1.MaxRdCurrentVDDMax = (csd_data[8] & 0x07);
+    csd->version.v1.MaxWrCurrentVDDMin = (csd_data[9] & 0xE0) >> 5;
+    csd->version.v1.MaxWrCurrentVDDMax = (csd_data[9] & 0x1C) >> 2;
+    csd->version.v1.DeviceSizeMul = ((csd_data[9] & 0x03) << 1) |
+                                    ((csd_data[10] & 0x80) >> 7);
+    break;
+  case 1:
+    // CSD version 2
+    csd->version.v2.Reserved1 = ((csd_data[6] & 0x0F) << 2) |
+                                ((csd_data[7] & 0xC0) >> 6);
+    csd->version.v2.DeviceSize = ((csd_data[7] & 0x3F) << 16) | (csd_data[8] << 8) |
+                                 csd_data[9];
+    csd->version.v2.Reserved2 = ((csd_data[10] & 0x80) >> 8);
+    break;
+  default:
+    return HAL_ERROR;
   }
+  csd->EraseSingleBlockEnable = (csd_data[10] & 0x40) >> 6;
+  csd->EraseSectorSize = ((csd_data[10] & 0x3F) << 1) | ((csd_data[11] & 0x80) >> 7);
+  csd->WrProtectGrSize = (csd_data[11] & 0x7F);
+  csd->WrProtectGrEnable = (csd_data[12] & 0x80) >> 7;
+  csd->Reserved2 = (csd_data[12] & 0x60) >> 5;
+  csd->WrSpeedFact = (csd_data[12] & 0x1C) >> 2;
+  csd->MaxWrBlockLen = ((csd_data[12] & 0x03) << 2) | ((csd_data[13] & 0xC0) >> 6);
+  csd->WriteBlockPartial = (csd_data[13] & 0x20) >> 5;
+  csd->Reserved3 = (csd_data[13] & 0x1F);
+  csd->FileFormatGrouop = (csd_data[14] & 0x80) >> 7;
+  csd->CopyFlag = (csd_data[14] & 0x40) >> 6;
+  csd->PermWrProtect = (csd_data[14] & 0x20) >> 5;
+  csd->TempWrProtect = (csd_data[14] & 0x10) >> 4;
+  csd->FileFormat = (csd_data[14] & 0x0C) >> 2;
+  csd->Reserved4 = (csd_data[14] & 0x03);
+  csd->crc = (csd_data[15] & 0xFE) >> 1;
+  csd->Reserved5 = (csd_data[15] & 0x01);
 
-  SD_Unselect();
   return HAL_OK;
 }
 
 uint64_t SD_capacity()
 {
-  return card_size;
+  return card_capacity;
 }
 
 HAL_StatusTypeDef SD_read_single_block(uint32_t blockNum, uint8_t *buff)
@@ -354,7 +430,7 @@ HAL_StatusTypeDef SD_read_single_block(uint32_t blockNum, uint8_t *buff)
 
   SD_Select();
 
-  if (sd_version == 1)
+  if (!sd_high_capacity)
     blockNum *= 512;
 
   /* CMD17 (SEND_SINGLE_BLOCK) command */
@@ -387,7 +463,7 @@ HAL_StatusTypeDef SD_write_single_block(uint32_t blockNum, const uint8_t *buff)
 
   SD_Select();
 
-  if (sd_version == 1)
+  if (!sd_high_capacity)
     blockNum *= 512;
 
   /* CMD24 (WRITE_BLOCK) command */
@@ -441,7 +517,7 @@ HAL_StatusTypeDef SD_read_begin(uint32_t blockNum)
 
   SD_Select();
 
-  if (sd_version == 1)
+  if (!sd_high_capacity)
     blockNum *= 512;
 
   /* CMD18 (READ_MULTIPLE_BLOCK) command */
@@ -515,7 +591,7 @@ HAL_StatusTypeDef SD_write_begin(uint32_t blockNum)
 
   SD_Select();
 
-  if (sd_version == 1)
+  if (!sd_high_capacity)
     blockNum *= 512;
 
   /* CMD25 (WRITE_MULTIPLE_BLOCK) command */
