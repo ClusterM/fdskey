@@ -201,6 +201,7 @@ HAL_StatusTypeDef SD_init()
   uint8_t r1;
   uint8_t r3[5];
   uint8_t r7[5];
+  SD_CSD csd;
   int i;
 
   SD_Unselect();
@@ -300,35 +301,23 @@ HAL_StatusTypeDef SD_init()
     sd_high_capacity = (r3[1] & 0x40) >> 6;
   }
 
-  SD_CSD csd;
   r = SD_read_csd(&csd);
   if (r != HAL_OK)
     return r;
   if (sd_high_capacity)
-    card_capacity = (csd.version.v2.DeviceSize + 1) * 512 * 1024;
+    card_capacity = (csd.version.v2.DeviceSize + 1) * SD_BLOCK_LENGTH * 1024;
   else
     card_capacity = (csd.version.v1.DeviceSize + 1) * (1UL << (csd.version.v1.DeviceSizeMul + 2)) * (1UL << csd.RdBlockLen);
 
-  // first byte is VVxxxxxxxx where VV is csd.version
-  /*
-  if ((csd_data[0] & 0xC0) == 0x40)
-  {
-    // csd.version 2
-    uint64_t c_size = ((csd_data[7] & 0b00111111) << 16) | (csd_data[8] << 8) | csd_data[9];
-    card_size = (c_size + 1) * 512 * 1024;
-  } else
-  {
-    // csd.version 1
-    uint64_t c_size = ((uint16_t) ((csd_data[6] & 0x03) << 10) | (uint16_t) (csd_data[7] << 2) | (uint16_t) ((csd_data[8] & 0xC0) >> 6)) + 1;
-    c_size = c_size << (((uint16_t) ((csd_data[9] & 0x03) << 1) | (uint16_t) ((csd_data[10] & 0x80) >> 7)) + 2);
-    c_size = c_size << ((uint16_t) (csd_data[5] & 0x0F));
-    card_size = c_size;
-    // set block length
-    r = SD_send_cmd(16, 512, 0xFF);
-    if (r != HAL_OK)
-      return r;
-  }
-  */
+  // set block length
+  r = SD_send_cmd(16, SD_BLOCK_LENGTH, 0xFF);
+  if (r != HAL_OK)
+    return r;
+  r = SD_read_r1(&r1);
+  if (r != HAL_OK)
+    return r;
+  if (r1 != 0x00)
+    return HAL_ERROR;
 
   SD_Unselect();
   return HAL_OK;
@@ -417,7 +406,7 @@ HAL_StatusTypeDef SD_read_csd(SD_CSD* csd)
   return HAL_OK;
 }
 
-uint64_t SD_capacity()
+uint64_t SD_get_capacity()
 {
   return card_capacity;
 }
@@ -431,7 +420,7 @@ HAL_StatusTypeDef SD_read_single_block(uint32_t blockNum, uint8_t *buff)
   SD_Select();
 
   if (!sd_high_capacity)
-    blockNum *= 512;
+    blockNum *= SD_BLOCK_LENGTH;
 
   /* CMD17 (SEND_SINGLE_BLOCK) command */
   r = SD_send_cmd(17, blockNum, 0xFF);
@@ -445,7 +434,7 @@ HAL_StatusTypeDef SD_read_single_block(uint32_t blockNum, uint8_t *buff)
   r = SD_wait_data_token();
   if (r != HAL_OK)
     return r;
-  r = SD_read_bytes(buff, 512);
+  r = SD_read_bytes(buff, SD_BLOCK_LENGTH);
   if (r != HAL_OK)
     return r;
   r = SD_read_bytes(crc, 2);
@@ -464,7 +453,7 @@ HAL_StatusTypeDef SD_write_single_block(uint32_t blockNum, const uint8_t *buff)
   SD_Select();
 
   if (!sd_high_capacity)
-    blockNum *= 512;
+    blockNum *= SD_BLOCK_LENGTH;
 
   /* CMD24 (WRITE_BLOCK) command */
   r = SD_send_cmd(24, blockNum, 0xFF);
@@ -481,7 +470,7 @@ HAL_StatusTypeDef SD_write_single_block(uint32_t blockNum, const uint8_t *buff)
   r = SPI_Transmit(&dataToken, sizeof(dataToken));
   if (r != HAL_OK)
     return r;
-  r = SPI_Transmit((uint8_t*) buff, 512);
+  r = SPI_Transmit((uint8_t*) buff, SD_BLOCK_LENGTH);
   if (r != HAL_OK)
     return r;
   r = SPI_Transmit(crc, sizeof(crc));
@@ -518,7 +507,7 @@ HAL_StatusTypeDef SD_read_begin(uint32_t blockNum)
   SD_Select();
 
   if (!sd_high_capacity)
-    blockNum *= 512;
+    blockNum *= SD_BLOCK_LENGTH;
 
   /* CMD18 (READ_MULTIPLE_BLOCK) command */
   r = SD_send_cmd(18, blockNum, 0xFF);
@@ -544,7 +533,7 @@ HAL_StatusTypeDef SD_read_data(uint8_t *buff)
   r = SD_wait_data_token();
   if (r != HAL_OK)
     return r;
-  r = SD_read_bytes(buff, 512);
+  r = SD_read_bytes(buff, SD_BLOCK_LENGTH);
   if (r != HAL_OK)
     return r;
   r = SD_read_bytes(crc, 2);
@@ -592,7 +581,7 @@ HAL_StatusTypeDef SD_write_begin(uint32_t blockNum)
   SD_Select();
 
   if (!sd_high_capacity)
-    blockNum *= 512;
+    blockNum *= SD_BLOCK_LENGTH;
 
   /* CMD25 (WRITE_MULTIPLE_BLOCK) command */
   r = SD_send_cmd(25, blockNum, 0xFF);
@@ -619,7 +608,7 @@ HAL_StatusTypeDef SD_write_data(const uint8_t *buff)
   r = SPI_Transmit(&dataToken, sizeof(dataToken));
   if (r != HAL_OK)
     return r;
-  r = SPI_Transmit((uint8_t*) buff, 512);
+  r = SPI_Transmit((uint8_t*) buff, SD_BLOCK_LENGTH);
   if (r != HAL_OK)
     return r;
   r = SPI_Transmit(crc, sizeof(crc));
