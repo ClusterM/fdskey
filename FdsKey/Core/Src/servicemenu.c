@@ -124,27 +124,7 @@ void service_menu()
       draw_item(oled_get_line() / 8 + selection - line, selection, 1);
     }
 
-    if (button_left_newpress())
-    {
-      switch (selection)
-      {
-      case SERVICE_SETTING_OLED_CONTROLLER:
-        if (fdskey_service_settings.oled_controller == OLED_CONTROLLER_SSD1306)
-          fdskey_service_settings.oled_controller = OLED_CONTROLLER_SH1106;
-        else
-          fdskey_service_settings.oled_controller = OLED_CONTROLLER_SSD1306;
-        // reinit display
-        oled_init(fdskey_service_settings.oled_controller, fdskey_settings.lefty_mode ? 0 : 1, fdskey_settings.invert_screen, 0xFF * fdskey_settings.brightness / SETTINGS_BRIGHTNESS_MAX);
-        for (i = 0; i < 4; i++)
-          draw_item((oled_get_line() + OLED_HEIGHT) / 8 + i, line + i, line + i == selection);
-        oled_switch_to_invisible();
-        break;
-      default:
-        service_settings_save();
-        return;
-      }
-    }
-    if (button_right_newpress())
+    if (button_left_newpress() || button_right_newpress())
     {
       switch (selection)
       {

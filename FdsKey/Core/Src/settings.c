@@ -167,32 +167,19 @@ void settings_menu()
       draw_item(oled_get_line() / 8 + selection - line, selection, 1);
     }
 
-    if (button_left_newpress())
+    switch (selection)
     {
-      switch (selection)
-      {
-      case SETTING_AUTOSAVE_TIME:
-        if (fdskey_settings.autosave_time > 0)
-          fdskey_settings.autosave_time--;
-        break;
-      case SETTING_BRIGHTNESS:
-        if (fdskey_settings.brightness > 0)
-          fdskey_settings.brightness--;
-        oled_send_commands(2, OLED_CMD_SET_CONTRAST_MODE, 0xFF * fdskey_settings.brightness / SETTINGS_BRIGHTNESS_MAX);
-        break;
-      case SETTING_AUTO_OFF_SCREEN_TIME:
-        fdskey_settings.auto_off_screen_time -= SETTINGS_AUTO_OFF_SCREEN_TIME_STEP;
-        if (fdskey_settings.auto_off_screen_time < 0)
-          fdskey_settings.auto_off_screen_time = 0;
-        if (fdskey_settings.auto_off_screen_time > SETTINGS_AUTO_OFF_SCREEN_TIME_MAX)
-          fdskey_settings.auto_off_screen_time = SETTINGS_AUTO_OFF_SCREEN_TIME_MAX;
-        break;
-      default:
-        settings_save();
-        return;
-      }
+    case SETTING_AUTOSAVE_TIME:
+    case SETTING_BRIGHTNESS:
+    case SETTING_AUTO_OFF_SCREEN_TIME:
+      button_left_right_repeat_enable(1);
+      break;
+    default:
+      button_left_right_repeat_enable(0);
+      break;
     }
-    if (button_right_newpress())
+
+    if (button_left_newpress() || button_right_newpress())
     {
       switch (selection)
       {
@@ -212,12 +199,24 @@ void settings_menu()
         fdskey_settings.hide_hidden = !fdskey_settings.hide_hidden;
         break;
       case SETTING_AUTOSAVE_TIME:
-        if (fdskey_settings.autosave_time < 60)
-          fdskey_settings.autosave_time++;
+        if (button_left_holding())
+        {
+          if (fdskey_settings.autosave_time > 0)
+            fdskey_settings.autosave_time--;
+        } else {
+          if (fdskey_settings.autosave_time < SETTINGS_AUTOSAVE_TIME_MAX)
+            fdskey_settings.autosave_time++;
+        }
         break;
       case SETTING_BRIGHTNESS:
-        if (fdskey_settings.brightness < SETTINGS_BRIGHTNESS_MAX)
-          fdskey_settings.brightness++;
+        if (button_left_holding())
+        {
+          if (fdskey_settings.brightness > 0)
+            fdskey_settings.brightness--;
+        } else {
+          if (fdskey_settings.brightness < SETTINGS_BRIGHTNESS_MAX)
+            fdskey_settings.brightness++;
+        }
         oled_send_commands(2, OLED_CMD_SET_CONTRAST_MODE, 0xFF * fdskey_settings.brightness / SETTINGS_BRIGHTNESS_MAX);
         break;
       case SETTING_INVERT_SCREEN:
@@ -229,11 +228,20 @@ void settings_menu()
         oled_rotate(fdskey_settings.lefty_mode ? 0 : 1);
         break;
       case SETTING_AUTO_OFF_SCREEN_TIME:
-        fdskey_settings.auto_off_screen_time += SETTINGS_AUTO_OFF_SCREEN_TIME_STEP;
-        if (fdskey_settings.auto_off_screen_time < 0)
-          fdskey_settings.auto_off_screen_time = 0;
-        if (fdskey_settings.auto_off_screen_time > SETTINGS_AUTO_OFF_SCREEN_TIME_MAX)
-          fdskey_settings.auto_off_screen_time = SETTINGS_AUTO_OFF_SCREEN_TIME_MAX;
+        if (button_left_holding())
+        {
+          fdskey_settings.auto_off_screen_time -= SETTINGS_AUTO_OFF_SCREEN_TIME_STEP;
+          if (fdskey_settings.auto_off_screen_time < 0)
+            fdskey_settings.auto_off_screen_time = 0;
+          if (fdskey_settings.auto_off_screen_time > SETTINGS_AUTO_OFF_SCREEN_TIME_MAX)
+            fdskey_settings.auto_off_screen_time = SETTINGS_AUTO_OFF_SCREEN_TIME_MAX;
+        } else {
+          fdskey_settings.auto_off_screen_time += SETTINGS_AUTO_OFF_SCREEN_TIME_STEP;
+          if (fdskey_settings.auto_off_screen_time < 0)
+            fdskey_settings.auto_off_screen_time = 0;
+          if (fdskey_settings.auto_off_screen_time > SETTINGS_AUTO_OFF_SCREEN_TIME_MAX)
+            fdskey_settings.auto_off_screen_time = SETTINGS_AUTO_OFF_SCREEN_TIME_MAX;
+        }
         break;
       case SETTING_BACKUP_ORIGINAL:
         fdskey_settings.backup_original = !fdskey_settings.backup_original;

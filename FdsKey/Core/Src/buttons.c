@@ -13,6 +13,8 @@ static uint32_t down_hold_time = 0;
 static uint32_t left_hold_time = 0;
 static uint32_t right_hold_time = 0;
 static uint32_t last_active_time = 0;
+static uint32_t tick = 0;
+static uint32_t left_right_repeat = 0;
 
 uint8_t button_up_holding()
 {
@@ -43,6 +45,7 @@ uint8_t button_up_newpress()
   uint8_t v = button_up_holding();
   uint8_t newpress = v && !up_pressed;
   up_pressed = v;
+  if (v) tick++;
   if (newpress)
     up_hold_time = HAL_GetTick();
   else if (!v)
@@ -55,6 +58,7 @@ uint8_t button_down_newpress()
   uint8_t v = button_down_holding();
   uint8_t newpress = v && !down_pressed;
   down_pressed = v;
+  if (v) tick++;
   if (newpress)
     down_hold_time = HAL_GetTick();
   else if (!v)
@@ -67,12 +71,13 @@ uint8_t button_left_newpress()
   uint8_t v = button_left_holding();
   uint8_t newpress = v && !left_pressed;
   left_pressed = v;
+  if (v) tick++;
   if (newpress)
     left_hold_time = HAL_GetTick();
   else if (!v)
     left_hold_time = 0;
   left_pressed = v;
-  return newpress /*|| (left_hold_time && (left_hold_time + BUTTONS_REPEAT_TIME < HAL_GetTick()))*/;
+  return newpress || (left_right_repeat && left_hold_time && (left_hold_time + BUTTONS_REPEAT_TIME < HAL_GetTick()) && (tick % BUTTONS_LEFT_RIGHT_REPEAT_INTERVAL == 0));
 }
 
 uint8_t button_right_newpress()
@@ -80,12 +85,18 @@ uint8_t button_right_newpress()
   uint8_t v = button_right_holding();
   uint8_t newpress = v && !right_pressed;
   right_pressed = v;
+  if (v) tick++;
   if (newpress)
     right_hold_time = HAL_GetTick();
   else if (!v)
     right_hold_time = 0;
   right_pressed = v;
-  return newpress /*|| (right_hold_time && (right_hold_time + BUTTONS_REPEAT_TIME < HAL_GetTick()))*/;
+  return newpress || (left_right_repeat && right_hold_time && (right_hold_time + BUTTONS_REPEAT_TIME < HAL_GetTick()) && (tick % BUTTONS_LEFT_RIGHT_REPEAT_INTERVAL == 0));
+}
+
+void button_left_right_repeat_enable(uint8_t enable)
+{
+  left_right_repeat = enable;
 }
 
 uint32_t button_left_hold_time()
