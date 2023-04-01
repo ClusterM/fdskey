@@ -228,7 +228,7 @@ HAL_StatusTypeDef SD_init()
       return r;
     if (r1 == SD_R1_IDLE)
       break;
-    else if (i == SD_INIT_TRIES - 1)
+    if (i == SD_INIT_TRIES - 1)
       return HAL_ERROR;
   }
 
@@ -268,10 +268,9 @@ HAL_StatusTypeDef SD_init()
   if (!(r3[2] & (0b00110000))) // 3.2-3.3V or 3.3-3.4V
     return HAL_ERROR;
 
-  while (1)
+  for (i = 0; ; i++)
   {
     // ACMD41 - send operating condition
-    // indicate we support high capacity cards
     r = SD_send_acmd(41, 0x40000000);
     if (r != HAL_OK)
       return r;
@@ -281,6 +280,8 @@ HAL_StatusTypeDef SD_init()
     if (r1 == 0x00)
       break; // initialization finished
     if (r1 != SD_R1_IDLE)
+      return HAL_ERROR;
+    if (i == SD_INIT_TRIES - 1)
       return HAL_ERROR;
   }
 
