@@ -104,12 +104,31 @@ FRESULT file_restore_backup(char *path)
   return FR_OK;
 }
 
-FRESULT file_delete(char *path)
+FRESULT file_delete(char *path, uint8_t *deleted)
 {
+  FRESULT fr;
+  FILINFO fno;
+  char backup_path[strlen(path) + 4];
+
+  *deleted = 0;
+
   if (!confirm("Delete file?"))
     return FR_OK;
   show_saving_screen();
-  return f_unlink(path);
+  fr = f_unlink(path);
+  if (fr != FR_OK)
+    return fr;
+  *deleted = 1;
+
+  // check for backup
+  strcpy(backup_path, path);
+  strcat(backup_path, ".bak");
+  fr = f_stat(backup_path, &fno);
+  if (fr == FR_NO_FILE)
+    return FR_OK;
+  if (!confirm("Delete backup?"))
+    return FR_OK;
+  return f_unlink(backup_path);
 }
 
 void file_properties(char *directory, FILINFO *fno)
@@ -118,7 +137,8 @@ void file_properties(char *directory, FILINFO *fno)
   uint8_t selection = 0;
   int dl = strlen(directory);
   int fl = strlen(fno->fname);
-  char full_path[dl + fl + 2];
+  char full_path[dl + 1 /*slash*/ + fl + 1 /*zero terminator*/];
+  uint8_t deleted = 0;
 
   strcpy(full_path, directory);
   strcat(full_path, "\\");
@@ -152,9 +172,10 @@ void file_properties(char *directory, FILINFO *fno)
         show_error_screen_fr(fr, 0);
         break;
       case FILE_PROPERTIES_DELETE:
-        fr = file_delete(full_path);
+        fr = file_delete(full_path, &deleted);
         show_error_screen_fr(fr, 0);
-        return;
+        if (deleted)
+          return;
       }
       file_properties_draw(selection, fno->fattrib & AM_RDO);
     }
