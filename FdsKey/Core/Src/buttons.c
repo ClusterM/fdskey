@@ -50,7 +50,7 @@ uint8_t button_up_newpress()
     up_hold_time = HAL_GetTick();
   else if (!v)
     up_hold_time = 0;
-  return newpress || (up_hold_time && (up_hold_time + BUTTONS_REPEAT_TIME < HAL_GetTick()));
+  return newpress || (up_hold_time && (up_hold_time + BUTTONS_REPEAT_TIME < HAL_GetTick()) && (tick % BUTTONS_UP_DOWN_REPEAT_INTERVAL == 0));
 }
 
 uint8_t button_down_newpress()
@@ -63,7 +63,7 @@ uint8_t button_down_newpress()
     down_hold_time = HAL_GetTick();
   else if (!v)
     down_hold_time = 0;
-  return newpress || (down_hold_time && (down_hold_time + BUTTONS_REPEAT_TIME < HAL_GetTick()));
+  return newpress || (down_hold_time && (down_hold_time + BUTTONS_REPEAT_TIME < HAL_GetTick()) && (tick % BUTTONS_UP_DOWN_REPEAT_INTERVAL == 0));
 }
 
 uint8_t button_left_newpress()

@@ -15,6 +15,7 @@ uint32_t button_right_hold_time();
 void button_check_screen_off();
 
 #define BUTTONS_REPEAT_TIME 500
+#define BUTTONS_UP_DOWN_REPEAT_INTERVAL 4
 #define BUTTONS_LEFT_RIGHT_REPEAT_INTERVAL 12
 
 #endif /* INC_BUTTONS_H_ */
