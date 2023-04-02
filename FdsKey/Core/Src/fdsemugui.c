@@ -20,6 +20,7 @@ void fds_gui_draw(uint8_t side, uint8_t side_count, char *game_name, int text_sc
   int total_size = fds_get_max_size();
   int block = fds_get_block();
   int block_count = fds_get_block_count();
+  int file_count;
 
   disk_image = side_select_get_disk_image(side, side_count);
 
@@ -98,7 +99,9 @@ void fds_gui_draw(uint8_t side, uint8_t side_count, char *game_name, int text_sc
   else
     strcpy(file_str, "FILE Hd/");
   oled_draw_text(&FDS_GUI_FILE_NUMBER_FONT, file_str, 32 + (((block_count - 2) / 2 / 10 == 1) ? 4 : 0), line + 22, 0, 0);
-  sprintf(file_str, "%02d", (block_count - 2) / 2);
+  file_count = (block_count - 2) / 2;
+  if (file_count < 0) file_count = 0;
+  sprintf(file_str, "%02d", file_count);
   oled_draw_text(&FDS_GUI_FILE_NUMBER_FONT, file_str, 80, line + 22, 0, 0);
   if (state_image != (DotMatrixImage*)&IMAGE_STATE_PAUSE) // lol
   {
@@ -133,7 +136,8 @@ FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t
 
   show_loading_screen();
   fr = fds_load_side(filename, side, ro);
-  if (fr != FR_OK) return fr;
+  if (fr != FR_OK)
+    return fr;
 
   while (!button_left_newpress())
   {
