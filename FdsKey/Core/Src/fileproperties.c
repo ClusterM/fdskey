@@ -115,6 +115,9 @@ FRESULT file_delete(char *path, uint8_t *deleted)
   if (!confirm("Delete file?"))
     return FR_OK;
   show_saving_screen();
+  fr = f_chmod(path, 0, AM_RDO);
+  if (fr != FR_OK)
+    return fr;
   fr = f_unlink(path);
   if (fr != FR_OK)
     return fr;
@@ -128,6 +131,10 @@ FRESULT file_delete(char *path, uint8_t *deleted)
     return FR_OK;
   if (!confirm("Delete backup?"))
     return FR_OK;
+  show_saving_screen();
+  fr = f_chmod(backup_path, 0, AM_RDO);
+  if (fr != FR_OK)
+    return fr;
   return f_unlink(backup_path);
 }
 
