@@ -142,7 +142,7 @@ FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t
       show_saving_screen();
       fr = fds_save();
       if (fr != FR_OK)
-        show_error_screen_fr(fr, 1);
+        return fr;
     }
 
     fds_gui_draw(side, side_count, game_name, text_scroll);
