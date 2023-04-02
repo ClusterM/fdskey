@@ -79,11 +79,11 @@ void fds_gui_draw(uint8_t side, uint8_t side_count, char *game_name, int text_sc
   // horizontal line
   oled_draw_line(4, line + 15, 89, line + 15, 1); // length = 86
   // used line
-  int used_length = used_space * 86 / total_size;
-  if (used_length > 86) used_length = 86;
-  oled_draw_rectangle(4, line + 12, 4 + used_length, line + 14, 1, 1);
+  int used_length = used_space * 87 / total_size;
+  if (used_length > 87) used_length = 87;
+  oled_draw_rectangle(3, line + 12, 3 + used_length, line + 14, 1, 1);
   int pos = head_position * 87 / total_size;
-  if (pos > 86) pos = 87;
+  if (pos > 87) pos = 87;
   oled_draw_image(&IMAGE_HEAD_CURSOR, 1 + pos, line + 16, 0, 0);
   // state image
   oled_draw_image(
