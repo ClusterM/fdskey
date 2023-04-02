@@ -98,7 +98,7 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
     value = fdskey_settings.hide_hidden ? on : off;
     break;
   case SETTING_AUTOSAVE_TIME:
-    parameter_name = "Autosave after";
+    parameter_name = "Autosave delay";
     sprintf(value_v, "<%ds>", fdskey_settings.autosave_time);
     break;
   case SETTING_BRIGHTNESS:

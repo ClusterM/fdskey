@@ -36,7 +36,7 @@ static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int
     if (side + 1 < side_count)
       oled_draw_image(&IMAGE_CURSOR_DOWN, l > 1 ? 85 : 81, line + OLED_HEIGHT - IMAGE_CURSOR_DOWN.height, 0, 0);
     if (side > 0)
-      oled_draw_image(&IMAGE_CURSOR_UP, l > 1 ? 85 : 81, line + 15, 0, 0);
+      oled_draw_image(&IMAGE_CURSOR_UP, l > 1 ? 85 : 81, line + 16, 0, 0);
   }
 
   max_width = OLED_WIDTH - disk_image->width - 4;
