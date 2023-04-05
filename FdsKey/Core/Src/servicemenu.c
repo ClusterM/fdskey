@@ -159,9 +159,12 @@ void service_menu()
           draw_item((oled_get_line() + OLED_HEIGHT) / 8 + i, line + i, line + i == selection);
         oled_switch_to_invisible();
         break;
+      case SERVICE_SETTING_VERSION:
       case SERVICE_SETTING_COMMIT:
       case SERVICE_SETTING_BUILD_DATE:
       case SERVICE_SETTING_BUILD_TIME:
+      case SERVICE_SETTING_HW_VERSION:
+      case SERVICE_SETTING_BL_COMMIT:
         break;
       default:
         service_settings_save();
