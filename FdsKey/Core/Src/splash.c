@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "splash.h"
 #include "oled.h"
 #include "app_fatfs.h"
@@ -7,9 +8,28 @@
 
 void show_message(char *text, uint8_t wait)
 {
+  char* second_line;
+
   oled_draw_rectangle(0, oled_get_line() + OLED_HEIGHT, OLED_WIDTH - 1, oled_get_line() + OLED_HEIGHT * 2 - 1, 1, 0);
-  oled_draw_text(&SPLASH_REGULAR_FONT, text, OLED_WIDTH / 2 - oled_get_text_length(&SPLASH_REGULAR_FONT, text) / 2,
+
+  second_line = strstr(text, "\n");
+  if (!second_line)
+  {
+    oled_draw_text(&SPLASH_REGULAR_FONT, text, OLED_WIDTH / 2 - oled_get_text_length(&SPLASH_REGULAR_FONT, text) / 2,
       oled_get_line() + OLED_HEIGHT + OLED_HEIGHT / 2 - SPLASH_REGULAR_FONT.char_height / 2, 0, 0);
+  } else {
+    // two-lined text
+    second_line++;
+    // we need to make a copy of text because text can point to non-writable memory
+    char first_line[second_line - text];
+    memcpy(first_line, text, second_line - text - 1);
+    first_line[second_line - text - 1] = 0;
+    oled_draw_text(&SPLASH_REGULAR_FONT, first_line, OLED_WIDTH / 2 - oled_get_text_length(&SPLASH_REGULAR_FONT, first_line) / 2,
+      oled_get_line() + OLED_HEIGHT + OLED_HEIGHT / 2 - SPLASH_REGULAR_FONT.char_height, 0, 0);
+    oled_draw_text(&SPLASH_REGULAR_FONT, second_line, OLED_WIDTH / 2 - oled_get_text_length(&SPLASH_REGULAR_FONT, second_line) / 2,
+      oled_get_line() + OLED_HEIGHT + OLED_HEIGHT / 2, 0, 0);
+  }
+
   oled_update_invisible();
   oled_switch_to_invisible();
 
@@ -42,6 +62,7 @@ void show_error_screen(char *text, uint8_t fatal)
 {
   if (fatal)
     __disable_irq();
+
   oled_draw_rectangle(0, oled_get_line() + OLED_HEIGHT, OLED_WIDTH - 1, oled_get_line() + OLED_HEIGHT * 2 - 1, 1, 0);
   oled_draw_text(&SPLASH_ERROR_TITLE_FONT, "Error :(", 4, oled_get_line() + OLED_HEIGHT, 0, 0);
   oled_draw_text(&SPLASH_REGULAR_FONT, text, 4, oled_get_line() + OLED_HEIGHT + 20, 0, 0);

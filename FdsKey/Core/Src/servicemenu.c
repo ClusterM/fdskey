@@ -6,6 +6,7 @@
 #include "oled.h"
 #include "buttons.h"
 #include "commit.h"
+#include "splash.h"
 
 FDSKEY_SERVICE_SETTINGS fdskey_service_settings;
 FDSKEY_HARDWARE_VERSION fdskey_hw_version;
@@ -72,22 +73,22 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
     sprintf(value_v, "<%s>", fdskey_service_settings.oled_controller == OLED_CONTROLLER_SSD1306 ? "SSD1306" : "SH1106");
     break;
   case SERVICE_SETTING_VERSION:
-    parameter_name = "Commit";
+    parameter_name = "FW version";
     if (!FDSKEY_VERION_SUFFIX)
       sprintf(value_v, "v%d.%d", FDSKEY_VERION_MAJOR, FDSKEY_VERION_MINOR);
     else
       sprintf(value_v, "v%d.%d%c", FDSKEY_VERION_MAJOR, FDSKEY_VERION_MINOR, FDSKEY_VERION_SUFFIX);
     break;
   case SERVICE_SETTING_COMMIT:
-    parameter_name = "Commit";
+    parameter_name = "FW commit";
     value = COMMIT;
     break;
   case SERVICE_SETTING_BUILD_DATE:
-    parameter_name = "Build date";
+    parameter_name = "FW build date";
     value = BUILD_DATE;
     break;
   case SERVICE_SETTING_BUILD_TIME:
-    parameter_name = "Build time";
+    parameter_name = "FW build time";
     value = BUILD_TIME;
     break;
   case SERVICE_SETTING_HW_VERSION:
@@ -124,6 +125,9 @@ void service_menu()
   int line = 0;
   int selection = 0;
   int i;
+
+  show_message("Entering into\nthe service menu", 0);
+  HAL_Delay(1500);
 
   for (i = 0; i < 4; i++)
     draw_item((oled_get_line() + OLED_HEIGHT) / 8 + i, line + i, line + i == selection);
