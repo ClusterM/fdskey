@@ -124,6 +124,7 @@ int main(void)
     Error_Handler();
   }
   /* USER CODE BEGIN 2 */
+  write_hardware_version();
 #ifndef DEBUG
   if (!button_left_holding() || !button_right_holding() ||
       !button_up_holding() || !button_down_holding()) start_app();
@@ -168,7 +169,8 @@ int main(void)
     fr = f_read(&fp, buffer, FLASH_PAGE_SIZE, &br);
     show_error_screen_fr(fr, 1);
     if (!br) break;
-
+    if (pos >= FIRMWARE_MAX_SIZE)
+      show_error_screen("File is too big", 1);
     erase_init_struct.TypeErase = FLASH_TYPEERASE_PAGES;
     erase_init_struct.Banks = ((APP_ADDRESS - 0x08000000 + pos) / FLASH_BANK_SIZE == 0) ? FLASH_BANK_1 : FLASH_BANK_2;
     erase_init_struct.Page = ((APP_ADDRESS - 0x08000000 + pos) / FLASH_PAGE_SIZE) % FLASH_PAGE_NB;

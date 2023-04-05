@@ -54,8 +54,8 @@ HAL_StatusTypeDef settings_save()
   r = HAL_FLASHEx_Erase(&erase_init_struct, &sector_error);
   if (r != HAL_OK) return r;
 
-  memcpy(buffer, &fdskey_settings, sizeof(fdskey_settings));
   // writing
+  memcpy(buffer, &fdskey_settings, sizeof(fdskey_settings));
   for (i = 0; i < sizeof(buffer); i += sizeof(uint64_t))
   {
     r = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, SETTINGS_FLASH_OFFSET + i, buffer[i / sizeof(uint64_t)]);

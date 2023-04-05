@@ -8,9 +8,11 @@
 #include "commit.h"
 
 FDSKEY_SERVICE_SETTINGS fdskey_service_settings;
+FDSKEY_HARDWARE_VERSION fdskey_hw_version;
 
 void service_settings_load()
 {
+  memcpy(&fdskey_hw_version, (void*)HARDWARE_VERSION_FLASH_OFFSET, sizeof(fdskey_hw_version));
   memcpy(&fdskey_service_settings, (void*)SERVICE_SETTINGS_FLASH_OFFSET, sizeof(fdskey_service_settings));
   fdskey_service_settings.sig[sizeof(fdskey_service_settings.sig) - 1] = 0;
   if (strcmp(fdskey_service_settings.sig, SERVICE_SETTINGS_SIGNATURE))
@@ -42,8 +44,8 @@ HAL_StatusTypeDef service_settings_save()
   r = HAL_FLASHEx_Erase(&erase_init_struct, &sector_error);
   if (r != HAL_OK) return r;
 
-  memcpy(buffer, &fdskey_service_settings, sizeof(fdskey_service_settings));
   // writing
+  memcpy(buffer, &fdskey_service_settings, sizeof(fdskey_service_settings));
   for (i = 0; i < sizeof(buffer); i += sizeof(uint64_t))
   {
     r = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, SERVICE_SETTINGS_FLASH_OFFSET + i, buffer[i / sizeof(uint64_t)]);
@@ -69,6 +71,13 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
     parameter_name = "OLED controller";
     sprintf(value_v, "<%s>", fdskey_service_settings.oled_controller == OLED_CONTROLLER_SSD1306 ? "SSD1306" : "SH1106");
     break;
+  case SERVICE_SETTING_VERSION:
+    parameter_name = "Commit";
+    if (!FDSKEY_VERION_SUFFIX)
+      sprintf(value_v, "v%d.%d", FDSKEY_VERION_MAJOR, FDSKEY_VERION_MINOR);
+    else
+      sprintf(value_v, "v%d.%d%c", FDSKEY_VERION_MAJOR, FDSKEY_VERION_MINOR, FDSKEY_VERION_SUFFIX);
+    break;
   case SERVICE_SETTING_COMMIT:
     parameter_name = "Commit";
     value = COMMIT;
@@ -80,6 +89,17 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
   case SERVICE_SETTING_BUILD_TIME:
     parameter_name = "Build time";
     value = BUILD_TIME;
+    break;
+  case SERVICE_SETTING_HW_VERSION:
+    parameter_name = "HW version";
+    if (!fdskey_hw_version.suffix)
+      sprintf(value_v, "v%d.%d", fdskey_hw_version.major, fdskey_hw_version.minor);
+    else
+      sprintf(value_v, "v%d.%d%c", fdskey_hw_version.major, fdskey_hw_version.minor, fdskey_hw_version.suffix);
+    break;
+  case SERVICE_SETTING_BL_COMMIT:
+    parameter_name = "BL commit";
+    value = fdskey_hw_version.bootloader_commit;
     break;
   default:
     parameter_name = "[ Save and return ]";

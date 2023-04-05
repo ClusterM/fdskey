@@ -109,15 +109,14 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  //HAL_Delay(5000);
+  service_settings_load();
+  settings_load();
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  service_settings_load();
-  settings_load();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */

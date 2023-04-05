@@ -41,13 +41,16 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-#define APP_ADDRESS 0x08020000
-#define FIRMWARE_FILE "firmware.bin"
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-
+#define APP_ADDRESS 0x08020000
+#define FIRMWARE_FILE "firmware.bin"
+#define FIRMWARE_MAX_SIZE (384 * 1024 - FLASH_PAGE_SIZE * 4)
+#define HARDWARE_VERSION_MAJOR 0
+#define HARDWARE_VERSION_MINOR 1
+#define HARDWARE_VERSION_SUFFIX 0
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
