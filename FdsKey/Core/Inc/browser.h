@@ -26,6 +26,6 @@ typedef struct {
   uint8_t fattrib;
 } DYN_FILINFO;
 
-FRESULT browser_tree(char *directory, int dir_max_len, FILINFO *fno, BROWSER_RESULT *br);
+BROWSER_RESULT browser_tree(char *directory, int dir_max_len, FILINFO *fno);
 
 #endif /* INC_BROWSER_H_ */

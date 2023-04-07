@@ -108,8 +108,7 @@ void main_menu_loop()
     case MAIN_MENU_BROWSE_ROMS:
       while (1)
       {
-        fr = browser_tree(fdskey_settings.last_directory, sizeof(fdskey_settings.last_directory), &selected_file, &br);
-        show_error_screen_fr(fr, 1);
+        br = browser_tree(fdskey_settings.last_directory, sizeof(fdskey_settings.last_directory), &selected_file);
         // remember last directory (root) and file
         strcpy(fdskey_settings.last_file, selected_file.fname);
         if (br == BROWSER_BACK)

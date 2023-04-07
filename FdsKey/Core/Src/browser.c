@@ -392,31 +392,31 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
 // directory - start directory and new directory path output
 // dir_max_len - size of "directory"
 // fno - start file and selected file output
-// br - output with selection result
-FRESULT browser_tree(char *directory, int dir_max_len, FILINFO *fno, BROWSER_RESULT *br)
+// returns output with selection result
+BROWSER_RESULT browser_tree(char *directory, int dir_max_len, FILINFO *fno)
 {
+  BROWSER_RESULT br;
   FRESULT fr;
   int i;
 
   while (1)
   {
-    fr = browser(directory, fno, br, fno->fname);
+    fr = browser(directory, fno, &br, fno->fname);
     if (fr == FR_NO_PATH) // directory not exists (anymore?)
     {
       // repeat from root
       directory[0] = 0;
-      fr = browser(directory, fno, br, fno->fname);
+      fr = browser(directory, fno, &br, fno->fname);
     }
-    if (fr != FR_OK) return fr;
-    switch (*br)
+    show_error_screen_fr(fr, 1);
+    switch (br)
     {
     case BROWSER_BACK:
       // "back" button pressed
       if (!*directory)
       {
         // we are at root already, return
-        *br = BROWSER_BACK;
-        return FR_OK;
+        return BROWSER_BACK;
       }
       for (i = strlen(directory) - 2; i >= 0; i--)
       {
@@ -450,7 +450,7 @@ FRESULT browser_tree(char *directory, int dir_max_len, FILINFO *fno, BROWSER_RES
       // file selected
     case BROWSER_FILE_LONGPRESS:
       // file selected using button longpress
-      return FR_OK;
+      return br;
     }
   }
 }

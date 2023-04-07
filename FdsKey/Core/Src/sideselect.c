@@ -119,7 +119,7 @@ void fds_side_select(char *directory, FILINFO *fno)
   {
     // Single sided ROM, do not show side select dialog
     fr = fds_gui_load_side(full_path, game_name, side, side_count, fno->fattrib & AM_RDO);
-    show_error_screen_fr(fr, 0);
+    show_error_screen_fr(fr, fr < 0x80);
     return;
   }
 
@@ -155,7 +155,7 @@ void fds_side_select(char *directory, FILINFO *fno)
     if (button_right_newpress())
     {
       fr = fds_gui_load_side(full_path, game_name, side, side_count, fno->fattrib & AM_RDO);
-      show_error_screen_fr(fr, 0);
+      show_error_screen_fr(fr, fr < 0x80);
       // back to side select
       fds_side_draw(side, side_count, game_name, text_scroll);
       oled_update_invisible();
