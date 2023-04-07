@@ -78,6 +78,7 @@ typedef struct {
 extern SPI_HandleTypeDef SD_SPI_PORT;
 
 HAL_StatusTypeDef SD_init();
+HAL_StatusTypeDef SD_init_try_speed();
 HAL_StatusTypeDef SD_read_csd(SD_CSD* csd);
 uint64_t SD_get_capacity();
 HAL_StatusTypeDef SD_read_single_block(uint32_t blockNum, uint8_t* buff); // sizeof(buff) == 512!

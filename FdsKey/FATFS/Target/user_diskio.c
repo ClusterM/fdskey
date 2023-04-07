@@ -82,7 +82,7 @@ DSTATUS USER_initialize (
 )
 {
   /* USER CODE BEGIN INIT */
-  HAL_StatusTypeDef r = SD_init();
+  HAL_StatusTypeDef r = SD_init_try_speed();
   if (r == HAL_OK)
     return 0;
   else

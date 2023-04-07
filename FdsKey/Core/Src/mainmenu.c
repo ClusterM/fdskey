@@ -79,16 +79,13 @@ void main_menu_loop()
 {
   BROWSER_RESULT br;
   FILINFO selected_file;
-  FATFS FatFs;
+  FATFS fat_fs;
   FRESULT fr;
   uint8_t menu_selection = 0xFF;
 
   while (HAL_GPIO_ReadPin(SD_DTCT_GPIO_Port, SD_DTCT_Pin))
     show_error_screen("No SD card", 0);
-  HAL_StatusTypeDef r = SD_init();
-  if (r != HAL_OK)
-    show_error_screen("Can't init SD card", 1);
-  fr = f_mount(&FatFs, "", 1);
+  fr = f_mount(&fat_fs, "", 1);
   show_error_screen_fr(fr, 1);
 
   if (!fdskey_settings.remember_last_file)

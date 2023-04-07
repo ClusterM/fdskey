@@ -324,6 +324,29 @@ HAL_StatusTypeDef SD_init()
   return HAL_OK;
 }
 
+// reduce SPI speed until SD card init is ok
+HAL_StatusTypeDef SD_init_try_speed()
+{
+  HAL_StatusTypeDef r;
+  SD_SPI_PORT.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  HAL_SPI_Init(&SD_SPI_PORT);
+  r = SD_init();
+  if (r == HAL_OK)
+    return r;
+  SD_SPI_PORT.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+  HAL_SPI_Init(&SD_SPI_PORT);
+  r = SD_init();
+  if (r == HAL_OK)
+    return r;
+  SD_SPI_PORT.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+  HAL_SPI_Init(&SD_SPI_PORT);
+  r = SD_init();
+  if (r == HAL_OK)
+    return r;
+  SD_SPI_PORT.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+  HAL_SPI_Init(&SD_SPI_PORT);
+  return SD_init();
+}
 
 HAL_StatusTypeDef SD_read_csd(SD_CSD* csd)
 {
