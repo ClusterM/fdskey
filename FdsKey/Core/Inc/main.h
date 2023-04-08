@@ -90,6 +90,7 @@ void Error_Handler(void);
 #define BUTTON_UP_GPIO_Port GPIOD
 #define SD_DTCT_Pin GPIO_PIN_3
 #define SD_DTCT_GPIO_Port GPIOD
+#define SD_DTCT_EXTI_IRQn EXTI2_3_IRQn
 #define SD_CS_Pin GPIO_PIN_6
 #define SD_CS_GPIO_Port GPIOB
 

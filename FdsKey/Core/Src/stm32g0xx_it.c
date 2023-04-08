@@ -42,7 +42,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+extern I2C_HandleTypeDef hi2c1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -87,6 +87,11 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
+  // we need to re-init i2c in case of interrupt
+  // because it can be used and we need it to
+  // output error message
+  HAL_I2C_DeInit(&hi2c1);
+  HAL_I2C_Init(&hi2c1);
   show_error_screen("Hard fault", 1);
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
@@ -166,6 +171,7 @@ void EXTI2_3_IRQHandler(void)
 
   /* USER CODE END EXTI2_3_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(FDS_WRITE_Pin);
+  HAL_GPIO_EXTI_IRQHandler(SD_DTCT_Pin);
   /* USER CODE BEGIN EXTI2_3_IRQn 1 */
 
   /* USER CODE END EXTI2_3_IRQn 1 */

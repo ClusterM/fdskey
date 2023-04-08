@@ -6,10 +6,10 @@
 #include "main.h"
 #include "oled.h"
 
-static OLED_CONTROLLER controller;
-static uint8_t rotate = 0;
-static uint8_t current_line = 0;
-static uint8_t image[OLED_HEIGHT * 2 * OLED_WIDTH];
+static volatile OLED_CONTROLLER controller;
+static volatile uint8_t rotate = 0;
+static volatile uint8_t current_line = 0;
+static volatile uint8_t image[OLED_HEIGHT * 2 * OLED_WIDTH];
 
 // init OLED and buffer
 void oled_init(OLED_CONTROLLER oled_controller, uint8_t rotate_screen, uint8_t reverse, uint8_t contrast)

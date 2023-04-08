@@ -72,12 +72,32 @@ static void MX_TIM1_Init(void);
 
 void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 {
-  fds_check_pins();
+  switch (GPIO_Pin)
+  {
+  case FDS_SCAN_MEDIA_Pin:
+  case FDS_WRITE_Pin:
+    fds_check_pins();
+    break;
+  case SD_DTCT_Pin:
+    // we need to re-init i2c in case of interrupt
+    // because it can be used and we need it to
+    // output error message
+    HAL_I2C_DeInit(&hi2c1);
+    HAL_I2C_Init(&hi2c1);
+    show_error_screen("SD card is ejected", 1);
+    break;
+  }
 }
 
 void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 {
-  fds_check_pins();
+  switch (GPIO_Pin)
+  {
+  case FDS_SCAN_MEDIA_Pin:
+  case FDS_WRITE_Pin:
+    fds_check_pins();
+    break;
+  }
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -516,11 +536,17 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(FDS_WRITE_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : BUTTON_RIGHT_Pin BUTTON_LEFT_Pin BUTTON_UP_Pin SD_DTCT_Pin */
-  GPIO_InitStruct.Pin = BUTTON_RIGHT_Pin|BUTTON_LEFT_Pin|BUTTON_UP_Pin|SD_DTCT_Pin;
+  /*Configure GPIO pins : BUTTON_RIGHT_Pin BUTTON_LEFT_Pin BUTTON_UP_Pin */
+  GPIO_InitStruct.Pin = BUTTON_RIGHT_Pin|BUTTON_LEFT_Pin|BUTTON_UP_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : SD_DTCT_Pin */
+  GPIO_InitStruct.Pin = SD_DTCT_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(SD_DTCT_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : SD_CS_Pin */
   GPIO_InitStruct.Pin = SD_CS_Pin;
