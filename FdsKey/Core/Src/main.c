@@ -84,7 +84,7 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
     // output error message
     HAL_I2C_DeInit(&hi2c1);
     HAL_I2C_Init(&hi2c1);
-    show_error_screen("SD card is ejected", 1);
+    show_error_screen("The SD card is ejected", 1);
     break;
   }
 }

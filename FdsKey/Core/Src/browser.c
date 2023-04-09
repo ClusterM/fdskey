@@ -180,6 +180,8 @@ static int browser_menu(int selection, uint8_t *is_selected)
   if (line + 4 > item_count) line = item_count - 4;
   if (line < 0) line = 0;
 
+  button_set_up_down_repeat_interval(1);
+
   for (i = 0; i < 4; i++)
   {
     browser_draw_item((oled_get_line() + OLED_HEIGHT) / 8 + i, line + i, line + i == selection, 0);
@@ -204,10 +206,12 @@ static int browser_menu(int selection, uint8_t *is_selected)
     }
     if (button_left_newpress()) {
       *is_selected = 0;
+      button_set_up_down_repeat_interval(BUTTONS_DEFAULT_UP_DOWN_REPEAT_INTERVAL);
       return selection; // back
     }
     if (button_right_newpress()) {
       *is_selected = 1;
+      button_set_up_down_repeat_interval(BUTTONS_DEFAULT_UP_DOWN_REPEAT_INTERVAL);
       return selection;
     }
     while (selection < line && line)

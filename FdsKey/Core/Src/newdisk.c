@@ -72,7 +72,7 @@ static void new_disk_select_sides_count_draw(int sides, int blink)
       0, 0);
 
   // arrows
-  if ((blink / 4) % 2)
+  if ((blink / 8) % 2)
   {
     if (sides < 8)
       oled_draw_image(&IMAGE_CURSOR_UP_W, OLED_WIDTH / 2 - IMAGE_CURSOR_UP_W.width / 2,
@@ -146,7 +146,7 @@ static void new_disk_filename_draw(char *filename, int blink)
       0, 0);
 
   // arrows
-  if ((blink / 4) % 2)
+  if ((blink / 8) % 2)
   {
     oled_draw_image(&IMAGE_CURSOR_UP_W, 1 + l * (FONT_GAMEGIRL_CLASSIC_6.char_width + FONT_GAMEGIRL_CLASSIC_6.spacing),
         line + 13, 0, 0);
@@ -174,6 +174,7 @@ FRESULT new_disk()
   l = strlen(filename);
   while (1)
   {
+    button_left_right_repeat_enable(1);
     if (button_up_newpress())
     {
       // character plus
@@ -213,6 +214,7 @@ FRESULT new_disk()
             break;
         }
         strcat(filename_trimmed, ".fds");
+        button_left_right_repeat_enable(0);
         fr = new_disk_select_sides_count(filename_trimmed);
         if (fr != FDSR_CANCELLED) {
           if (fr == FR_OK)
