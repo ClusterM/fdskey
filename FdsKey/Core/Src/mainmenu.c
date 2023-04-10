@@ -90,25 +90,32 @@ void main_menu_loop()
 
   if (fdskey_settings.remember_last_state_mode == REMEMBER_LAST_STATE_NONE)
   {
+    // reset state
     fdskey_settings.last_directory[0] = 0;
     fdskey_settings.last_file[0] = 0;
   } else {
+    // load last filename
     strcpy(selected_file.fname, fdskey_settings.last_file);
     if (fdskey_settings.last_state != LAST_STATE_MAIN_MENU)
     {
       if (fdskey_settings.last_state == LAST_STATE_ROM)
       {
+        // need to load last ROM
         show_loading_screen();
+        // combine directory path and filename
         int dl = strlen(fdskey_settings.last_directory);
         int fl = strlen(fdskey_settings.last_file);
         char full_path[dl + fl + 2];
         strcpy(full_path, fdskey_settings.last_directory);
         strcat(full_path, "\\");
         strcat(full_path, fdskey_settings.last_file);
+        // get file attributes
         fr = f_stat(full_path, &selected_file);
+        // load ROM
         if (fr == FR_OK)
           fds_side_select(fdskey_settings.last_directory, &selected_file, 1);
       }
+      // show file browser on last file
       menu_selection = MAIN_MENU_BROWSE_ROMS;
     }
   }
@@ -120,7 +127,9 @@ void main_menu_loop()
     case MAIN_MENU_BROWSE_ROMS:
       while (1)
       {
+        // show file browser
         br = browser_tree(fdskey_settings.last_directory, sizeof(fdskey_settings.last_directory), &selected_file);
+        // remember last filename if need
         if (fdskey_settings.remember_last_state_mode != REMEMBER_LAST_STATE_NONE)
           strcpy(fdskey_settings.last_file, selected_file.fname);
         if (br == BROWSER_BACK || br == BROWSER_BACK_LONGPRESS)
@@ -129,6 +138,7 @@ void main_menu_loop()
           // load ROM
           fds_side_select(fdskey_settings.last_directory, &selected_file, 0);
         else if (br == BROWSER_FILE_LONGPRESS)
+          // show file properties
           file_properties(fdskey_settings.last_directory, &selected_file);
       }
       if (fdskey_settings.remember_last_state_mode != REMEMBER_LAST_STATE_NONE)
@@ -139,6 +149,7 @@ void main_menu_loop()
       }
       break;
     case MAIN_MENU_NEW_ROM:
+      // new ROM dialog
       fr = new_disk();
       if (fr != FDSR_CANCELLED)
       {
@@ -154,9 +165,11 @@ void main_menu_loop()
       }
       break;
     case MAIN_MENU_SETTINGS:
+      // settings dialog
       settings_menu();
       break;
     case MAIN_MENU_SERVICE_MENU:
+      // service menu
       service_menu();
       menu_selection = 0;
       break;

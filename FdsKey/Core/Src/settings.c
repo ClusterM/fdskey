@@ -95,7 +95,8 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
       value = "<ROM>";
       break;
     }
-    break;  case SETTING_HIDE_NON_FDS:
+    break;
+  case SETTING_HIDE_NON_FDS:
     parameter_name = "Hide non .fds files";
     value = fdskey_settings.hide_non_fds ? on : off;
     break;
