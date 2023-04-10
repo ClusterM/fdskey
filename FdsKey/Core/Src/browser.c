@@ -16,6 +16,8 @@ static int file_count = 0;
 static void browser_free();
 
 #ifdef BROWSER_USE_RUSSIAN
+// codepage conversions for russian characters
+// FAT uses cp866 but my fonts use cp1251
 static void cp866to1251(char *text)
 {
   while (*text)
@@ -31,7 +33,6 @@ static void cp866to1251(char *text)
     text++;
   }
 }
-
 static void cp1251to866(char *text)
 {
   while (*text)
@@ -49,6 +50,24 @@ static void cp1251to866(char *text)
 }
 #endif
 
+// compare filenames but without extension(s)
+static int strcasecmp_no_extension(char *a, char *b)
+{
+  // TODO: optimize?
+  int i;
+  char a_no_ext[_MAX_LFN + 1];
+  char b_no_ext[_MAX_LFN + 1];
+  strcpy(a_no_ext, a);
+  strcpy(b_no_ext, b);
+  char *a_dot = strstr(a_no_ext, ".");
+  char *b_dot = strstr(b_no_ext, ".");
+  if (a_dot) *a_dot = 0;
+  if (b_dot) *b_dot = 0;
+  i = strcasecmp(a_no_ext, b_no_ext);
+  if (i) return i;
+  return strcasecmp(a, b);
+}
+
 // Merge sort
 // left source half is A[iBegin:iMiddle-1]
 // right source half is A[iMiddle:iEnd-1]
@@ -60,7 +79,7 @@ static void top_down_merge(DYN_FILINFO** A, int iBegin, int iMiddle, int iEnd, D
   // While there are elements in the left or right runs...
   for (k = iBegin; k < iEnd; k++) {
     // If left run head exists and is <= existing right run head.
-    if (i < iMiddle && (j >= iEnd || strcasecmp(A[i]->filename, A[j]->filename) <= 0)) {
+    if (i < iMiddle && (j >= iEnd || strcasecmp_no_extension(A[i]->filename, A[j]->filename) <= 0)) {
       B[k] = A[i];
       i = i + 1;
     } else {
@@ -103,7 +122,7 @@ static void browser_draw_item(uint8_t line, int item, uint8_t is_selected, int t
   {
     text = file_list[item - dir_count]->filename;
     // hide extension if enabled and .fds file
-    if (fdskey_settings.hide_extensions && (strcasecmp(text + strlen(text) - 4, ".fds") == 0))
+    if (fdskey_settings.hide_extensions && !strcasecmp(text + strlen(text) - 4, ".fds"))
     {
       char trimmed[_MAX_LFN + 1];
       strncpy(trimmed, text, _MAX_LFN);
