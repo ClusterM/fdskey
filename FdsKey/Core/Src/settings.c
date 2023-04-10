@@ -16,9 +16,10 @@ void settings_load()
     // config is empty, load defaults
     memset(&fdskey_settings, 0, sizeof(fdskey_settings));
     strcpy(fdskey_settings.sig, SETTINGS_SIGNATURE);
-    fdskey_settings.version = SETTINGS_VERSION;
-    fdskey_settings.remember_last_file = 1;
+    fdskey_settings.version = 0;
     fdskey_settings.fast_rewind = 0;
+    fdskey_settings.remember_last_state_mode = REMEMBER_LAST_STATE_BROWSER;
+    fdskey_settings.last_state = LAST_STATE_MAIN_MENU;
     fdskey_settings.hide_non_fds = 1;
     fdskey_settings.hide_extensions = 1;
     fdskey_settings.hide_hidden = 1;
@@ -30,7 +31,6 @@ void settings_load()
     fdskey_settings.backup_original = 1;
     fdskey_settings.last_directory[0] = 0;
     fdskey_settings.last_file[0] = 0;
-    fdskey_settings.last_state_menu = 1;
   }
 }
 
@@ -77,15 +77,25 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
 
   switch (item)
   {
-  case SETTING_REMEMBER_LAST_FILE:
-    parameter_name = "Remember last file";
-    value = fdskey_settings.remember_last_file ? on : off;
-    break;
   case SETTING_FAST_REWIND:
     parameter_name = "Fast disk rewind";
     value = fdskey_settings.fast_rewind ? on : off;
     break;
-  case SETTING_HIDE_NON_FDS:
+  case SETTING_REMEMBER_LAST_STATE:
+    parameter_name = "Remember state";
+    switch (fdskey_settings.remember_last_state_mode)
+    {
+    default:
+      value = "<none>";
+      break;
+    case REMEMBER_LAST_STATE_BROWSER:
+      value = "<browser>";
+      break;
+    case REMEMBER_LAST_STATE_ROM:
+      value = "<ROM>";
+      break;
+    }
+    break;  case SETTING_HIDE_NON_FDS:
     parameter_name = "Hide non .fds files";
     value = fdskey_settings.hide_non_fds ? on : off;
     break;
@@ -183,8 +193,15 @@ void settings_menu()
     {
       switch (selection)
       {
-      case SETTING_REMEMBER_LAST_FILE:
-        fdskey_settings.remember_last_file = !fdskey_settings.remember_last_file;
+      case SETTING_REMEMBER_LAST_STATE:
+        if (button_left_holding())
+        {
+          if (fdskey_settings.remember_last_state_mode > 0)
+            fdskey_settings.remember_last_state_mode--;
+        } else {
+          if (fdskey_settings.remember_last_state_mode < REMEMBER_LAST_STATE_ROM)
+            fdskey_settings.remember_last_state_mode++;
+        }
         break;
       case SETTING_FAST_REWIND:
         fdskey_settings.fast_rewind = !fdskey_settings.fast_rewind;

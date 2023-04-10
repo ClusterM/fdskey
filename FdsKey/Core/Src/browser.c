@@ -413,16 +413,41 @@ BROWSER_RESULT browser_tree(char *directory, int dir_max_len, FILINFO *fno)
   FRESULT fr;
   int i;
 
+  // save state if need
+  if (fdskey_settings.remember_last_state_mode != REMEMBER_LAST_STATE_NONE
+      && fdskey_settings.last_state != LAST_STATE_BROWSER)
+  {
+    fdskey_settings.last_state = LAST_STATE_BROWSER;
+    settings_save();
+  }
+
   while (1)
   {
     fr = browser(directory, fno, &br, fno->fname);
+
     if (fr == FR_NO_PATH) // directory not exists (anymore?)
     {
       // repeat from root
       directory[0] = 0;
       fr = browser(directory, fno, &br, fno->fname);
     }
-    show_error_screen_fr(fr, 1);
+
+    if (fr != FR_OK)
+    {
+      // reset last state to main menu and show fatal error
+      fdskey_settings.last_state = LAST_STATE_MAIN_MENU;
+      settings_save();
+      show_error_screen_fr(fr, 1);
+    }
+
+    // save state if need
+    if (fdskey_settings.remember_last_state_mode != REMEMBER_LAST_STATE_NONE)
+    {
+      strcpy(fdskey_settings.last_file, fno->fname);
+      fdskey_settings.last_state = LAST_STATE_BROWSER;
+      settings_save();
+    }
+
     switch (br)
     {
     case BROWSER_BACK:
@@ -462,10 +487,10 @@ BROWSER_RESULT browser_tree(char *directory, int dir_max_len, FILINFO *fno)
       break;
     case BROWSER_FILE:
       // file selected
-    case BROWSER_BACK_LONGPRESS:
-      // back longpress - return to main menu
     case BROWSER_FILE_LONGPRESS:
       // file selected using button longpress
+    case BROWSER_BACK_LONGPRESS:
+      // back longpress - return to main menu
       return br;
     }
   }

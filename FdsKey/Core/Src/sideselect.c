@@ -76,7 +76,7 @@ static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int
       0, 0);
 }
 
-void fds_side_select(char *directory, FILINFO *fno)
+void fds_side_select(char *directory, FILINFO *fno, uint8_t load_first)
 {
   FRESULT fr;
   uint8_t side_count, side = 0;
@@ -121,6 +121,13 @@ void fds_side_select(char *directory, FILINFO *fno)
     fr = fds_gui_load_side(full_path, game_name, side, side_count, fno->fattrib & AM_RDO);
     show_error_screen_fr(fr, fr < 0x80);
     return;
+  }
+
+  if (load_first)
+  {
+    // need to load first side
+    fr = fds_gui_load_side(full_path, game_name, 0, side_count, fno->fattrib & AM_RDO);
+    show_error_screen_fr(fr, fr < 0x80);
   }
 
   while (1)

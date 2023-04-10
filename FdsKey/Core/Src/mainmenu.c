@@ -88,14 +88,29 @@ void main_menu_loop()
   fr = f_mount(&fat_fs, "", 1);
   show_error_screen_fr(fr, 1);
 
-  if (!fdskey_settings.remember_last_file)
+  if (fdskey_settings.remember_last_state_mode == REMEMBER_LAST_STATE_NONE)
   {
     fdskey_settings.last_directory[0] = 0;
     fdskey_settings.last_file[0] = 0;
   } else {
     strcpy(selected_file.fname, fdskey_settings.last_file);
-    if (!fdskey_settings.last_state_menu)
+    if (fdskey_settings.last_state != LAST_STATE_MAIN_MENU)
+    {
+      if (fdskey_settings.last_state == LAST_STATE_ROM)
+      {
+        show_loading_screen();
+        int dl = strlen(fdskey_settings.last_directory);
+        int fl = strlen(fdskey_settings.last_file);
+        char full_path[dl + fl + 2];
+        strcpy(full_path, fdskey_settings.last_directory);
+        strcat(full_path, "\\");
+        strcat(full_path, fdskey_settings.last_file);
+        fr = f_stat(full_path, &selected_file);
+        if (fr == FR_OK)
+          fds_side_select(fdskey_settings.last_directory, &selected_file, 1);
+      }
       menu_selection = MAIN_MENU_BROWSE_ROMS;
+    }
   }
 
   while (1)
@@ -106,20 +121,22 @@ void main_menu_loop()
       while (1)
       {
         br = browser_tree(fdskey_settings.last_directory, sizeof(fdskey_settings.last_directory), &selected_file);
-        // remember last directory (root) and file
-        strcpy(fdskey_settings.last_file, selected_file.fname);
+        if (fdskey_settings.remember_last_state_mode != REMEMBER_LAST_STATE_NONE)
+          strcpy(fdskey_settings.last_file, selected_file.fname);
         if (br == BROWSER_BACK || br == BROWSER_BACK_LONGPRESS)
           break;
-        fdskey_settings.last_state_menu = 0;
-        settings_save();
         if (br == BROWSER_FILE)
           // load ROM
-          fds_side_select(fdskey_settings.last_directory, &selected_file);
+          fds_side_select(fdskey_settings.last_directory, &selected_file, 0);
         else if (br == BROWSER_FILE_LONGPRESS)
           file_properties(fdskey_settings.last_directory, &selected_file);
       }
-      fdskey_settings.last_state_menu = 1; // remember last state as main menu
-      settings_save();
+      if (fdskey_settings.remember_last_state_mode != REMEMBER_LAST_STATE_NONE)
+      {
+        // remember last state as main menu
+        fdskey_settings.last_state = LAST_STATE_MAIN_MENU;
+        settings_save();
+      }
       break;
     case MAIN_MENU_NEW_ROM:
       fr = new_disk();
