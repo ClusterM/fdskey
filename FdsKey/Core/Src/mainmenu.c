@@ -81,7 +81,7 @@ void main_menu_loop()
   FILINFO selected_file;
   FATFS fat_fs;
   FRESULT fr;
-  uint8_t menu_selection = 0xFF;
+  MAIN_MENU_SELECTION menu_selection = MAIN_MENU_NONE;
 
   while (HAL_GPIO_ReadPin(SD_DTCT_GPIO_Port, SD_DTCT_Pin))
     show_error_screen("No SD card", 0);
@@ -142,6 +142,8 @@ void main_menu_loop()
     case MAIN_MENU_SERVICE_MENU:
       service_menu();
       menu_selection = 0;
+      break;
+    default:
       break;
     }
     menu_selection = main_menu(menu_selection);
