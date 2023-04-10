@@ -108,7 +108,7 @@ void main_menu_loop()
         br = browser_tree(fdskey_settings.last_directory, sizeof(fdskey_settings.last_directory), &selected_file);
         // remember last directory (root) and file
         strcpy(fdskey_settings.last_file, selected_file.fname);
-        if (br == BROWSER_BACK)
+        if (br == BROWSER_BACK || br == BROWSER_BACK_LONGPRESS)
           break;
         fdskey_settings.last_state_menu = 0;
         settings_save();

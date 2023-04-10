@@ -186,7 +186,7 @@ static int browser_menu(int selection, uint8_t *is_selected)
   {
     browser_draw_item((oled_get_line() + OLED_HEIGHT) / 8 + i, line + i, line + i == selection, 0);
   }
-  oled_switch_to_invisible();
+ oled_switch_to_invisible();
 
   while (1)
   {
@@ -385,7 +385,17 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
     output->fattrib = file_list[r - dir_count]->fattrib;
   }
   if (!is_selected)
+  {
     *result = BROWSER_BACK;
+    while (button_left_holding())
+    {
+      if (button_left_hold_time() >= BROWSER_LONGPRESS_TIME)
+      {
+        *result = BROWSER_BACK_LONGPRESS;
+        break;
+      }
+    }
+  }
 
   browser_free();
 
@@ -419,8 +429,8 @@ BROWSER_RESULT browser_tree(char *directory, int dir_max_len, FILINFO *fno)
       // "back" button pressed
       if (!*directory)
       {
-        // we are at root already, return
-        return BROWSER_BACK;
+        // we are at the root already, return
+        return br;
       }
       for (i = strlen(directory) - 2; i >= 0; i--)
       {
@@ -452,6 +462,8 @@ BROWSER_RESULT browser_tree(char *directory, int dir_max_len, FILINFO *fno)
       break;
     case BROWSER_FILE:
       // file selected
+    case BROWSER_BACK_LONGPRESS:
+      // back longpress - return to main menu
     case BROWSER_FILE_LONGPRESS:
       // file selected using button longpress
       return br;
