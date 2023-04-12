@@ -48,7 +48,7 @@ extern "C" {
 #define APP_ADDRESS 0x08020000
 #define FIRMWARE_FILE "firmware.bin"
 #define FIRMWARE_MAX_SIZE (384 * 1024 - FLASH_PAGE_SIZE * 4)
-#define HARDWARE_VERSION_MAJOR 0
+#define HARDWARE_VERSION_MAJOR 1
 #define HARDWARE_VERSION_MINOR 1
 #define HARDWARE_VERSION_SUFFIX 0
 /* USER CODE END EM */
@@ -61,10 +61,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define BUTTON_DOWN_Pin GPIO_PIN_15
+#define BUTTON_DOWN_Pin GPIO_PIN_12
 #define BUTTON_DOWN_GPIO_Port GPIOA
-#define BUTTON_RIGHT_Pin GPIO_PIN_0
-#define BUTTON_RIGHT_GPIO_Port GPIOD
+#define BUTTON_RIGHT_Pin GPIO_PIN_15
+#define BUTTON_RIGHT_GPIO_Port GPIOA
 #define BUTTON_LEFT_Pin GPIO_PIN_1
 #define BUTTON_LEFT_GPIO_Port GPIOD
 #define BUTTON_UP_Pin GPIO_PIN_2

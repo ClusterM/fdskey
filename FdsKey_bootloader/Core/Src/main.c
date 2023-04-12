@@ -365,14 +365,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : BUTTON_DOWN_Pin */
-  GPIO_InitStruct.Pin = BUTTON_DOWN_Pin;
+  /*Configure GPIO pins : BUTTON_DOWN_Pin BUTTON_RIGHT_Pin */
+  GPIO_InitStruct.Pin = BUTTON_DOWN_Pin|BUTTON_RIGHT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(BUTTON_DOWN_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : BUTTON_RIGHT_Pin BUTTON_LEFT_Pin BUTTON_UP_Pin SD_DTCT_Pin */
-  GPIO_InitStruct.Pin = BUTTON_RIGHT_Pin|BUTTON_LEFT_Pin|BUTTON_UP_Pin|SD_DTCT_Pin;
+  /*Configure GPIO pins : BUTTON_LEFT_Pin BUTTON_UP_Pin SD_DTCT_Pin */
+  GPIO_InitStruct.Pin = BUTTON_LEFT_Pin|BUTTON_UP_Pin|SD_DTCT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);

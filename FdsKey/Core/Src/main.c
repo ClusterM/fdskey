@@ -504,8 +504,8 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pins : FDS_STOP_MOTOR_Pin BUTTON_DOWN_Pin */
-  GPIO_InitStruct.Pin = FDS_STOP_MOTOR_Pin|BUTTON_DOWN_Pin;
+  /*Configure GPIO pins : FDS_STOP_MOTOR_Pin BUTTON_DOWN_Pin BUTTON_RIGHT_Pin */
+  GPIO_InitStruct.Pin = FDS_STOP_MOTOR_Pin|BUTTON_DOWN_Pin|BUTTON_RIGHT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -536,8 +536,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(FDS_WRITE_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : BUTTON_RIGHT_Pin BUTTON_LEFT_Pin BUTTON_UP_Pin */
-  GPIO_InitStruct.Pin = BUTTON_RIGHT_Pin|BUTTON_LEFT_Pin|BUTTON_UP_Pin;
+  /*Configure GPIO pins : BUTTON_LEFT_Pin BUTTON_UP_Pin */
+  GPIO_InitStruct.Pin = BUTTON_LEFT_Pin|BUTTON_UP_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
