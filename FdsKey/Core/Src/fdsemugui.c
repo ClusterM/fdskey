@@ -137,14 +137,6 @@ FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t
 
   show_loading_screen();
 
-  // save state if need
-  if (fdskey_settings.remember_last_state_mode == REMEMBER_LAST_STATE_ROM
-      && fdskey_settings.last_state != LAST_STATE_ROM)
-  {
-    fdskey_settings.last_state = LAST_STATE_ROM;
-    settings_save();
-  }
-
   fr = fds_load_side(filename, side, ro);
   if (fr != FR_OK)
     return fr;

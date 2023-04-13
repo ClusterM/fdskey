@@ -86,6 +86,14 @@ void fds_side_select(char *directory, FILINFO *fno, uint8_t load_first)
   char full_path[dl + fl + 2];
   int i, text_scroll = 0;
 
+  // save state if need
+  if (fdskey_settings.remember_last_state_mode == REMEMBER_LAST_STATE_ROM
+      && fdskey_settings.last_state != LAST_STATE_ROM)
+  {
+    fdskey_settings.last_state = LAST_STATE_ROM;
+    settings_save();
+  }
+
   strcpy(full_path, directory);
   strcat(full_path, "\\");
   strcat(full_path, fno->fname);
