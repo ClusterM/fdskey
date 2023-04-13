@@ -7,7 +7,6 @@
 #include "buttons.h"
 #include "sideselect.h"
 #include "splash.h"
-#include "settings.h"
 
 void fds_gui_draw(uint8_t side, uint8_t side_count, char *game_name, int text_scroll)
 {

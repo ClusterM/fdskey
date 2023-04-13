@@ -7,6 +7,7 @@
 #include "app_fatfs.h"
 #include "splash.h"
 #include "buttons.h"
+#include "settings.h"
 
 static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int text_scroll)
 {
