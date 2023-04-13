@@ -184,6 +184,8 @@ void fds_side_select(char *directory, FILINFO *fno, uint8_t load_first)
 
 DotMatrixImage* side_select_get_disk_image(uint8_t side, uint8_t side_count)
 {
+  if (side_count <= 1)
+    return (DotMatrixImage*)&IMAGE_CARD_SINGLE;
   switch (side)
   {
   case 0:

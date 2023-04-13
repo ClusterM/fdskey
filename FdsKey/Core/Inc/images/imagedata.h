@@ -14,6 +14,7 @@
 #include "card_f.h"
 #include "card_g.h"
 #include "card_h.h"
+#include "card_single.h"
 #include "card_unknown.h"
 #include "cursor.h"
 #include "cursor_down.h"
@@ -134,6 +135,12 @@ const DotMatrixImage IMAGE_CARD_H = {
   .width = IMAGE_CARD_H_WIDTH,
   .height = IMAGE_CARD_H_HEIGHT,
   .image_data = image_card_h
+};
+
+const DotMatrixImage IMAGE_CARD_SINGLE = {
+  .width = IMAGE_CARD_SINGLE_WIDTH,
+  .height = IMAGE_CARD_SINGLE_HEIGHT,
+  .image_data = image_card_single
 };
 
 const DotMatrixImage IMAGE_CARD_UNKNOWN = {

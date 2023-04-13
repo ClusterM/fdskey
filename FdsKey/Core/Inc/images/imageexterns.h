@@ -14,6 +14,7 @@ extern const DotMatrixImage IMAGE_CARD_E;
 extern const DotMatrixImage IMAGE_CARD_F;
 extern const DotMatrixImage IMAGE_CARD_G;
 extern const DotMatrixImage IMAGE_CARD_H;
+extern const DotMatrixImage IMAGE_CARD_SINGLE;
 extern const DotMatrixImage IMAGE_CARD_UNKNOWN;
 extern const DotMatrixImage IMAGE_CURSOR;
 extern const DotMatrixImage IMAGE_CURSOR_DOWN;
