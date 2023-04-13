@@ -134,7 +134,7 @@ int main(void)
   // OLED init
   service_settings_load();
   settings_load();
-  oled_init(fdskey_service_settings.oled_controller, fdskey_settings.lefty_mode ? 0 : 1, 0, 0xFF);
+  oled_init(fdskey_service_settings.oled_controller, fdskey_settings.lefty_mode ? 0 : 1, fdskey_settings.invert_screen, 0xFF);
   oled_draw_rectangle(0, 0, OLED_WIDTH - 1, OLED_HEIGHT - 1, 1, 0);
   oled_update_full();
   oled_set_line(0);
