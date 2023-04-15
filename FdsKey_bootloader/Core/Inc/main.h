@@ -46,7 +46,7 @@ extern "C" {
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
 #define APP_ADDRESS 0x08020000
-#define FIRMWARE_FILE "firmware.bin"
+#define FIRMWARE_FILE "fdskey.bin"
 #define FIRMWARE_MAX_SIZE (384 * 1024 - FLASH_PAGE_SIZE * 4)
 #define HARDWARE_VERSION_MAJOR 1
 #define HARDWARE_VERSION_MINOR 1
