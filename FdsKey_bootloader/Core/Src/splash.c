@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "splash.h"
 #include "oled.h"
 #include "app_fatfs.h"
