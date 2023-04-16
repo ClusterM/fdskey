@@ -83,7 +83,7 @@ void text_remove_brackets(char *text)
   int shift = 0;
   int pos = -1;
   char last_char = ' ';
-  uint8_t bracket_open = 0;
+  int bracket_open = 0;
   while (1)
   {
     if (pos - shift >= 0)
@@ -100,14 +100,15 @@ void text_remove_brackets(char *text)
     {
       // open bracket
       shift++;
-      bracket_open = 1;
+      bracket_open++;
       continue;
     }
     else if (c == ']' || c == ')')
     {
       // close bracket
       shift++;
-      bracket_open = 0;
+      if (bracket_open > 0)
+        bracket_open--;
       continue;
     } else if (bracket_open)
     {
