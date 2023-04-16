@@ -14,7 +14,7 @@
 
 #define OLED_TIMEOUT 100
 
-typedef enum
+typedef enum __attribute__ ((__packed__))
 {
   OLED_CONTROLLER_SSD1306 = 0,
   OLED_CONTROLLER_SH1106

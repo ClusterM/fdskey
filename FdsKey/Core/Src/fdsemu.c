@@ -127,7 +127,7 @@ static void fds_dma_fill_read_buffer(int pos, int length)
       fds_current_byte = (fds_current_byte + 1) % FDS_MAX_SIDE_SIZE;
       // check if drive is rewinded
       if ((fds_current_byte == 0) ||
-          (fdskey_settings.fast_rewind && fds_current_byte > fds_used_space + FDS_NOT_READY_BYTES))
+          (fdskey_settings.rewind_speed == REWIND_SPEED_TURBO && fds_current_byte > fds_used_space + FDS_NOT_READY_BYTES))
       {
         // pause before ready
         HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_SET);
@@ -314,7 +314,8 @@ static void fds_stop_reading()
 void fds_reset_reading()
 {
   fds_clock = 0;
-  fds_current_byte = 0;
+  if (fdskey_settings.rewind_speed == REWIND_SPEED_TURBO)
+    fds_current_byte = 0;
   fds_current_bit = 0;
   fds_last_value = 0;
 }
@@ -434,7 +435,7 @@ void fds_check_pins()
     default:
       // just full stop
       fds_stop();
-      if (fdskey_settings.fast_rewind)
+      if (fdskey_settings.rewind_speed == REWIND_SPEED_TURBO)
         fds_reset_reading();
     }
   } else
@@ -450,7 +451,7 @@ void fds_check_pins()
       {
       case FDS_IDLE:
         // start reading
-        if (fdskey_settings.fast_rewind || fds_current_byte == 0)
+        if (fdskey_settings.rewind_speed == REWIND_SPEED_TURBO || fds_current_byte == 0)
         {
           // wait some time before ready
           fds_not_ready_time = HAL_GetTick();
@@ -465,7 +466,7 @@ void fds_check_pins()
         break;
       case FDS_READ_WAIT_READY_TIMER:
         // check if "not-ready" pause expired
-        if (fds_not_ready_time + FDS_NOT_READY_TIME < HAL_GetTick())
+        if (fds_not_ready_time + (fdskey_settings.rewind_speed == REWIND_SPEED_ORIGINAL ? FDS_NOT_READY_TIME_ORIGINAL : FDS_NOT_READY_TIME) < HAL_GetTick())
         {
           HAL_GPIO_WritePin(FDS_READY_GPIO_Port, FDS_READY_Pin, GPIO_PIN_RESET);
           fds_start_reading();
@@ -681,10 +682,11 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
 //  strcat(filename, ".good.bin");
 //  fds_dump(filename);
 
-  if (!HAL_GPIO_ReadPin(FDS_SCAN_MEDIA_GPIO_Port, FDS_SCAN_MEDIA_Pin))
+  if (!HAL_GPIO_ReadPin(FDS_SCAN_MEDIA_GPIO_Port, FDS_SCAN_MEDIA_Pin) && (fdskey_settings.rewind_speed == REWIND_SPEED_TURBO))
     fds_state = FDS_READ_WAIT_READY_TIMER;
   else
     fds_state = FDS_IDLE;
+  fds_check_pins();
 
   return FR_OK;
 }

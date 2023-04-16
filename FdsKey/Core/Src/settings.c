@@ -17,7 +17,7 @@ void settings_load()
     memset(&fdskey_settings, 0, sizeof(fdskey_settings));
     strcpy(fdskey_settings.sig, SETTINGS_SIGNATURE);
     fdskey_settings.version = 0;
-    fdskey_settings.fast_rewind = 0;
+    fdskey_settings.rewind_speed = REWIND_SPEED_TURBO;
     fdskey_settings.remember_last_state_mode = REMEMBER_LAST_STATE_BROWSER;
     fdskey_settings.last_state = LAST_STATE_MAIN_MENU;
     fdskey_settings.hide_non_fds = 1;
@@ -78,8 +78,19 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
   switch (item)
   {
   case SETTING_FAST_REWIND:
-    parameter_name = "Fast disk rewind";
-    value = fdskey_settings.fast_rewind ? on : off;
+    parameter_name = "Rewind speed";
+    switch (fdskey_settings.rewind_speed)
+    {
+    case REWIND_SPEED_ORIGINAL:
+      value = "<original>";
+      break;
+    case REWIND_SPEED_FAST:
+      value = "<fast>";
+      break;
+    case REWIND_SPEED_TURBO:
+      value = "<turbo>";
+      break;
+    }
     break;
   case SETTING_REMEMBER_LAST_STATE:
     parameter_name = "Remember state";
@@ -205,7 +216,14 @@ void settings_menu()
         }
         break;
       case SETTING_FAST_REWIND:
-        fdskey_settings.fast_rewind = !fdskey_settings.fast_rewind;
+        if (button_left_holding())
+        {
+          if (fdskey_settings.rewind_speed > 0)
+            fdskey_settings.rewind_speed--;
+        } else {
+          if (fdskey_settings.rewind_speed < REWIND_SPEED_TURBO)
+            fdskey_settings.rewind_speed++;
+        }
         break;
       case SETTING_HIDE_NON_FDS:
         fdskey_settings.hide_non_fds = !fdskey_settings.hide_non_fds;

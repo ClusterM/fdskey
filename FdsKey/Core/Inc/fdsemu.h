@@ -28,6 +28,7 @@
 #define FDS_NEXT_GAPS_READ_BITS 976   // next gap size, bits
 #define FDS_WRITE_GAP_SKIP_BITS 32     // dispose bits before writing
 #define FDS_NOT_READY_TIME 1000       // disk rewind time, milliseconds
+#define FDS_NOT_READY_TIME_ORIGINAL 5000 // disk rewind time for original speed mode
 #define FDS_NOT_READY_BYTES 1024      // fast rewind after this amount of bytes of used data
 #define FDS_MULTI_WRITE_UNLICENSED_BITS 32 // some unlicensed software can write multiple blocks at once
 

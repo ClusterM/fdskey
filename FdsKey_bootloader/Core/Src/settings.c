@@ -16,7 +16,7 @@ void settings_load()
     memset(&fdskey_settings, 0, sizeof(fdskey_settings));
     strcpy(fdskey_settings.sig, SETTINGS_SIGNATURE);
     fdskey_settings.version = 0;
-    fdskey_settings.fast_rewind = 0;
+    fdskey_settings.rewind_speed = REWIND_SPEED_TURBO;
     fdskey_settings.remember_last_state_mode = REMEMBER_LAST_STATE_BROWSER;
     fdskey_settings.last_state = LAST_STATE_MAIN_MENU;
     fdskey_settings.hide_non_fds = 1;

@@ -29,25 +29,32 @@ typedef enum
   SETTING_AUTO_OFF_SCREEN_TIME
 } SETTING_ID;
 
-typedef enum
+typedef enum __attribute__ ((__packed__))
 {
   REMEMBER_LAST_STATE_NONE = 0,
   REMEMBER_LAST_STATE_BROWSER,
   REMEMBER_LAST_STATE_ROM
 } REMEMBER_LAST_STATE_MODE;
 
-typedef enum
+typedef enum __attribute__ ((__packed__))
 {
   LAST_STATE_MAIN_MENU = 0,
   LAST_STATE_BROWSER,
   LAST_STATE_ROM
 } LAST_STATE;
 
+typedef enum __attribute__ ((__packed__))
+{
+  REWIND_SPEED_ORIGINAL = 0,
+  REWIND_SPEED_FAST,
+  REWIND_SPEED_TURBO
+} REWIND_SPEED;
+
 typedef struct __attribute__((packed))
 {
   char sig[sizeof(SETTINGS_SIGNATURE) + 1];
   uint8_t version;
-  uint8_t fast_rewind;
+  REWIND_SPEED rewind_speed;
   REMEMBER_LAST_STATE_MODE remember_last_state_mode;
   LAST_STATE last_state;
   uint8_t hide_non_fds;
