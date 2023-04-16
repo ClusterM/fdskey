@@ -68,6 +68,8 @@ Search for "3X4X2.5H SMD" buttons, it's easy to find.
 
 7. Resistors and capacitors
 
+![image](https://user-images.githubusercontent.com/4236181/232319858-d8be57ae-639b-496c-821b-c151da69f2c9.png)
+
 There are very few of them:
 * C1, C2 - two 22uF ceramic capacitors, 0603 size
 * C3, C4 - two 100nF ceramic capacitors, 0402 size (0603 will be fine too)
