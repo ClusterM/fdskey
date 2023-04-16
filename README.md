@@ -80,3 +80,7 @@ You can buy it in any electronic components store.
 8. Plastic case
 
 Work in progress.
+
+# Flashing the firmwire
+
+There are five pins on the PCB to connect ST-Link programmer (GND, VCC, SWD, SWCLK and NRST). First, you need to write bootloader: "bootloader.bin" file. Then you can put main firmware - "fdskey.bin" file on SD card (FAT/FAT32/exFAT formatted) and hold all four buttons on power-on, e.g. connect FDSKey to RAM adaptor, hold buttons and turn Famicom on. You can use the same method to update main firmware in the future without additional hardware.
