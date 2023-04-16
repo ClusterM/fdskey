@@ -15,7 +15,7 @@ Requirements:
 * Famicom Disk System RAM adaptor
 * Micro SD card
 
-# How to build it
+## How to build it
 You'll need few cheap components.
 
 1. PCB
@@ -44,7 +44,7 @@ You can easyly buy it on [mouser.com](https://www.mouser.com/c/?q=STM32G0B0CET) 
 
 It's very popular OLED display, search for "SSD1306 0.91 inch OLED 128x32 4-pin" on [aliexpress.com](aliexpress.com), [ebay.com](ebay.com) or [taobao.com](taobao.com).
 
-WARNING: some unscrupulous sellers can sell you used burned out display.
+WARNING: some unscrupulous sellers can sell you used burned-in display.
 
 4. Micro SD card socket (push-push, 8-pin + card detect pin = 9-pin)
 
@@ -81,6 +81,29 @@ You can buy it in any electronic components store.
 
 Work in progress.
 
-# Flashing the firmwire
-
+## Flashing the firmwire
 There are five pins on the PCB to connect ST-Link programmer (GND, VCC, SWD, SWCLK and NRST). First, you need to write bootloader: "bootloader.bin" file. Then you can put main firmware - "fdskey.bin" file on SD card (FAT/FAT32/exFAT formatted) and hold all four buttons on power-on, e.g. connect FDSKey to RAM adaptor, hold buttons and turn Famicom on. You can use the same method to update main firmware in the future without additional hardware.
+
+After first boot you can press "left" button for 3 seconds to enter service menu. You can select OLED display controller type (change if display shows corrupted image) there and check some info.
+
+## Device usage
+Format micro SD cart to FAT/FAT32/exFAT and put some .fds files on it. Insert micro SD cart into FDSKey, insert FDSKey into RAM Adaptor's cable instead of a real disk drive and turn on Famicom. You can hotplug FDSKey when Famicom is already on too, it's ok.
+
+Now you can navitate through FDSKey interface using buttons. "Left" button usually used as "back" and "right" button usually used as "OK".
+
+![FDSKey - interface flowchart](https://user-images.githubusercontent.com/4236181/232327286-8afaa7cd-3d97-4b34-bb7b-d6d20e7622c6.png)
+
+### Settings menu
+Use "up"/"down" buttons to select setting and "left"/"right" to change it. Setting descriptions:
+* Rewind speed: you can select between "original" (very slow, like on read FDS drive, for nostalgia guys), "fast" (rewind time reduced but virtual head position is not altered) and "turbo" (fastest possible mode)
+* Remember state: you can select power-on state between "none" (always start from the main menu), "browser" (open browser and select last file if broser was opened before power off) and "ROM" (start first side of the last started game emulation if ROM emulation was active before power off)
+* Hide non .fds files: hide non .fds files in file browser
+* Hide .fds extensions: hide .fds extensions files in file browser
+* Hide hidden files: hide hidden files and directories in file browser
+* Autosave delay: time between last drive activity and ROM file writing (if disk contents was rewritten), 1 second is recommended
+* Brightness: screen brightness from 0 to 10
+* Invert screen: draw black on white instead white on black
+* Lefty mode: rotate screen image on 180 degrees and flip buttons
+* Screen off after: time before automatic screen off if there is no any action (button presses, drive activity), recommended to use to prevent OLED screen burn-in
+* Backup original ROM: copy .fds file to .fds.bak file if disk contents was rewritten
+* [ Save and return ] - press "left" or "right" on this item to return to the main menu
