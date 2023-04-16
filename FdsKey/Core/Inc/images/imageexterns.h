@@ -39,3 +39,4 @@ extern const DotMatrixImage IMAGE_STATE_FF;
 extern const DotMatrixImage IMAGE_STATE_PAUSE;
 extern const DotMatrixImage IMAGE_STATE_PLAY;
 extern const DotMatrixImage IMAGE_STATE_REC;
+extern const DotMatrixImage IMAGE_STATE_REWIND;

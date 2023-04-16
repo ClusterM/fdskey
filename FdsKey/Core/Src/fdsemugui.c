@@ -52,6 +52,9 @@ void fds_gui_draw(uint8_t side, uint8_t side_count, char *game_name, int text_sc
   case FDS_READ_WAIT_READY:
     state_image = (DotMatrixImage*)&IMAGE_STATE_FF;
     break;
+  case FDS_READ_WAIT_READY_TIMER:
+    state_image = (DotMatrixImage*)&IMAGE_STATE_REWIND;
+    break;
   case FDS_WRITING:
   case FDS_WRITING_GAP:
   case FDS_WRITING_STOPPING:

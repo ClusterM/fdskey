@@ -39,6 +39,7 @@
 #include "state_pause.h"
 #include "state_play.h"
 #include "state_rec.h"
+#include "state_rewind.h"
 #include "../images.h"
 
 const DotMatrixImage IMAGE_CARD_1A = {
@@ -285,4 +286,10 @@ const DotMatrixImage IMAGE_STATE_REC = {
   .width = IMAGE_STATE_REC_WIDTH,
   .height = IMAGE_STATE_REC_HEIGHT,
   .image_data = image_state_rec
+};
+
+const DotMatrixImage IMAGE_STATE_REWIND = {
+  .width = IMAGE_STATE_REWIND_WIDTH,
+  .height = IMAGE_STATE_REWIND_HEIGHT,
+  .image_data = image_state_rewind
 };
