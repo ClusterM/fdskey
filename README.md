@@ -64,7 +64,7 @@ You can buy it in any electronic components store.
 
 ![image](https://user-images.githubusercontent.com/4236181/232316667-556b9a1f-eef8-4035-806b-d7917b8ea483.png)
 
-Search for "3X4X2.5H SMD" buttons, it's easy to find.
+Search for "3X4X2.5H SMD" buttons, it's easy to find. You can also search for "434133025816" model on [mouser.com](https://www.mouser.com/c/?q=STM32G0B0CET).
 
 7. Resistors and capacitors
 
