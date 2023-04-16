@@ -77,6 +77,55 @@ static void fds_side_draw(uint8_t side, uint8_t side_count, char* game_name, int
       0, 0);
 }
 
+// function to remove () and [] suffixes from text
+void text_remove_brackets(char *text)
+{
+  int shift = 0;
+  int pos = -1;
+  char last_char = ' ';
+  uint8_t bracket_open = 0;
+  while (1)
+  {
+    if (pos - shift >= 0)
+      last_char = text[pos - shift];
+    pos++;
+    char c = text[pos];
+    if (c == ' ' && last_char == ' ')
+    {
+      // remove double spaces
+      shift++;
+      continue;
+    }
+    else if (c == '[' || c == '(')
+    {
+      // open bracket
+      shift++;
+      bracket_open = 1;
+      continue;
+    }
+    else if (c == ']' || c == ')')
+    {
+      // close bracket
+      shift++;
+      bracket_open = 0;
+      continue;
+    } else if (bracket_open)
+    {
+      // skip text in brackets;
+      shift++;
+      continue;
+    }
+    // normal text
+    text[pos - shift] = text[pos];
+    if (!text[pos]) {
+      // trim end space if need
+      if (pos - shift - 1 >= 0 && text[pos - shift - 1] == ' ')
+        text[pos - shift - 1] = 0;
+      break;
+    }
+  }
+}
+
 void fds_side_select(char *directory, FILINFO *fno, uint8_t load_first)
 {
   FRESULT fr;
@@ -108,6 +157,8 @@ void fds_side_select(char *directory, FILINFO *fno, uint8_t load_first)
       break;
     }
   }
+  // remove brackets
+  text_remove_brackets(game_name);
 
   if (fno->fsize % FDS_ROM_SIDE_SIZE == FDS_ROM_HEADER_SIZE)
     fno->fsize -= FDS_ROM_HEADER_SIZE;
