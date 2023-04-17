@@ -1,5 +1,5 @@
 # FDSKey
-Open source, cheap and easy to build Famicom Disk System drive emulator with a nice OLED display.
+Open source, cheap and easy-to-build Famicom Disk System drive emulator with a nice OLED display.
 
 Work in progress. It's not finished yet.
 
@@ -42,7 +42,7 @@ You can order it from any PCB factory (e.g. [jlcpcb.com](jlcpcb.com)) using [ger
 
 ![STM32G0B0CET](https://user-images.githubusercontent.com/4236181/232314493-1ec8e30e-3a7c-4811-aa55-ce00b48657be.png)
 
-You can easyly buy it on [mouser.com](https://www.mouser.com/c/?q=STM32G0B0CET) or [taobao.com](https://s.taobao.com/search?q=STM32G0B0CET).
+You can easily find it on [mouser.com](https://www.mouser.com/c/?q=STM32G0B0CET) or [taobao.com](https://s.taobao.com/search?q=STM32G0B0CET).
 
 3. **OLED display module**
 
