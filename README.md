@@ -19,8 +19,15 @@ Requirements:
 * Micro SD card
 
 ## How to build it
-You'll need few cheap components.
+You'll need a few cheap components.
 
+### Сircuit diagram
+![Сircuit diagram](fdskey_circuit_diagram.png )
+
+### Bill of materials
+![Сircuit diagram](fdskey_bom.png )
+
+### Components
 1. **PCB**
 
 TODO: add PCB photo
