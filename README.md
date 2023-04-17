@@ -27,11 +27,9 @@ TODO: add PCB photo
 
 PCB is designed in the [DipTrace](https://diptrace.com/) software.
 
-You can order it from any PCB factory (e.g. [jlcpcb.com](jlcpcb.com)) using gerber files.
+You can order it from any PCB factory (e.g. [jlcpcb.com](jlcpcb.com)) using [gerber files](PCB_gerbers).
 * PCB thickness: 1.6mm
 * Gold fingers are recommended
-
-TODO: add gerber filenames.
 
 2. **STM32G0B0CET microcontroller**
 
