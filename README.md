@@ -8,8 +8,8 @@ TODO: fix my bad engrish
 
 How you can use it:
 * Run disk images for Famicom Disk System from SD card 
-* Dump disks using read FDS drive without additional hardware/cables
-* Write disks using read FDS drive without additional hardware/cables
+* Dump disks using real FDS drive without additional hardware/cables
+* Write disks using real FDS drive without additional hardware/cables
 
 Requirements:
 * Famicom
@@ -23,7 +23,7 @@ You'll need few cheap components.
 
 TODO: add PCB photo
 
-PCB is designed in [DipTrace](https://diptrace.com/) software.
+PCB is designed in the [DipTrace](https://diptrace.com/) software.
 
 You can order it from any PCB factory (e.g. [jlcpcb.com](jlcpcb.com)) using gerber files.
 * PCB thickness: 1.6mm
