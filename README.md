@@ -9,14 +9,14 @@ TODO: add more photos
 TODO: fix my bad engrish
 
 How you can use it:
-* Run disk images for a Famicom Disk System from a Micro SD card 
+* Run disk images for a Famicom Disk System from a microSD card 
 * Dump disks using a real FDS drive without additional hardware/cables
 * Write disks using a real FDS drive without additional hardware/cables
 
 Requirements:
 * Famicom
 * Famicom Disk System RAM adaptor
-* Micro SD card
+* microSD card
 
 ## How to build it
 You'll need a few cheap components.
@@ -54,11 +54,11 @@ It's a very popular OLED display, search for **SSD1306 0.91 inch OLED 128x32 4-p
 
 **WARNING**: some unscrupulous sellers can sell you used burned-in display.
 
-4. **Micro SD card socket (push-push, 8-pin + card detect pin = 9-pin)**
+4. **microSD card socket (push-push, 8-pin + card detect pin = 9-pin)**
 
-![Micro SD card socket](https://user-images.githubusercontent.com/4236181/232315515-5448f67a-dd0d-40c4-9347-7212eabafad3.png)
+![microSD card socket](https://user-images.githubusercontent.com/4236181/232315515-5448f67a-dd0d-40c4-9347-7212eabafad3.png)
 
-![Micro SD card socket](https://user-images.githubusercontent.com/4236181/232315553-8d20c2c3-7c77-4bec-bd75-0b12cd5d0591.png)
+![microSD card socket](https://user-images.githubusercontent.com/4236181/232315553-8d20c2c3-7c77-4bec-bd75-0b12cd5d0591.png)
 
 It's a very popular push-push socket, you can find it on [aliexpress.com](aliexpdress.com). Also, you can search for **112J-TDAR-R01** model but there are many compatible models with other names. You can always edit the PCB for another socket model.
 
@@ -95,7 +95,7 @@ There are five pins (6 but 1 is unused) on the PCB to connect a ST-Link programm
 After first boot you can hold **left** button for 3 seconds to enter the service menu. You can select OLED display controller type (change it if display shows corrupted image) there and check some system info.
 
 ## Device usage
-Format a micro SD cart to FAT/FAT32/exFAT and put some .fds files on it. Insert a micro SD cart into a FDSKey, insert a FDSKey into a RAM Adaptor's cable instead of a real disk drive and turn on a Famicom. You can hotplug a FDSKey when Famicom is already on too, it's ok.
+Format a microSD cart to FAT/FAT32/exFAT and put some .fds files on it. Insert a microSD cart into a FDSKey, insert a FDSKey into a RAM Adaptor's cable instead of a real disk drive and turn on a Famicom. You can hotplug a FDSKey when Famicom is already on too, it's ok.
 
 Now you can navitate through the FDSKey interface using buttons. **Left** button usually means **back**, **right** button usually means **OK** and **up**/**down** are used to select something (file, disk side, etc.) Also, you can use **left** button longpress in the file browser to return directly to the main menu from subfolder and **right** button longpress to open the file properties menu.
 
