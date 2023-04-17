@@ -100,7 +100,7 @@ TODO: add some GUI images
 
 ### Settings menu
 Use **up**/****down** buttons to select setting and **left**/**right** to change it. Setting descriptions:
-* Rewind speed: you can select between **original** (very slow, like on read FDS drive, for nostalgia guys), **fast** (rewind time reduced but virtual head position is not altered) and **turbo** (fastest possible mode)
+* Rewind speed: you can select between **original** (very slow, like on real FDS drive, for nostalgia guys), **fast** (rewind time reduced but virtual head position is not altered) and **turbo** (fastest possible mode)
 * Remember state: you can select power-on state between **none** (always start from the main menu), **browser** (open browser and select last file if broser was opened before power off) and **ROM** (start first side of the last started game emulation if ROM emulation was active before power off)
 * Hide non .fds files: hide files with non .fds extension in the file browser
 * Hide .fds extensions: hide .fds extension in the file browser
