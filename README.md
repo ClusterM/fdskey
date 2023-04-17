@@ -16,7 +16,7 @@ How you can use it:
 Requirements:
 * Famicom
 * Famicom Disk System RAM adaptor
-* Micro SD card
+* Micro SD Card
 
 ## How to build it
 You'll need a few cheap components.
