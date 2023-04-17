@@ -1,9 +1,11 @@
 # FDSKey
-Open source, cheap and easy to build Famicom Disk System drive emulator.
+Open source, cheap and easy to build Famicom Disk System drive emulator with a nice OLED display.
 
 Work in progress. It's not finished yet.
 
-TODO: add photo
+![image](https://user-images.githubusercontent.com/4236181/232438823-64f874d5-5dbd-4393-9f87-31feba4c95c4.png)
+
+TODO: add more photos
 TODO: fix my bad engrish
 
 How you can use it:
