@@ -9,14 +9,14 @@ TODO: add more photos
 TODO: fix my bad engrish
 
 How you can use it:
-* Run disk images for a Famicom Disk System from SD card 
+* Run disk images for a Famicom Disk System from a Micro SD card 
 * Dump disks using a real FDS drive without additional hardware/cables
 * Write disks using a real FDS drive without additional hardware/cables
 
 Requirements:
 * Famicom
 * Famicom Disk System RAM adaptor
-* Micro SD Card
+* Micro SD card
 
 ## How to build it
 You'll need a few cheap components.
