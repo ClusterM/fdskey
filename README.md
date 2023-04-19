@@ -138,3 +138,8 @@ It's a reverse operation of dumping: you can use disk copiers homebrew applicati
 4. When disk copier asks to insert new/blank disk disconnect a FDSKey from a RAM adaptor and connect a real FDS drive with blank disk inserted
 5. Disconnect a real FDS drive and connect FDSKey
 6. Repeat steps 3-4-5 until copy operation is completed
+
+## Donate
+* PayPal: cluster@cluster.wtf
+* [Donation Alerts](https://www.donationalerts.com/r/clustermeerkat)
+* [Boosty](https://boosty.to/cluster)
