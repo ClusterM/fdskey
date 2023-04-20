@@ -40,7 +40,7 @@ You can order it from any PCB factory (e.g. [jlcpcb.com](jlcpcb.com)) using [ger
 
 2. **STM32G0B0CET (or any STM32G0B0CETxxx) microcontroller**
 
-![STM32G0B0CET](https://user-images.githubusercontent.com/4236181/232314493-1ec8e30e-3a7c-4811-aa55-ce00b48657be.png)
+![STM32G0B0CET](https://user-images.githubusercontent.com/4236181/233363258-f9142b9d-85cc-4d1e-8280-1727ba952167.png)
 
 You can easily find it on [mouser.com](https://www.mouser.com/c/?q=STM32G0B0CET) or [taobao.com](https://s.taobao.com/search?q=STM32G0B0CET).
 
