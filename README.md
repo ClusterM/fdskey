@@ -101,7 +101,11 @@ Now you can navigate through the FDSKey interface using buttons. **Left** button
 
 ![FDSKey - interface flowchart](https://user-images.githubusercontent.com/4236181/232327286-8afaa7cd-3d97-4b34-bb7b-d6d20e7622c6.png)
 
-TODO: add some GUI images
+Oops, too complicated :( Let's try again...
+
+![GUI](https://user-images.githubusercontent.com/4236181/233477947-ea854f05-12d8-486e-b127-cfea1d112ae5.png)
+
+Much better.
 
 **WARNING**: when a game writes some data on a virtual disk (saves game progress) don't turn off your Famicom power until a updated ROM saved to a SD card. Wait a few seconds for it or eject a virtual disk (**left** button). The **saving** message will be displayed. You can set an autosave delay in the settings menu (see below).
 
