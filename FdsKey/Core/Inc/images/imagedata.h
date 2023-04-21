@@ -21,6 +21,16 @@
 #include "cursor_down_w.h"
 #include "cursor_up.h"
 #include "cursor_up_w.h"
+#include "disk_flip_frame_0.h"
+#include "disk_flip_frame_1.h"
+#include "disk_flip_frame_2.h"
+#include "disk_flip_frame_3.h"
+#include "disk_flip_frame_4.h"
+#include "disk_flip_frame_5.h"
+#include "disk_flip_frame_6.h"
+#include "disk_flip_frame_7.h"
+#include "disk_flip_frame_8.h"
+#include "disk_flip_frame_9.h"
 #include "folder.h"
 #include "folder2.h"
 #include "folder3.h"
@@ -178,6 +188,66 @@ const DotMatrixImage IMAGE_CURSOR_UP_W = {
   .width = IMAGE_CURSOR_UP_W_WIDTH,
   .height = IMAGE_CURSOR_UP_W_HEIGHT,
   .image_data = image_cursor_up_w
+};
+
+const DotMatrixImage IMAGE_DISK_FLIP_FRAME_0 = {
+  .width = IMAGE_DISK_FLIP_FRAME_0_WIDTH,
+  .height = IMAGE_DISK_FLIP_FRAME_0_HEIGHT,
+  .image_data = image_disk_flip_frame_0
+};
+
+const DotMatrixImage IMAGE_DISK_FLIP_FRAME_1 = {
+  .width = IMAGE_DISK_FLIP_FRAME_1_WIDTH,
+  .height = IMAGE_DISK_FLIP_FRAME_1_HEIGHT,
+  .image_data = image_disk_flip_frame_1
+};
+
+const DotMatrixImage IMAGE_DISK_FLIP_FRAME_2 = {
+  .width = IMAGE_DISK_FLIP_FRAME_2_WIDTH,
+  .height = IMAGE_DISK_FLIP_FRAME_2_HEIGHT,
+  .image_data = image_disk_flip_frame_2
+};
+
+const DotMatrixImage IMAGE_DISK_FLIP_FRAME_3 = {
+  .width = IMAGE_DISK_FLIP_FRAME_3_WIDTH,
+  .height = IMAGE_DISK_FLIP_FRAME_3_HEIGHT,
+  .image_data = image_disk_flip_frame_3
+};
+
+const DotMatrixImage IMAGE_DISK_FLIP_FRAME_4 = {
+  .width = IMAGE_DISK_FLIP_FRAME_4_WIDTH,
+  .height = IMAGE_DISK_FLIP_FRAME_4_HEIGHT,
+  .image_data = image_disk_flip_frame_4
+};
+
+const DotMatrixImage IMAGE_DISK_FLIP_FRAME_5 = {
+  .width = IMAGE_DISK_FLIP_FRAME_5_WIDTH,
+  .height = IMAGE_DISK_FLIP_FRAME_5_HEIGHT,
+  .image_data = image_disk_flip_frame_5
+};
+
+const DotMatrixImage IMAGE_DISK_FLIP_FRAME_6 = {
+  .width = IMAGE_DISK_FLIP_FRAME_6_WIDTH,
+  .height = IMAGE_DISK_FLIP_FRAME_6_HEIGHT,
+  .image_data = image_disk_flip_frame_6
+};
+
+const DotMatrixImage IMAGE_DISK_FLIP_FRAME_7 = {
+  .width = IMAGE_DISK_FLIP_FRAME_7_WIDTH,
+  .height = IMAGE_DISK_FLIP_FRAME_7_HEIGHT,
+  .image_data = image_disk_flip_frame_7
+};
+
+const DotMatrixImage IMAGE_DISK_FLIP_FRAME_8 = {
+  .width = IMAGE_DISK_FLIP_FRAME_8_WIDTH,
+  .height = IMAGE_DISK_FLIP_FRAME_8_HEIGHT,
+  .image_data = image_disk_flip_frame_8
+};
+
+const DotMatrixImage IMAGE_DISK_FLIP_FRAME_9 = {
+  .width = IMAGE_DISK_FLIP_FRAME_9_WIDTH,
+  .height = IMAGE_DISK_FLIP_FRAME_9_HEIGHT,
+  .image_data = image_disk_flip_frame_9
 };
 
 const DotMatrixImage IMAGE_FOLDER = {

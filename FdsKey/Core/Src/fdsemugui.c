@@ -129,15 +129,60 @@ void fds_gui_draw(uint8_t side, uint8_t side_count, char *game_name, int text_sc
   }
 }
 
-void fds_gui_draw_side_changing(uint8_t swap)
+void fds_gui_draw_side_changing(uint8_t swap, int frame)
 {
   int line = oled_get_line() + OLED_HEIGHT;
-  char *text = !swap ? "Flipping the disk" : "Swapping the disk";
+  char *first_line;
+  char *second_line;
+  DotMatrixImage *image;
   // clear screen
   oled_draw_rectangle(0, line, OLED_WIDTH - 1, line + OLED_HEIGHT - 1, 1, 0);
   // text
-  oled_draw_text(&SPLASH_REGULAR_FONT, text, OLED_WIDTH / 2 - oled_get_text_length(&SPLASH_REGULAR_FONT, text) / 2,
-    oled_get_line() + OLED_HEIGHT + OLED_HEIGHT / 2 - SPLASH_REGULAR_FONT.char_height / 2, 0, 0);
+  first_line = !swap ? "Flipping" : "Swapping";
+  second_line = "the disk";
+  oled_draw_text(&SPLASH_REGULAR_FONT, first_line, 20 + oled_get_text_length(&SPLASH_REGULAR_FONT, second_line) / 2 - oled_get_text_length(&SPLASH_REGULAR_FONT, first_line) / 2,
+    oled_get_line() + OLED_HEIGHT + OLED_HEIGHT / 2 - SPLASH_REGULAR_FONT.char_height, 0, 0);
+  oled_draw_text(&SPLASH_REGULAR_FONT, second_line, 20,
+    oled_get_line() + OLED_HEIGHT + OLED_HEIGHT / 2, 0, 0);
+  // disk image
+  frame %= 20;
+  if (frame >= 10)
+    frame = 19 - frame;
+  switch (frame)
+  {
+  default:
+  case 0:
+    image = (DotMatrixImage*)&IMAGE_DISK_FLIP_FRAME_0;
+    break;
+  case 1:
+    image = (DotMatrixImage*)&IMAGE_DISK_FLIP_FRAME_1;
+    break;
+  case 2:
+    image = (DotMatrixImage*)&IMAGE_DISK_FLIP_FRAME_2;
+    break;
+  case 3:
+    image = (DotMatrixImage*)&IMAGE_DISK_FLIP_FRAME_3;
+    break;
+  case 4:
+    image = (DotMatrixImage*)&IMAGE_DISK_FLIP_FRAME_4;
+    break;
+  case 5:
+    image = (DotMatrixImage*)&IMAGE_DISK_FLIP_FRAME_5;
+    break;
+  case 6:
+    image = (DotMatrixImage*)&IMAGE_DISK_FLIP_FRAME_6;
+    break;
+  case 7:
+    image = (DotMatrixImage*)&IMAGE_DISK_FLIP_FRAME_7;
+    break;
+  case 8:
+    image = (DotMatrixImage*)&IMAGE_DISK_FLIP_FRAME_8;
+    break;
+  case 9:
+    image = (DotMatrixImage*)&IMAGE_DISK_FLIP_FRAME_9;
+    break;
+  }
+  oled_draw_image(image, OLED_WIDTH - image->width - 20, oled_get_line() + OLED_HEIGHT + OLED_HEIGHT / 2 - image->height / 2, 0, 0);
 }
 
 FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t side_count, uint8_t ro)
@@ -176,14 +221,20 @@ FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t
       fr = fds_close(1);
       if (fr != FR_OK)
         return fr;
-      fds_gui_draw_side_changing((cmd == 1 && !(side & 1)) || (cmd == 2 && (side & 1)));
+      fds_gui_draw_side_changing((cmd == 1 && !(side & 1)) || (cmd == 2 && (side & 1)), 0);
       oled_update_invisible();
       for (i = 0; i < OLED_HEIGHT; i++)
       {
         oled_set_line(oled_get_line() + (cmd == 1 ? -1 : 1));
         HAL_Delay(1);
       }
-      HAL_Delay(FDS_GUI_SIDE_SWITCH_DELAY);
+      for (i = 0; i < 20; i++)
+      {
+        HAL_Delay(FDS_GUI_SIDE_SWITCH_DELAY / 20);
+        fds_gui_draw_side_changing((cmd == 1 && !(side & 1)) || (cmd == 2 && (side & 1)), i);
+        oled_update_invisible();
+        oled_switch_to_invisible();
+      }
       if (cmd == 1)
         side--;
       else
