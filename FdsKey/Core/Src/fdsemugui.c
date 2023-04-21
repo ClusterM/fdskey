@@ -127,15 +127,24 @@ void fds_gui_draw(uint8_t side, uint8_t side_count, char *game_name, int text_sc
       break;
     }
   }
+}
 
-  oled_update_invisible();
-  oled_switch_to_invisible();
+void fds_gui_draw_side_changing()
+{
+  int line = oled_get_line() + OLED_HEIGHT;
+  char *text = "Switching side";
+  // clear screen
+  oled_draw_rectangle(0, line, OLED_WIDTH - 1, line + OLED_HEIGHT - 1, 1, 0);
+  // text
+  oled_draw_text(&SPLASH_REGULAR_FONT, text, OLED_WIDTH / 2 - oled_get_text_length(&SPLASH_REGULAR_FONT, text) / 2,
+    oled_get_line() + OLED_HEIGHT + OLED_HEIGHT / 2 - SPLASH_REGULAR_FONT.char_height / 2, 0, 0);
 }
 
 FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t side_count, uint8_t ro)
 {
   FRESULT fr;
-  int text_scroll = 0;
+  int i, text_scroll = 0;
+  uint8_t cmd;
 
   show_loading_screen();
 
@@ -143,7 +152,7 @@ FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t
   if (fr != FR_OK)
     return fr;
 
-  while (!button_left_newpress())
+  while (1)
   {
     if (fds_get_state() == FDS_SAVE_PENDING)
     {
@@ -153,7 +162,47 @@ FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t
         return fr;
     }
 
+    cmd = 0;
+    if (button_left_newpress())
+        break;
+    if (button_up_newpress() && side > 0)
+      cmd = 1;
+    if (button_down_newpress() && side + 1 < side_count)
+      cmd = 2;
+    if (cmd)
+    {
+      // need to change side
+      if (fds_is_changed()) show_saving_screen();
+      fr = fds_close(1);
+      if (fr != FR_OK)
+        return fr;
+      fds_gui_draw_side_changing();
+      oled_update_invisible();
+      for (i = 0; i < OLED_HEIGHT; i++)
+      {
+        oled_set_line(oled_get_line() + (cmd == 1 ? -1 : 1));
+        HAL_Delay(1);
+      }
+      HAL_Delay(FDS_GUI_SIDE_SWITCH_DELAY);
+      if (cmd == 1)
+        side--;
+      else
+        side++;
+      fr = fds_load_side(filename, side, ro);
+      if (fr != FR_OK)
+        return fr;
+      fds_gui_draw(side, side_count, game_name, text_scroll);
+      oled_update_invisible();
+      for (i = 0; i < OLED_HEIGHT; i++)
+      {
+        oled_set_line(oled_get_line() + (cmd == 1 ? -1 : 1));
+        HAL_Delay(1);
+      }
+    }
+
     fds_gui_draw(side, side_count, game_name, text_scroll);
+    oled_update_invisible();
+    oled_switch_to_invisible();
 //    if (!text_scroll)
 //      oled_screenshot("ss_fds_emu_gui.bmp");
     button_check_screen_off();
