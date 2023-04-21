@@ -38,7 +38,11 @@ void show_message(char *text, uint8_t wait)
 
 void show_updating_screen()
 {
-  show_message("Updating\nthe firmware", 0);
+  oled_draw_rectangle(0, oled_get_line() + OLED_HEIGHT, OLED_WIDTH - 1, oled_get_line() + OLED_HEIGHT * 2 - 1, 1, 0);
+  oled_draw_text(&SPLASH_REGULAR_FONT, "Updating", 10, oled_get_line() + OLED_HEIGHT + OLED_HEIGHT / 2 - SPLASH_REGULAR_FONT.char_height / 2, 0, 0);
+  oled_draw_image(&IMAGE_COGS, OLED_WIDTH - IMAGE_COGS.width - 10, oled_get_line() + OLED_HEIGHT + OLED_HEIGHT / 2 - IMAGE_COGS.height / 2, 0, 0);
+  oled_update_invisible();
+  oled_switch_to_invisible();
 }
 
 void show_error_screen(char *text, uint8_t fatal)
