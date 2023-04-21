@@ -45,6 +45,7 @@ void main_menu_draw(uint8_t selection)
 
   oled_update_invisible();
   oled_switch_to_invisible();
+//  oled_screenshot("ss_main_menu.bmp");
 }
 
 uint8_t main_menu(uint8_t selection)

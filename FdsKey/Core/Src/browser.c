@@ -205,7 +205,8 @@ static int browser_menu(int selection, uint8_t *is_selected)
   {
     browser_draw_item((oled_get_line() + OLED_HEIGHT) / 8 + i, line + i, line + i == selection, 0);
   }
- oled_switch_to_invisible();
+  oled_switch_to_invisible();
+//  oled_screenshot("ss_browser.bmp");
 
   while (1)
   {

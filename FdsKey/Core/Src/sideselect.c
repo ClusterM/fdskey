@@ -196,6 +196,8 @@ void fds_side_select(char *directory, FILINFO *fno, uint8_t load_first)
     fds_side_draw(side, side_count, game_name, text_scroll);
     oled_update_invisible();
     oled_switch_to_invisible();
+//    if (!text_scroll)
+//      oled_screenshot("ss_side_select.bmp");
     text_scroll++;
 
     if (button_up_newpress() && side > 0)

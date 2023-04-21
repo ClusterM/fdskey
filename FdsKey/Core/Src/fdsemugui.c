@@ -154,6 +154,8 @@ FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t
     }
 
     fds_gui_draw(side, side_count, game_name, text_scroll);
+//    if (!text_scroll)
+//      oled_screenshot("ss_fds_emu_gui.bmp");
     button_check_screen_off();
     text_scroll++;
   }
