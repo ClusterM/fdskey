@@ -129,10 +129,10 @@ void fds_gui_draw(uint8_t side, uint8_t side_count, char *game_name, int text_sc
   }
 }
 
-void fds_gui_draw_side_changing()
+void fds_gui_draw_side_changing(uint8_t swap)
 {
   int line = oled_get_line() + OLED_HEIGHT;
-  char *text = "Switching side";
+  char *text = !swap ? "Flipping the disk" : "Swapping the disk";
   // clear screen
   oled_draw_rectangle(0, line, OLED_WIDTH - 1, line + OLED_HEIGHT - 1, 1, 0);
   // text
@@ -176,7 +176,7 @@ FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t
       fr = fds_close(1);
       if (fr != FR_OK)
         return fr;
-      fds_gui_draw_side_changing();
+      fds_gui_draw_side_changing((cmd == 1 && !(side & 1)) || (cmd == 2 && (side & 1)));
       oled_update_invisible();
       for (i = 0; i < OLED_HEIGHT; i++)
       {

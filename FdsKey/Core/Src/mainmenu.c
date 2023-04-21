@@ -25,7 +25,7 @@ void main_menu_draw(uint8_t selection)
   oled_draw_text(&MAIN_MENU_FONT, "Browse disk images",
       10, line + 1,
       0, 0);
-  oled_draw_text(&MAIN_MENU_FONT, "Create blank disk",
+  oled_draw_text(&MAIN_MENU_FONT, "Create a blank disk",
       10, line + 11,
       0, 0);
   oled_draw_text(&MAIN_MENU_FONT, "Settings",
