@@ -3,7 +3,7 @@ An open-source, low-cost, and easy-to-build Famicom Disk System drive emulator f
 
 This project is currently a work in progress and is not yet finished.
 
-![image](https://user-images.githubusercontent.com/4236181/232440939-b28283d4-2cc3-44ea-8043-354e01dabb07.png)
+![image](https://user-images.githubusercontent.com/4236181/235117963-40d30f15-8f6f-4209-978d-fd50f23c474f.png)
 
 ![image](https://user-images.githubusercontent.com/4236181/235107005-b5a327a4-42dc-4795-9351-22f230a0fae1.png)
 
