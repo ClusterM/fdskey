@@ -103,7 +103,7 @@ Now you can navigate through the FDSKey interface using buttons. **Left** button
 
 Oops, too complicated :( Let's try again...
 
-![GUI](https://user-images.githubusercontent.com/4236181/233477947-ea854f05-12d8-486e-b127-cfea1d112ae5.png)
+![GUI](https://user-images.githubusercontent.com/4236181/233791612-959ba4ce-804c-4253-aff5-36fda6b2c8e1.png)
 
 Much better.
 
