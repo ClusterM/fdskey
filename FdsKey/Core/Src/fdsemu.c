@@ -424,7 +424,7 @@ void fds_check_pins()
       break;
     case FDS_IDLE:
       // schedule file saving if need and idle time exceeded
-      if (fds_changed && fds_last_action_time + fdskey_settings.autosave_time * 1000 < HAL_GetTick())
+      if (fds_changed && (fds_last_action_time + FDS_AUTOSAVE_DELAY /*fdskey_settings.autosave_time * 1000*/ < HAL_GetTick()))
         fds_state = FDS_SAVE_PENDING;
       break;
     case FDS_SAVE_PENDING:

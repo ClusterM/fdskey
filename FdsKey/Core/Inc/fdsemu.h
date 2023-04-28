@@ -31,6 +31,7 @@
 #define FDS_NOT_READY_TIME_ORIGINAL 5000 // disk rewind time for original speed mode
 #define FDS_NOT_READY_BYTES 1024      // fast rewind after this amount of bytes of used data
 #define FDS_MULTI_WRITE_UNLICENSED_BITS 32 // some unlicensed software can write multiple blocks at once
+#define FDS_AUTOSAVE_DELAY 1000
 
 // do not touch it
 #define FDS_ROM_HEADER_SIZE 16    // header in ROM

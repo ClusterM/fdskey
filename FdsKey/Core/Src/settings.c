@@ -119,10 +119,12 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
     parameter_name = "Hide hidden files";
     value = fdskey_settings.hide_hidden ? on : off;
     break;
+  /*
   case SETTING_AUTOSAVE_TIME:
     parameter_name = "Autosave delay";
     sprintf(value_v, "<%ds>", fdskey_settings.autosave_time);
     break;
+  */
   case SETTING_BRIGHTNESS:
     parameter_name = "Brightness";
     sprintf(value_v, "<%d>", fdskey_settings.brightness);
@@ -191,7 +193,7 @@ void settings_menu()
 
     switch (selection)
     {
-    case SETTING_AUTOSAVE_TIME:
+    //case SETTING_AUTOSAVE_TIME:
     case SETTING_BRIGHTNESS:
     case SETTING_AUTO_OFF_SCREEN_TIME:
       button_left_right_repeat_enable(1);
@@ -234,6 +236,7 @@ void settings_menu()
       case SETTING_HIDE_HIDDEN:
         fdskey_settings.hide_hidden = !fdskey_settings.hide_hidden;
         break;
+      /*
       case SETTING_AUTOSAVE_TIME:
         if (button_left_holding())
         {
@@ -244,6 +247,7 @@ void settings_menu()
             fdskey_settings.autosave_time++;
         }
         break;
+      */
       case SETTING_BRIGHTNESS:
         if (button_left_holding())
         {
