@@ -97,7 +97,7 @@ There are five TH pads (actually 6 but 1 is unused) on the PCB to connect a ST-L
 After the first boot, press and hold the **left** button for 3 seconds to access the service menu. There, you can select the OLED display controller type (change it if the display shows a corrupted image) and check some system information.
 
 ## Device usage
-Format a microSD card to FAT/FAT32/exFAT and put some .fds files on it. Insert a microSD card into a FDSKey, insert a FDSKey into a RAM Adaptor's cable instead of a physical disk drive and turn on a Famicom. You can hotplug a FDSKey when Famicom is already on too, it's ok.
+Format a microSD card to FAT/FAT32/exFAT and put some .fds files on it. Insert a microSD card into a FDSKey, insert a FDSKey into a RAM Adaptor's cable instead of a physical disk drive and turn on a Famicom. You can hot plug a FDSKey when Famicom is already on too, it's ok.
 
 Now you can navigate through the FDSKey interface using the buttons. **Left** button usually means **back**, **right** button usually means **OK** and **up**/**down** are used to select something (file, disk side, etc.) Also, you can long press the **left** button in the file browser to directly return to the main menu from a subfolder, and long press the **right** button to open the file properties menu.
 
