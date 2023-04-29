@@ -12,8 +12,8 @@ TODO: fix my bad engrish
 
 How you can use it:
 * You can run Famicom Disk System disk images from a microSD card 
-* You can dump disks using a real FDS drive without additional hardware/cables
-* You can write disks using a real FDS drive without additional hardware/cables
+* You can dump disks using a physical FDS drive without additional hardware/cables
+* You can write disks using a physical FDS drive without additional hardware/cables
 
 Requirements:
 * Famicom
@@ -97,7 +97,7 @@ There are five TH pads (actually 6 but 1 is unused) on the PCB to connect a ST-L
 After the first boot, press and hold the **left** button for 3 seconds to access the service menu. There, you can select the OLED display controller type (change it if the display shows a corrupted image) and check some system information.
 
 ## Device usage
-Format a microSD card to FAT/FAT32/exFAT and put some .fds files on it. Insert a microSD card into a FDSKey, insert a FDSKey into a RAM Adaptor's cable instead of a real disk drive and turn on a Famicom. You can hotplug a FDSKey when Famicom is already on too, it's ok.
+Format a microSD card to FAT/FAT32/exFAT and put some .fds files on it. Insert a microSD card into a FDSKey, insert a FDSKey into a RAM Adaptor's cable instead of a physical disk drive and turn on a Famicom. You can hotplug a FDSKey when Famicom is already on too, it's ok.
 
 Now you can navigate through the FDSKey interface using the buttons. **Left** button usually means **back**, **right** button usually means **OK** and **up**/**down** are used to select something (file, disk side, etc.) Also, you can long press the **left** button in the file browser to directly return to the main menu from a subfolder, and long press the **right** button to open the file properties menu.
 
@@ -113,7 +113,7 @@ Much better.
 
 ### Settings menu
 Use **up**/**down** buttons to select a setting and **left**/**right** to change it. Setting descriptions:
-* Rewind speed: you can select a drive operation speed as either **original** (very slow, like on a real FDS drive, for the nostalgic ones), **fast** (where the rewind time is reduced but the virtual head position is not altered), or **turbo** (the fastest possible mode, instant head rewind)
+* Rewind speed: you can select a drive operation speed as either **original** (very slow, like on a physical FDS drive, for the nostalgic ones), **fast** (where the rewind time is reduced but the virtual head position is not altered), or **turbo** (the fastest possible mode, instant head rewind)
 * Remember state: you can select a power-on state between **none** (always start from the main menu), **browser** (open browser and select last file if browser was opened before power off) and **ROM** (start first side of the last started game emulation if ROM emulation was active before power off)
 * Hide non .fds files: hide files with non .fds extension in the file browser
 * Hide .fds extensions: hide .fds extension in the file browser
@@ -125,23 +125,23 @@ Use **up**/**down** buttons to select a setting and **left**/**right** to change
 * Backup original ROM: copy a .fds file to a .fds.bak file if a disk content was rewritten
 * [ Save and return ] - press **left** or **right** button on this item to return to the main menu
 
-### How to dump real disks
-You can use a homebrew disk copier applications to copy a real disk to a virtual one, simply create an empty ROM. There is **Create blank disk** item in the main menu for it.
+### How to dump physical disks
+You can use a homebrew disk copier applications to copy a physical disk to a virtual one, simply create an empty ROM. There is **Create blank disk** item in the main menu for it.
 1. Put **Disk Hacker**/**Disk Keeper** or another homebrew disk copier ROM on SD card
 2. Select a disk copier software on your SD card like any other ROM and load it
 3. Return to the main menu and select **Create blank disk**
 4. Enter filename for the new ROM, trailing spaces will be trimmed
-5. When disk copier asks to insert game disk disconnect a FDSKey from a RAM adaptor and connect a real FDS drive with a game disk inserted
-6. When disk copier asks to insert new/blank disk disconnect a real drive, connect a FDSKey and select ROM created in steps 3-4
+5. When disk copier asks to insert game disk disconnect a FDSKey from a RAM adaptor and connect a physical FDS drive with a game disk inserted
+6. When disk copier asks to insert new/blank disk disconnect a physical drive, connect a FDSKey and select ROM created in steps 3-4
 7. Repeat steps 5-6 until the copy operation is completed
 
-### How to write real disks
-This is a reverse operation of dumping: you can use disk copiers homebrew applications to copy a virtual disk to a real one.
+### How to write physical disks
+This is a reverse operation of dumping: you can use disk copiers homebrew applications to copy a virtual disk to a physical one.
 1. Put **Disk Hacker**/**Disk Keeper** or another homebrew disk copier ROM on SD card
 2. Select a disk copier software on your SD card like any other ROM and load it
 3. When disk copier asks to insert game disk select the source ROM/side
-4. When disk copier asks to insert new/blank disk disconnect a FDSKey from a RAM adaptor and connect a real FDS drive with blank disk inserted
-5. Disconnect a real FDS drive and connect FDSKey
+4. When disk copier asks to insert new/blank disk disconnect a FDSKey from a RAM adaptor and connect a physical FDS drive with blank disk inserted
+5. Disconnect a physical FDS drive and connect FDSKey
 6. Repeat steps 3, 4, and 5 until the copy operation is completed
 
 ## Donate
