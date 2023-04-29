@@ -91,8 +91,8 @@ You can buy them in any electronic components store.
 
 Work in progress.
 
-## Flashing the firmwire
-There are five TH pads (actually 6 but 1 is unused) on the PCB to connect a ST-Link programmer (GND, VCC, SWD, SWCLK and NRST). First, you need to write the bootloader - **bootloader.bin** file. Then you can put the main firmwire file - **fdskey.bin** on your SD card (FAT/FAT32/exFAT formatted) and hold all four buttons on power-on, e.g. connect FDSKey to RAM adaptor, hold buttons and turn a Famicom on. You can use the same method to update the main firmwire in the future without additional hardware.
+## Flashing the firmware
+There are five TH pads (actually 6 but 1 is unused) on the PCB to connect a ST-Link programmer (GND, VCC, SWD, SWCLK and NRST). First, you need to write the bootloader - **bootloader.bin** file. Then you can put the main firmware file - **fdskey.bin** on your SD card (FAT/FAT32/exFAT formatted) and hold all four buttons on power-on, e.g. connect FDSKey to RAM adaptor, hold buttons and turn a Famicom on. You can use the same method to update the main firmware in the future without additional hardware.
 
 After the first boot, press and hold the **left** button for 3 seconds to access the service menu. There, you can select the OLED display controller type (change it if the display shows a corrupted image) and check some system information.
 
