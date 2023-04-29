@@ -208,7 +208,7 @@ void fds_side_select(char *directory, FILINFO *fno, uint8_t load_first)
       for (i = 0; i < OLED_HEIGHT; i++)
       {
         oled_set_line(oled_get_line() - 1);
-        HAL_Delay(1);
+        HAL_Delay(2);
       }
     }
     if (button_down_newpress() && side + 1 < side_count)
@@ -219,7 +219,7 @@ void fds_side_select(char *directory, FILINFO *fno, uint8_t load_first)
       for (i = 0; i < OLED_HEIGHT; i++)
       {
         oled_set_line(oled_get_line() + 1);
-        HAL_Delay(1);
+        HAL_Delay(2);
       }
     }
     if (button_right_newpress())

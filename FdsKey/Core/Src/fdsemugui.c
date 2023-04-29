@@ -141,9 +141,9 @@ void fds_gui_draw_side_changing(uint8_t swap, int frame)
   first_line = !swap ? "Flipping" : "Swapping";
   second_line = "the disk";
   oled_draw_text(&SPLASH_REGULAR_FONT, first_line, 20 + oled_get_text_length(&SPLASH_REGULAR_FONT, second_line) / 2 - oled_get_text_length(&SPLASH_REGULAR_FONT, first_line) / 2,
-    oled_get_line() + OLED_HEIGHT + OLED_HEIGHT / 2 - SPLASH_REGULAR_FONT.char_height, 0, 0);
+    line + OLED_HEIGHT / 2 - SPLASH_REGULAR_FONT.char_height, 0, 0);
   oled_draw_text(&SPLASH_REGULAR_FONT, second_line, 20,
-    oled_get_line() + OLED_HEIGHT + OLED_HEIGHT / 2, 0, 0);
+    line + OLED_HEIGHT / 2, 0, 0);
   // disk image
   frame %= 20;
   if (frame >= 10)
@@ -182,7 +182,7 @@ void fds_gui_draw_side_changing(uint8_t swap, int frame)
     image = (DotMatrixImage*)&IMAGE_DISK_FLIP_FRAME_9;
     break;
   }
-  oled_draw_image(image, OLED_WIDTH - image->width - 20, oled_get_line() + OLED_HEIGHT + OLED_HEIGHT / 2 - image->height / 2, 0, 0);
+  oled_draw_image(image, OLED_WIDTH - image->width - 20, line + OLED_HEIGHT / 2 - image->height / 2, 0, 0);
 }
 
 FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t side_count, uint8_t ro)
@@ -222,11 +222,12 @@ FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t
       if (fr != FR_OK)
         return fr;
       fds_gui_draw_side_changing((cmd == 1 && !(side & 1)) || (cmd == 2 && (side & 1)), 0);
+      HAL_Delay(10); // wtf, image is glitched without this line for some reason
       oled_update_invisible();
       for (i = 0; i < OLED_HEIGHT; i++)
       {
         oled_set_line(oled_get_line() + (cmd == 1 ? -1 : 1));
-        HAL_Delay(1);
+        HAL_Delay(5);
       }
       for (i = 0; i < 20; i++)
       {
@@ -247,7 +248,7 @@ FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t
       for (i = 0; i < OLED_HEIGHT; i++)
       {
         oled_set_line(oled_get_line() + (cmd == 1 ? -1 : 1));
-        HAL_Delay(1);
+        HAL_Delay(5);
       }
     }
 
