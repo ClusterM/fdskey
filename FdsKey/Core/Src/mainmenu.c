@@ -84,8 +84,8 @@ void main_menu_loop()
   FRESULT fr;
   MAIN_MENU_SELECTION menu_selection = MAIN_MENU_NONE;
 
-  while (HAL_GPIO_ReadPin(SD_DTCT_GPIO_Port, SD_DTCT_Pin))
-    show_error_screen("No SD card", 0);
+  if (HAL_GPIO_ReadPin(SD_DTCT_GPIO_Port, SD_DTCT_Pin))
+    show_error_screen("No SD card", 1);
   fr = f_mount(&fat_fs, "", 1);
   show_error_screen_fr(fr, 1);
 

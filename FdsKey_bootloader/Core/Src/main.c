@@ -142,8 +142,8 @@ int main(void)
   show_message("Please wait...", 0);
 
   // Init SD card and FAT
-  while (HAL_GPIO_ReadPin(SD_DTCT_GPIO_Port, SD_DTCT_Pin))
-    show_error_screen("No SD card", 0);
+  if (HAL_GPIO_ReadPin(SD_DTCT_GPIO_Port, SD_DTCT_Pin))
+    show_error_screen("No SD card", 1);
   r = SD_init();
   if (r != HAL_OK)
     show_error_screen("Can't init SD card", 1);
