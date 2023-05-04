@@ -3,12 +3,9 @@ An open-source, low-cost, and easy-to-build Famicom Disk System drive emulator f
 
 This project is currently a work in progress and is not yet finished.
 
-![image](https://user-images.githubusercontent.com/4236181/235117963-40d30f15-8f6f-4209-978d-fd50f23c474f.png)
+![image](https://user-images.githubusercontent.com/4236181/236316906-6cb9d61e-4590-4c11-8656-5975de52ae7a.png)
 
-![image](https://user-images.githubusercontent.com/4236181/235107005-b5a327a4-42dc-4795-9351-22f230a0fae1.png)
-
-TODO: add more photos
-TODO: fix my bad engrish
+![image](https://user-images.githubusercontent.com/4236181/236317015-384c0057-1e60-4fc1-9c69-a7cfe7c16906.png)
 
 How you can use it:
 * You can run Famicom Disk System disk images from a microSD card 
