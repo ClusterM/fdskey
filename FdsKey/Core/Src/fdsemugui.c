@@ -185,15 +185,17 @@ void fds_gui_draw_side_changing(uint8_t swap, int frame)
   oled_draw_image(image, OLED_WIDTH - image->width - 20, line + OLED_HEIGHT / 2 - image->height / 2, 0, 0);
 }
 
-FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t side_count, uint8_t ro)
+FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t *side, uint8_t side_count, uint8_t ro)
 {
   FRESULT fr;
   int i, text_scroll = 0;
   uint8_t cmd;
+  uint8_t zero_side = 0;
 
   show_loading_screen();
 
-  fr = fds_load_side(filename, side, ro);
+  if (!side) side = &zero_side;
+  fr = fds_load_side(filename, *side, ro);
   if (fr != FR_OK)
     return fr;
 
@@ -210,9 +212,9 @@ FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t
     cmd = 0;
     if (button_left_newpress())
         break;
-    if (button_up_newpress() && side > 0)
+    if (button_up_newpress() && *side > 0)
       cmd = 1;
-    if (button_down_newpress() && side + 1 < side_count)
+    if (button_down_newpress() && *side + 1 < side_count)
       cmd = 2;
     if (cmd)
     {
@@ -221,7 +223,7 @@ FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t
       fr = fds_close(1);
       if (fr != FR_OK)
         return fr;
-      fds_gui_draw_side_changing((cmd == 1 && !(side & 1)) || (cmd == 2 && (side & 1)), 0);
+      fds_gui_draw_side_changing((cmd == 1 && !(*side & 1)) || (cmd == 2 && (*side & 1)), 0);
       HAL_Delay(10); // wtf, image is glitched without this line for some reason
       oled_update_invisible();
       for (i = 0; i < OLED_HEIGHT; i++)
@@ -232,18 +234,18 @@ FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t
       for (i = 0; i < 20; i++)
       {
         HAL_Delay(FDS_GUI_SIDE_SWITCH_DELAY / 20);
-        fds_gui_draw_side_changing((cmd == 1 && !(side & 1)) || (cmd == 2 && (side & 1)), i);
+        fds_gui_draw_side_changing((cmd == 1 && !(*side & 1)) || (cmd == 2 && (*side & 1)), i);
         oled_update_invisible();
         oled_switch_to_invisible();
       }
       if (cmd == 1)
-        side--;
+        (*side)--;
       else
-        side++;
-      fr = fds_load_side(filename, side, ro);
+        (*side)++;
+      fr = fds_load_side(filename, *side, ro);
       if (fr != FR_OK)
         return fr;
-      fds_gui_draw(side, side_count, game_name, text_scroll);
+      fds_gui_draw(*side, side_count, game_name, text_scroll);
       oled_update_invisible();
       for (i = 0; i < OLED_HEIGHT; i++)
       {
@@ -252,7 +254,7 @@ FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t
       }
     }
 
-    fds_gui_draw(side, side_count, game_name, text_scroll);
+    fds_gui_draw(*side, side_count, game_name, text_scroll);
     oled_update_invisible();
     oled_switch_to_invisible();
 //    if (!text_scroll)

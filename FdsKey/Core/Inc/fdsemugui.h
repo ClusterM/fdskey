@@ -9,6 +9,6 @@
 #define FDS_GUI_FILE_NUMBER_FONT FONT_DIGITS
 #define FDS_GUI_SIDE_SWITCH_DELAY 800
 
-FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t side, uint8_t side_count, uint8_t ro);
+FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t *side, uint8_t side_count, uint8_t ro);
 
 #endif /* INC_FDSEMUGUI_H_ */
