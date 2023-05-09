@@ -3,12 +3,9 @@ An open-source, low-cost, and easy-to-build Famicom Disk System drive emulator f
 
 This project is currently a work in progress and is not yet finished.
 
-![image](https://user-images.githubusercontent.com/4236181/235117963-40d30f15-8f6f-4209-978d-fd50f23c474f.png)
+![image](https://user-images.githubusercontent.com/4236181/236316906-6cb9d61e-4590-4c11-8656-5975de52ae7a.png)
 
-![image](https://user-images.githubusercontent.com/4236181/235107005-b5a327a4-42dc-4795-9351-22f230a0fae1.png)
-
-TODO: add more photos
-TODO: fix my bad engrish
+![image](https://user-images.githubusercontent.com/4236181/236317015-384c0057-1e60-4fc1-9c69-a7cfe7c16906.png)
 
 How you can use it:
 * You can run Famicom Disk System disk images from a microSD card 
@@ -89,7 +86,11 @@ You can buy them in any electronic components store.
 
 8. **Plastic case**
 
-Work in progress.
+![Case](https://user-images.githubusercontent.com/4236181/236312271-72fae0b4-eb8f-4205-96cc-bcf23f25701f.png)
+
+You can print plastic case with a 3D printer. You can find .stl files in the [case_3d_models](case_3d_models) directory. There are two types of models:
+* [For FDM 3D printers](case_3d_models/fdm) - can be printed on a affordable home 3D printer, the bottom and top parts of the case must be glued together
+* [For MJF 3D printers](case_3d_models/mjf) (recommended) - for industrial 3D printing, you can order it from a manufacturing service (e.g. [jlcpcb.com](https://jlcpcb.com)), this version features latches
 
 ## Flashing the firmware
 There are five TH pads (actually 6 but 1 is unused) on the PCB to connect a ST-Link programmer (GND, VCC, SWD, SWCLK and NRST). First, you need to write the bootloader - **bootloader.bin** file. Then you can put the main firmware file - **fdskey.bin** on your SD card (FAT/FAT32/exFAT formatted) and hold all four buttons on power-on, e.g. connect FDSKey to RAM adaptor, hold buttons and turn a Famicom on. You can use the same method to update the main firmware in the future without additional hardware.
