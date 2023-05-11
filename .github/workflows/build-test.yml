@@ -26,7 +26,7 @@ jobs:
     - name: Build bootloader
       run: |
         mkdir -p ${{ env.OUT_DIR }}
-        make -C FdsKey_bootloader/interim/ OBJCOPY_BIN=../../${{ env.OUT_DIR }}/${{ env.APP_NAME }}_bootloader.bin
+        make -C FdsKey_bootloader/interim/ OBJCOPY_BIN=../../${{ env.OUT_DIR }}/${{ env.APP_NAME }}_bootloader.bin EXECUTABLES=../../${{ env.OUT_DIR }}/${{ env.APP_NAME }}_bootloader.elf
     - name: Build firmware
       run: |
         mkdir -p ${{ env.OUT_DIR }}
