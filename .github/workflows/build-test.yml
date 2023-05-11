@@ -17,7 +17,7 @@ jobs:
     runs-on: [ubuntu-latest]
     env:
       APP_NAME: fdskey
-      OUT_DIR: output
+      OUT_DIR: fdskey
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -47,6 +47,10 @@ jobs:
     steps:
     - name: Download artifacts
       uses: actions/download-artifact@v3
+    - name: Move files to the root
+      run: find -mindepth 2 -exec mv {} . \;
+    - name: Remove empty directories
+      run: find -mindepth 1 -type d -delete
     - name: Generate index.html
       run: "(echo \"<html><head><title>FDSKey</title></head><body>Updated: `date`<br/><br/>\" ; for file in output ; do echo \"<a href='$file'>$file</a><br/>\" ; done ; echo \"</body></html>\") > index.html"
     - name: Upload artifact
