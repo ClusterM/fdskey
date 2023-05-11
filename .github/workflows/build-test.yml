@@ -52,7 +52,7 @@ jobs:
     - name: Remove empty directories
       run: find -mindepth 1 -type d -delete
     - name: Generate index.html
-      run: "(echo \"<html><head><title>FDSKey</title></head><body>Updated: `date`<br/><br/>\" ; for file in output ; do echo \"<a href='$file'>$file</a><br/>\" ; done ; echo \"</body></html>\") > index.html"
+      run: "(echo \"<html><head><title>FDSKey</title></head><body>Updated: `date`<br/><br/>\" ; for file in *.bin ; do echo \"<a href='$file'>$file</a><br/>(MD5: `md5sub $file`)</br></br>\" ; done ; echo \"</body></html>\") > index.html"
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v1
       with:
