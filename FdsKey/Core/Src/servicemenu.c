@@ -74,10 +74,14 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
     break;
   case SERVICE_SETTING_VERSION:
     parameter_name = "FW version";
+#ifndef INTERIM
     if (!FDSKEY_VERION_SUFFIX)
       sprintf(value_v, "v%d.%d", FDSKEY_VERION_MAJOR, FDSKEY_VERION_MINOR);
     else
       sprintf(value_v, "v%d.%d%c", FDSKEY_VERION_MAJOR, FDSKEY_VERION_MINOR, FDSKEY_VERION_SUFFIX);
+#else
+    value = "interim";
+#endif
     break;
   case SERVICE_SETTING_COMMIT:
     parameter_name = "FW commit";
