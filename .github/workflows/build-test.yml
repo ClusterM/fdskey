@@ -1,0 +1,60 @@
+name: Build, test, upload
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: [ubuntu-latest]
+    env:
+      APP_NAME: fdskey
+      OUT_DIR: output
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Install compiler
+      run: sudo apt-get install gcc-arm-none-eabi
+    - name: Build bootloader
+      run: |
+        mkdir -p ${{ env.OUT_DIR }}
+        make -C FdsKey_bootloader/interim/ OBJCOPY_BIN=../../${{ env.OUT_DIR }}/${{ env.APP_NAME }}_bootloader.bin
+    - name: Build firmware
+      run: |
+        mkdir -p ${{ env.OUT_DIR }}
+        make -C FdsKey/interim/ OBJCOPY_BIN=../../${{ env.OUT_DIR }}/${{ env.APP_NAME }}.bin
+    - name: Archive
+      working-directory: ${{ env.OUT_DIR }}
+      env:
+        CMD: ${{ matrix.os == 'win' && 'zip -r9' || 'tar -czvf' }}
+      run: |
+        tar -czvf ../{{ env.APP_NAME }}.tar.gz *
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.APP_NAME }}
+        path: {{ env.APP_NAME }}.tar.gz
+
+  upload-to-pages:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+    - name: Generate index.html
+      run: "(echo \"<html><head><title>FDSKey</title></head><body>Updated: `date`<br/><br/>\" ; for file in output ; do echo \"<a href='$file'>$file</a><br/>\" ; done ; echo \"</body></html>\") > index.html"
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v1
+      with:
+        path: '.'
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v1
