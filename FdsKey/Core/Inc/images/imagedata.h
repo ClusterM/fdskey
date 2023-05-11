@@ -31,20 +31,11 @@
 #include "disk_flip_frame_7.h"
 #include "disk_flip_frame_8.h"
 #include "disk_flip_frame_9.h"
-#include "folder.h"
-#include "folder2.h"
-#include "folder3.h"
-#include "folder4.h"
-#include "folder5.h"
 #include "folder6.h"
-#include "folder_up.h"
 #include "head_cursor.h"
 #include "large_cursor.h"
 #include "medium_cursor.h"
-#include "microsd.h"
-#include "microsd2.h"
 #include "microsd_hor.h"
-#include "microsd_hor2.h"
 #include "state_ff.h"
 #include "state_pause.h"
 #include "state_play.h"
@@ -250,46 +241,10 @@ const DotMatrixImage IMAGE_DISK_FLIP_FRAME_9 = {
   .image_data = image_disk_flip_frame_9
 };
 
-const DotMatrixImage IMAGE_FOLDER = {
-  .width = IMAGE_FOLDER_WIDTH,
-  .height = IMAGE_FOLDER_HEIGHT,
-  .image_data = image_folder
-};
-
-const DotMatrixImage IMAGE_FOLDER2 = {
-  .width = IMAGE_FOLDER2_WIDTH,
-  .height = IMAGE_FOLDER2_HEIGHT,
-  .image_data = image_folder2
-};
-
-const DotMatrixImage IMAGE_FOLDER3 = {
-  .width = IMAGE_FOLDER3_WIDTH,
-  .height = IMAGE_FOLDER3_HEIGHT,
-  .image_data = image_folder3
-};
-
-const DotMatrixImage IMAGE_FOLDER4 = {
-  .width = IMAGE_FOLDER4_WIDTH,
-  .height = IMAGE_FOLDER4_HEIGHT,
-  .image_data = image_folder4
-};
-
-const DotMatrixImage IMAGE_FOLDER5 = {
-  .width = IMAGE_FOLDER5_WIDTH,
-  .height = IMAGE_FOLDER5_HEIGHT,
-  .image_data = image_folder5
-};
-
 const DotMatrixImage IMAGE_FOLDER6 = {
   .width = IMAGE_FOLDER6_WIDTH,
   .height = IMAGE_FOLDER6_HEIGHT,
   .image_data = image_folder6
-};
-
-const DotMatrixImage IMAGE_FOLDER_UP = {
-  .width = IMAGE_FOLDER_UP_WIDTH,
-  .height = IMAGE_FOLDER_UP_HEIGHT,
-  .image_data = image_folder_up
 };
 
 const DotMatrixImage IMAGE_HEAD_CURSOR = {
@@ -310,28 +265,10 @@ const DotMatrixImage IMAGE_MEDIUM_CURSOR = {
   .image_data = image_medium_cursor
 };
 
-const DotMatrixImage IMAGE_MICROSD = {
-  .width = IMAGE_MICROSD_WIDTH,
-  .height = IMAGE_MICROSD_HEIGHT,
-  .image_data = image_microsd
-};
-
-const DotMatrixImage IMAGE_MICROSD2 = {
-  .width = IMAGE_MICROSD2_WIDTH,
-  .height = IMAGE_MICROSD2_HEIGHT,
-  .image_data = image_microsd2
-};
-
 const DotMatrixImage IMAGE_MICROSD_HOR = {
   .width = IMAGE_MICROSD_HOR_WIDTH,
   .height = IMAGE_MICROSD_HOR_HEIGHT,
   .image_data = image_microsd_hor
-};
-
-const DotMatrixImage IMAGE_MICROSD_HOR2 = {
-  .width = IMAGE_MICROSD_HOR2_WIDTH,
-  .height = IMAGE_MICROSD_HOR2_HEIGHT,
-  .image_data = image_microsd_hor2
 };
 
 const DotMatrixImage IMAGE_STATE_FF = {

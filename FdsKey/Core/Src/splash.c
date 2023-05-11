@@ -40,13 +40,6 @@ void show_message(char *text, uint8_t wait)
 void show_loading_screen()
 {
   show_message("Loading", 0);
-  /*
-  oled_draw_rectangle(0, oled_get_line() + OLED_HEIGHT, OLED_WIDTH - 1, oled_get_line() + OLED_HEIGHT * 2 - 1, 1, 0);
-  oled_draw_image(&SPLASH_LOADING_IMAGE, OLED_WIDTH - SPLASH_LOADING_IMAGE.width - 10, oled_get_line() + OLED_HEIGHT + (OLED_HEIGHT - SPLASH_LOADING_IMAGE.height) / 2, 0, 0);
-  oled_draw_text(&SPLASH_REGULAR_FONT, "Loading", 10, oled_get_line() + OLED_HEIGHT + 11, 0, 0);
-  oled_update_invisible();
-  oled_switch_to_invisible();
-  */
 }
 
 void show_saving_screen()
