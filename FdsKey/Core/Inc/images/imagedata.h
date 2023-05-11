@@ -8,12 +8,6 @@
 #include "card_4b.h"
 #include "card_a.h"
 #include "card_b.h"
-#include "card_c.h"
-#include "card_d.h"
-#include "card_e.h"
-#include "card_f.h"
-#include "card_g.h"
-#include "card_h.h"
 #include "card_single.h"
 #include "card_unknown.h"
 #include "cursor.h"
@@ -101,42 +95,6 @@ const DotMatrixImage IMAGE_CARD_B = {
   .width = IMAGE_CARD_B_WIDTH,
   .height = IMAGE_CARD_B_HEIGHT,
   .image_data = image_card_b
-};
-
-const DotMatrixImage IMAGE_CARD_C = {
-  .width = IMAGE_CARD_C_WIDTH,
-  .height = IMAGE_CARD_C_HEIGHT,
-  .image_data = image_card_c
-};
-
-const DotMatrixImage IMAGE_CARD_D = {
-  .width = IMAGE_CARD_D_WIDTH,
-  .height = IMAGE_CARD_D_HEIGHT,
-  .image_data = image_card_d
-};
-
-const DotMatrixImage IMAGE_CARD_E = {
-  .width = IMAGE_CARD_E_WIDTH,
-  .height = IMAGE_CARD_E_HEIGHT,
-  .image_data = image_card_e
-};
-
-const DotMatrixImage IMAGE_CARD_F = {
-  .width = IMAGE_CARD_F_WIDTH,
-  .height = IMAGE_CARD_F_HEIGHT,
-  .image_data = image_card_f
-};
-
-const DotMatrixImage IMAGE_CARD_G = {
-  .width = IMAGE_CARD_G_WIDTH,
-  .height = IMAGE_CARD_G_HEIGHT,
-  .image_data = image_card_g
-};
-
-const DotMatrixImage IMAGE_CARD_H = {
-  .width = IMAGE_CARD_H_WIDTH,
-  .height = IMAGE_CARD_H_HEIGHT,
-  .image_data = image_card_h
 };
 
 const DotMatrixImage IMAGE_CARD_SINGLE = {
