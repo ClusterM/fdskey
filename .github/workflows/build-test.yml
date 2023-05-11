@@ -33,10 +33,8 @@ jobs:
         make -C FdsKey/interim/ OBJCOPY_BIN=../../${{ env.OUT_DIR }}/${{ env.APP_NAME }}.bin
     - name: Archive
       working-directory: ${{ env.OUT_DIR }}
-      env:
-        CMD: ${{ matrix.os == 'win' && 'zip -r9' || 'tar -czvf' }}
       run: |
-        tar -czvf ../{{ env.APP_NAME }}.tar.gz *
+        tar -czvf {{ env.APP_NAME }}.tar.gz *
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
