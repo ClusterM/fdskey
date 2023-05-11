@@ -35,10 +35,14 @@ void main_menu_draw(uint8_t selection)
   oled_draw_image(&IMAGE_LARGE_CURSOR, 3, line + 2 + 10 * selection, 0, 0);
 
   // version number
+#ifndef INTERIM
   if (!FDSKEY_VERION_SUFFIX)
     sprintf(buf, "v%d.%d", FDSKEY_VERION_MAJOR, FDSKEY_VERION_MINOR);
   else
     sprintf(buf, "v%d.%d%c", FDSKEY_VERION_MAJOR, FDSKEY_VERION_MINOR, FDSKEY_VERION_SUFFIX);
+#else
+  strcpy(buf, COMMIT);
+#endif
   oled_draw_text(&MAIN_MENU_VERSION_FONT, buf,
       OLED_WIDTH - oled_get_text_length(&MAIN_MENU_VERSION_FONT, buf) - 1, line + OLED_HEIGHT - MAIN_MENU_VERSION_FONT.char_height,
       0, 0);
