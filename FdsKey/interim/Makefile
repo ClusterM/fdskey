@@ -36,6 +36,6 @@ clean:
 	find .. -name *.d -delete
 
 pre-build:
-	echo "#define COMMIT \"$$(git rev-parse --short HEAD)$$(git diff-index --quiet HEAD -- || echo ' (dirty)')\"\n#define BUILD_DATE \"$$(TZ=UTC date +'%Y-%m-%d')\"\n#define BUILD_TIME \"$$(TZ=UTC date +'%H:%M:%S')\"\n#define INTERIM\n" > $(COMMIT_FILE)
+	echo "#define COMMIT \"$$(git rev-parse --short HEAD)$$(git diff-index --quiet HEAD -- || echo ' (dirty)')\"\n#define BUILD_DATE \"$$(TZ=UTC date +'%Y-%m-%d')\"\n#define BUILD_TIME \"$$(TZ=UTC date +'%H:%M:%S')\"\n#define INTERIM 1\n" > $(COMMIT_FILE)
 
 .PHONY: all clean pre-build
