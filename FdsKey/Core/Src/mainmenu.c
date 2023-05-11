@@ -13,6 +13,7 @@
 #include "newdisk.h"
 #include "fileproperties.h"
 #include "servicemenu.h"
+#include "commit.h"
 
 void main_menu_draw(uint8_t selection)
 {
