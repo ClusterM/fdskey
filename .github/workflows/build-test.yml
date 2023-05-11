@@ -50,7 +50,7 @@ jobs:
     - name: Move files to the root
       run: find -mindepth 2 -exec mv {} . \;
     - name: Generate index.html
-      run: "(echo \"<html><head><title>FDSKey</title></head><meta http-equiv='Cache-Control' content='no-cache, no-store, must-revalidate'/><body>Updated: `date`<br/><br/>Main firmware: <a href='fdskey.bin'>fdskey.bin</a><br/>(MD5: `md5sum fdskey.bin | awk '{print $1}'`)</br></br>Bootloader: <a href='fdskey_bootloader.bin'>fdskey_bootloader.bin</a><br/>(MD5: `md5sum fdskey_bootloader.bin | awk '{print $1}'`)</body></html>\") > index.html"
+      run: "(echo \"<html><head><title>FDSKey</title></head><meta http-equiv='Cache-Control' content='no-cache, no-store, must-revalidate'/><body>Updated: `date`<br/><br/>Main firmware: <a href='fdskey.bin'>fdskey.bin</a><br/>(MD5: `md5sum fdskey.bin | awk '{print $1}'`)</br></br>Bootloader (.bin): <a href='fdskey_bootloader.bin'>fdskey_bootloader.bin</a><br/>(MD5: `md5sum fdskey_bootloader.bin | awk '{print $1}'`)</br></br>Bootloader (.elf): <a href='fdskey_bootloader.elf'>fdskey_bootloader.elf</a><br/>(MD5: `md5sum fdskey_bootloader.elf | awk '{print $1}'`)</body></html>\") > index.html"
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v1
       with:
