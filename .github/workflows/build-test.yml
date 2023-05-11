@@ -34,7 +34,7 @@ jobs:
     - name: Archive
       working-directory: ${{ env.OUT_DIR }}
       run: |
-        tar -czvf {{ env.APP_NAME }}.tar.gz *
+        tar -czvf ${{ env.APP_NAME }}.tar.gz *
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
