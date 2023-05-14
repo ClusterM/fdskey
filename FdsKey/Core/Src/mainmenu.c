@@ -24,16 +24,16 @@ void main_menu_draw(uint8_t selection)
   oled_draw_rectangle(0, line, OLED_WIDTH - 1, line + OLED_HEIGHT - 1, 1, 0);
   // draw text
   oled_draw_text(&MAIN_MENU_FONT, "Browse disk images",
-      10, line + 1,
+      8, line + 1,
       0, 0);
   oled_draw_text(&MAIN_MENU_FONT, "Create a blank disk",
-      10, line + 11,
+      8, line + 11,
       0, 0);
   oled_draw_text(&MAIN_MENU_FONT, "Settings",
-      10, line + 21,
+      8, line + 21,
       0, 0);
   // draw cursor
-  oled_draw_image(&IMAGE_LARGE_CURSOR, 3, line + 2 + 10 * selection, 0, 0);
+  oled_draw_image(&IMAGE_LARGE_CURSOR, 1, line + 2 + 10 * selection, 0, 0);
 
   // version number
 #ifndef INTERIM
