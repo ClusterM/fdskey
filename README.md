@@ -29,7 +29,7 @@ You'll need a few low-cost components.
 ### Components
 1. **PCB**
 
-TODO: add PCB photo
+![image](https://github.com/ClusterM/fdskey/assets/4236181/476d0b8a-ceb0-43a4-9af6-49b70bd346fb)
 
 The PCB is designed in the [DipTrace](https://diptrace.com/) software.
 
@@ -50,6 +50,12 @@ You can easily find it on [mouser.com](https://www.mouser.com/c/?q=STM32G0B0CET)
 ![OLED display](https://user-images.githubusercontent.com/4236181/232314774-186cd89f-30fd-4f91-9653-37cfe8fef6e9.png)
 
 It's a very popular OLED display, search for **SSD1306 0.91-inch OLED 128x32 4-pin** on [aliexpress.com](https://aliexpress.com), [ebay.com](https://ebay.com), [amazon.com](https://amazon.com) or [taobao.com](https://taobao.com). These displays are available in different colors: blue, white and yellow, you can select the one you prefer.
+
+Solder it like this:
+
+![image](https://github.com/ClusterM/fdskey/assets/4236181/838d6eda-314d-4413-b7a4-7afc750db767)
+
+It's recommended to put something soft under the display on the right side.
 
 **WARNING**: some unscrupulous sellers may sell you used, burned-in displays.
 
@@ -91,6 +97,12 @@ You can buy them in any electronic components store.
 You can print plastic case with a 3D printer. You can find .stl files in the [case_3d_models](case_3d_models) directory. There are two types of models:
 * [For FDM 3D printers](case_3d_models/fdm) - can be printed on a affordable home 3D printer, the bottom and top parts of the case must be glued together
 * [For MJF 3D printers](case_3d_models/mjf) (recommended) - for industrial 3D printing, you can order it from a manufacturing service (e.g. [jlcpcb.com](https://jlcpcb.com)), this version features latches
+
+![image](https://github.com/ClusterM/fdskey/assets/4236181/63e137a9-f813-465d-b8eb-892db9b8c92a)
+
+What does it look like when everything is assembled:
+![image](https://github.com/ClusterM/fdskey/assets/4236181/89b203e7-0c53-416a-bfa9-5ffd49e8fffc)
+
 
 ## Flashing the firmware
 There are five TH pads (actually 6 but 1 is unused) on the PCB to connect a ST-Link programmer (GND, VCC, SWD, SWCLK and NRST). First, you need to write the bootloader - **bootloader.bin** file. Then you can put the main firmware file - **fdskey.bin** on your SD card (FAT/FAT32/exFAT formatted) and hold all four buttons on power-on, e.g. connect FDSKey to RAM adaptor, hold buttons and turn a Famicom on. You can use the same method to update the main firmware in the future without additional hardware.
@@ -144,6 +156,13 @@ This is a reverse operation of dumping: you can use disk copiers homebrew applic
 4. When disk copier asks to insert new/blank disk disconnect a FDSKey from a RAM adaptor and connect a physical FDS drive with blank disk inserted
 5. Disconnect a physical FDS drive and connect FDSKey
 6. Repeat steps 3, 4, and 5 until the copy operation is completed
+
+## Firmware updates
+You can always download the latest version at https://github.com/ClusterM/fdskey/releases.
+
+Also, you can download automatic interim builds at http://clusterm.github.io/fdskey/.
+
+Remember, you can update the firmware by putting **fdskey.bin** on your SD card and holding all four buttons on power-on.
 
 ## Donate
 * PayPal: cluster@cluster.wtf
