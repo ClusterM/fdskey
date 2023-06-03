@@ -82,8 +82,7 @@ Search for **3X4X2.5H SMD** buttons, they can be found on [aliexpress.com](https
 ![Capacitor](https://user-images.githubusercontent.com/4236181/232319858-d8be57ae-639b-496c-821b-c151da69f2c9.png)
 
 You will need only a few of them:
-* C1 - 4.7uF ceramic capacitor, 0603 size (higher values are not recommended)
-* C2 - 22uF ceramic capacitor, 0603 size
+* C1, C2 - two 4.7uF ceramic capacitors, 0603 size (higher values are not recommended)
 * C3, C4 - two 100nF ceramic capacitors, 0402 size (0603 will be fine too)
 * R1, R2 - two 1.5K resistors, 0402 size (0603 will be fine too), actually you can also use any values from 1K to 10K
 
