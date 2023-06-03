@@ -19,10 +19,10 @@ Requirements:
 You'll need a few low-cost components.
 
 ### Circuit diagram
-![Сircuit diagram](fdskey_circuit_diagram.png )
+![Сircuit diagram](FdsKey_circuit_diagram.png )
 
 ### Bill of materials
-![Сircuit diagram](fdskey_bom.png )
+![Сircuit diagram](FdsKey_bom.png )
 
 ### Components
 1. **PCB**
