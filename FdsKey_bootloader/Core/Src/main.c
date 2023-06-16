@@ -144,7 +144,7 @@ int main(void)
   // Init SD card and FAT
   if (HAL_GPIO_ReadPin(SD_DTCT_GPIO_Port, SD_DTCT_Pin))
     show_error_screen("No SD card", 1);
-  r = SD_init();
+  r = SD_init_try_speed();
   if (r != HAL_OK)
     show_error_screen("Can't init SD card", 1);
   fr = f_mount(&FatFs, "", 1);
