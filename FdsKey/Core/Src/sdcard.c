@@ -1,5 +1,3 @@
-/* vim: set ai et ts=4 sw=4: */
-
 #include "sdcard.h"
 
 static uint64_t card_capacity;
@@ -18,45 +16,12 @@ static void SD_Unselect()
 
 static HAL_StatusTypeDef SPI_TransmitReceive(uint8_t* tx, uint8_t* rx, size_t buff_size)
 {
-//  uint8_t i, o, bit;
   return HAL_SPI_TransmitReceive(&SD_SPI_PORT, tx, rx, buff_size, SD_TIMEOUT);
-//  while (buff_size)
-//  {
-//    i = *tx;
-//    o = 0;
-//    for (bit = 0; bit < 8; bit++)
-//    {
-//      HAL_GPIO_WritePin(SD_MOSI_GPIO_Port, SD_MOSI_Pin, (i >> (7 - bit)) & 1);
-//      HAL_GPIO_WritePin(SD_CLK_GPIO_Port, SD_CLK_Pin, GPIO_PIN_SET);
-//      o <<= 1;
-//      o |= HAL_GPIO_ReadPin(SD_MISO_GPIO_Port, SD_MISO_Pin) & 1;
-//      HAL_GPIO_WritePin(SD_CLK_GPIO_Port, SD_CLK_Pin, GPIO_PIN_RESET);
-//    }
-//    *rx = o;
-//    tx++;
-//    rx++;
-//    buff_size--;
-//  }
-//  return HAL_OK;
 }
 
 static HAL_StatusTypeDef SPI_Transmit(uint8_t* tx, size_t buff_size)
 {
-//  uint8_t i, bit;
   return HAL_SPI_Transmit(&SD_SPI_PORT, tx, buff_size, SD_TIMEOUT);
-//  while (buff_size)
-//  {
-//    i = *tx;
-//    for (bit = 0; bit < 8; bit++)
-//    {
-//      HAL_GPIO_WritePin(SD_MOSI_GPIO_Port, SD_MOSI_Pin, (i >> (7 - bit)) & 1);
-//      HAL_GPIO_WritePin(SD_CLK_GPIO_Port, SD_CLK_Pin, GPIO_PIN_SET);
-//      HAL_GPIO_WritePin(SD_CLK_GPIO_Port, SD_CLK_Pin, GPIO_PIN_RESET);
-//    }
-//    tx++;
-//    buff_size--;
-//  }
-//  return HAL_OK;
 }
 
 static HAL_StatusTypeDef SD_read_bytes(uint8_t *buff, size_t buff_size)
@@ -75,20 +40,19 @@ static HAL_StatusTypeDef SD_read_bytes(uint8_t *buff, size_t buff_size)
   return 0;
 }
 
-/*
- R1: 0abcdefg
- ||||||`- 1th bit (g): card is in idle state
- |||||`-- 2th bit (f): erase sequence cleared
- ||||`--- 3th bit (e): illegal command detected
- |||`---- 4th bit (d): crc check error
- ||`----- 5th bit (c): error in the sequence of erase commands
- |`------ 6th bit (b): misaligned address used in command
- `------- 7th bit (a): command argument outside allowed range
- (8th bit is always zero)
- */
-
 static HAL_StatusTypeDef SD_read_r1(uint8_t *r1)
 {
+  /*
+   * R1: 0abcdefg
+   *     |||||||+- 0th bit (g): Card is in idle state
+   *     ||||||+-- 1th bit (f): Erase sequence cleared
+   *     |||||+--- 2th bit (e): Illegal command detected
+   *     ||||+---- 3th bit (d): CRC check error
+   *     |||+----- 4th bit (c): Error in the sequence of erase commands
+   *     ||+------ 5th bit (b): Misaligned address used in command
+   *     |+------- 6th bit (a): Command argument outside allowed range
+   *     +-------- 7th bit is always zero
+   */
   HAL_StatusTypeDef r;
   uint8_t tx = 0xFF;
   uint32_t start_time = HAL_GetTick();
@@ -210,6 +174,7 @@ HAL_StatusTypeDef SD_init()
   uint8_t high = 0xFF;
   for (int i = 0; i < 10; i++)
   {
+    HAL_Delay(1);
     r = SPI_Transmit(&high, sizeof(high));
     if (r != HAL_OK)
       return r;
@@ -232,7 +197,33 @@ HAL_StatusTypeDef SD_init()
       return HAL_ERROR;
   }
 
-  // CMD8 - send interface condition
+  /*
+   * CMD8 - send interface condition
+   *
+   * 0th byte: R1 response
+   *
+   * 1st byte: Command version
+   * rrrrmnop (7th bit to 0th bit)
+   * ||||||||
+   * |||||+++-- 3th to 0th (m-p): Command version. It corresponds to the command version in the argument of the CMD8 command.
+   * ++++------ Reserved
+   *
+   * 2nd byte: Reserved and always 0
+   *
+   * 3rd byte: Voltage acceptance
+   * rrrrrvwx (7th bit to 0th bit)
+   * ||||||||
+   * |||||+++-- 3th to 0th bits (x-u): Voltage acceptance (VHS). It echoes back the VHS field in the argument of the CMD8 command.
+   * |||||        0b0001: The card supports 2.7-3.6V range.
+   * |||||        0b0010: The card supports low voltage range 1.65-1.95V.
+   * |||||        0b0100 and 0b1000: Reserved for future use.
+   * +++++----- Reserved
+   *
+   * 4th byte: Check pattern echo
+   * yzABCDEF (7th bit to 0th bit)
+   * ||||||||
+   * ++++++++-- 7th to 0th bits (F-y): Echo of check pattern. This field is an echo-back of the check pattern set in the argument of the CMD8 command.
+   */
   r = SD_send_cmd(8, 0x000001AA, 0x43); // request 2.7-3.63v
   if (r != HAL_OK)
     return r;
@@ -255,7 +246,44 @@ HAL_StatusTypeDef SD_init()
     sd_version = 2;
   }
 
-  // CMD58 - read OCR register
+  /*
+   * CMD58 - Read OCR
+   *
+   * 0th byte: R1 response
+   *
+   * 1st byte: OCR register [31:24]
+   * IJKrrrrP (7th bit to 0th bit)
+   * ||||||||
+   * |||||||+-- 0th bit (P): Switching to 1.8V Accepted (S18A).
+   * |||++++--- Reserved.
+   * ||+------- 5th (K) bits: UHS-II Card Status.
+   * |+-------- 6th (J) bits: Card Capacity Status (CCS).
+   * +--------- 7th (I) bits: Card power up status bit (busy).
+   *
+   * 2nd byte: OCR register [23:16]
+   * QRSTUVWX (7th bit to 0th bit)
+   * ||||||||
+   * |||||||+-- 0th bit (X): Voltage window 2.8-2.9V.
+   * ||||||+--- 1th bit (W): Voltage window 2.9-3.0V.
+   * |||||+---- 2th bit (V): Voltage window 3.0-3.1V.
+   * ||||+----- 3th bit (U): Voltage window 3.1-3.2V.
+   * |||+------ 4th bit (T): Voltage window 3.2-3.3V.
+   * ||+------- 5th bit (S): Voltage window 3.3-3.4V.
+   * |+-------- 6th bit (R): Voltage window 3.4-3.5V.
+   * +--------- 7th bit (Q): Voltage window 3.5-3.6V.
+   *
+   * 3rd byte: OCR register [15:8]
+   * Yrrrrrrr (7th bit to 0th bit)
+   * ||||||||
+   * |+++++++-- Reserved
+   * +--------- 7th bit (Y): Voltage window 2.7-2.8V.
+   *
+   * 4th byte: OCR register [7:0]
+   * grrrrrrr (7th bit to 0th bit)
+   * ||||||||
+   * |+++++++-- Reserved
+   * +--------- 7th bit (g): Reserved for Low Voltage Range.
+   */
   r = SD_send_cmd(58, 0x00000000, 0xFF);
   if (r != HAL_OK)
     return r;
@@ -294,7 +322,7 @@ HAL_StatusTypeDef SD_init()
     r = SD_read_r3(r3);
     if (r != HAL_OK)
       return r;
-    if (r3[0] & 0b11111110)
+    if (r3[0] & ~SD_R1_IDLE)
       return HAL_ERROR;
     // check if power up ok and high capacity
     if (!(r3[1] & 0x80))
@@ -353,7 +381,6 @@ HAL_StatusTypeDef SD_read_csd(SD_CSD* csd)
   HAL_StatusTypeDef r;
   uint8_t r1;
   uint8_t csd_data[16];
-  uint8_t crc[2];
 
   // CMD9 - read CSD register and SD card capacity
   r = SD_send_cmd(9, 0x00000000, 0xFF);
@@ -368,9 +395,6 @@ HAL_StatusTypeDef SD_read_csd(SD_CSD* csd)
   if (r != HAL_OK)
     return r;
   r = SD_read_bytes(csd_data, sizeof(csd_data));
-  if (r != HAL_OK)
-    return r;
-  r = SD_read_bytes(crc, sizeof(crc));
   if (r != HAL_OK)
     return r;
 

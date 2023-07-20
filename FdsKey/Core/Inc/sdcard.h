@@ -4,8 +4,6 @@
 #include "main.h"
 
 #define SD_SPI_PORT      hspi3
-//#define SD_CS_Pin        GPIO_PIN_5
-//#define SD_CS_GPIO_Port  GPIOA
 
 #define SD_TIMEOUT       100 // milliseconds
 #define SD_INIT_TRIES    512
