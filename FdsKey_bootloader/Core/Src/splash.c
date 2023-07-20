@@ -33,7 +33,8 @@ void show_message(char *text, uint8_t wait)
   oled_switch_to_invisible();
 
   if (wait)
-    while (!button_up_newpress() && !button_down_newpress() && !button_left_newpress() && !button_right_newpress());
+    while (!button_up_newpress() && !button_down_newpress() && !button_left_newpress() && !button_right_newpress())
+      HAL_Delay(1);
 }
 
 void show_updating_screen()
@@ -60,7 +61,8 @@ void show_error_screen(char *text, uint8_t fatal)
   {
     while (1);
   } else {
-    while (!button_up_newpress() && !button_down_newpress() && !button_left_newpress() && !button_right_newpress());
+    while (!button_up_newpress() && !button_down_newpress() && !button_left_newpress() && !button_right_newpress())
+      HAL_Delay(1);
   }
 }
 

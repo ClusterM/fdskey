@@ -33,8 +33,10 @@ void show_message(char *text, uint8_t wait)
   oled_update_invisible();
   oled_switch_to_invisible();
 
-  if (wait)
-    while (!button_up_newpress() && !button_down_newpress() && !button_left_newpress() && !button_right_newpress());
+  if (wait) {
+    while (!button_up_newpress() && !button_down_newpress() && !button_left_newpress() && !button_right_newpress())
+      HAL_Delay(1);
+  }
 }
 
 void show_loading_screen()
@@ -68,7 +70,8 @@ void show_error_screen(char *text, uint8_t fatal)
   {
     while (1);
   } else {
-    while (!button_up_newpress() && !button_down_newpress() && !button_left_newpress() && !button_right_newpress());
+    while (!button_up_newpress() && !button_down_newpress() && !button_left_newpress() && !button_right_newpress())
+      HAL_Delay(1);
   }
 }
 
@@ -135,5 +138,6 @@ void show_free_memory()
   oled_update_invisible();
   oled_switch_to_invisible();
 
-  while (!button_up_newpress() && !button_down_newpress() && !button_left_newpress() && !button_right_newpress());
+  while (!button_up_newpress() && !button_down_newpress() && !button_left_newpress() && !button_right_newpress())
+    HAL_Delay(1);
 }
