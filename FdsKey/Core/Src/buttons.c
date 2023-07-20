@@ -45,6 +45,9 @@ uint8_t button_right_holding()
 uint8_t button_up_newpress()
 {
   uint8_t v = button_up_holding();
+  // diagonal press protection
+  if (v && (left_pressed || down_pressed || right_pressed))
+    return 0;
   uint8_t newpress = v && !up_pressed;
   up_pressed = v;
   if (v) tick++;
@@ -58,6 +61,9 @@ uint8_t button_up_newpress()
 uint8_t button_down_newpress()
 {
   uint8_t v = button_down_holding();
+  // diagonal press protection
+  if (v && (up_pressed || left_pressed || right_pressed))
+    return 0;
   uint8_t newpress = v && !down_pressed;
   down_pressed = v;
   if (v) tick++;
@@ -71,6 +77,9 @@ uint8_t button_down_newpress()
 uint8_t button_left_newpress()
 {
   uint8_t v = button_left_holding();
+  // diagonal press protection
+  if (v && (up_pressed || down_pressed || right_pressed))
+    return 0;
   uint8_t newpress = v && !left_pressed;
   left_pressed = v;
   if (v) tick++;
@@ -78,13 +87,15 @@ uint8_t button_left_newpress()
     left_hold_time = HAL_GetTick();
   else if (!v)
     left_hold_time = 0;
-  left_pressed = v;
   return newpress || (left_right_repeat && left_hold_time && (left_hold_time + BUTTONS_REPEAT_TIME < HAL_GetTick()) && (tick % left_right_repeat_interval == 0));
 }
 
 uint8_t button_right_newpress()
 {
   uint8_t v = button_right_holding();
+  // diagonal press protection
+  if (v && (up_pressed || down_pressed || left_pressed))
+    return 0;
   uint8_t newpress = v && !right_pressed;
   right_pressed = v;
   if (v) tick++;
@@ -92,7 +103,6 @@ uint8_t button_right_newpress()
     right_hold_time = HAL_GetTick();
   else if (!v)
     right_hold_time = 0;
-  right_pressed = v;
   return newpress || (left_right_repeat && right_hold_time && (right_hold_time + BUTTONS_REPEAT_TIME < HAL_GetTick()) && (tick % left_right_repeat_interval == 0));
 }
 
