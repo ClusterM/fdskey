@@ -63,19 +63,3 @@ uint8_t button_right_newpress()
   return newpress;
 }
 
-uint32_t button_left_hold_time()
-{
-  if (!button_left_holding())
-    left_hold_time = 0;
-  if (!left_hold_time) return 0;
-  return HAL_GetTick() - left_hold_time;
-}
-
-uint32_t button_right_hold_time()
-{
-  if (!button_right_holding())
-    right_hold_time = 0;
-  if (!right_hold_time) return 0;
-  return HAL_GetTick() - right_hold_time;
-}
-
