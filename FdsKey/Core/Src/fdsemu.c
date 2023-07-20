@@ -534,7 +534,34 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
   filename[sizeof(fds_filename) - 1] = 0;
   fds_side = side;
 
-  fr = f_open(&fp, filename, FA_READ);
+  if (fdskey_settings.backup_original != SAVES_EVERDRIVE)
+  {
+    fr = f_open(&fp, filename, FA_READ);
+  } else {
+    // everdrive-style saves
+    char alt_filename[_MAX_LFN + 1];
+    alt_filename[sizeof(alt_filename) - 1] = 0;
+    FILINFO fno;
+    char* filename_no_path = fds_filename + strlen(fds_filename);
+    while (filename_no_path >= fds_filename)
+    {
+      if (*filename_no_path == '\\')
+      {
+        filename_no_path++;
+        break;
+      }
+      if (filename_no_path > fds_filename)
+        filename_no_path--;
+    }
+    strncpy(alt_filename, "EDN8\\gamedata\\", _MAX_LFN);
+    strncat(alt_filename, filename_no_path, _MAX_LFN);
+    strncat(alt_filename, "\\bram.srm", _MAX_LFN);
+    fr = f_stat(alt_filename, &fno);
+    if (fr == FR_OK)
+      fr = f_open(&fp, alt_filename, FA_READ);
+    else
+      fr = f_open(&fp, filename, FA_READ);
+  }
   if (fr != FR_OK)
   {
     fds_close(0);
@@ -706,7 +733,6 @@ FRESULT fds_save()
 
   if (fds_readonly)
     return FDSR_READ_ONLY;
-//  fds_dump("bad.bin");
 
   // check CRC of every block
   for (i = 0; i < fds_block_count; i++)
@@ -718,30 +744,85 @@ FRESULT fds_save()
       return FDSR_WRONG_CRC;
   }
 
-  if (fdskey_settings.backup_original)
+  char alt_filename[_MAX_LFN + 1];
+  alt_filename[sizeof(alt_filename) - 1] = 0;
+  if (fdskey_settings.backup_original == SAVES_REWRITE_BACKUP || fdskey_settings.backup_original == SAVES_EVERDRIVE)
   {
     // combine backup filename
-    char backup_filename[_MAX_LFN + 5];
-    strcpy(backup_filename, fds_filename);
-    strcat(backup_filename, ".bak");
+    if (fdskey_settings.backup_original == SAVES_REWRITE_BACKUP)
+    {
+      // just add ".bad" to filename
+      strncpy(alt_filename, fds_filename, _MAX_LFN);
+      strncat(alt_filename, ".bak", _MAX_LFN);
+    } else {
+      // get filename without path
+      char* filename_no_path = fds_filename + strlen(fds_filename);
+      while (filename_no_path >= fds_filename)
+      {
+        if (*filename_no_path == '\\')
+        {
+          filename_no_path++;
+          break;
+        }
+        if (filename_no_path > fds_filename)
+          filename_no_path--;
+      }
+      // create directories
+      fr = f_mkdir("EDN8");
+      if (fr != FR_OK && fr != FR_EXIST)
+      {
+        fds_state = FDS_IDLE;
+        return fr;
+      }
+      fr = f_mkdir("EDN8\\gamedata");
+      if (fr != FR_OK && fr != FR_EXIST)
+      {
+        fds_state = FDS_IDLE;
+        return fr;
+      }
+      // this directory name contains filename
+      strncpy(alt_filename, "EDN8\\gamedata\\", _MAX_LFN);
+      strncat(alt_filename, filename_no_path, _MAX_LFN);
+      fr = f_mkdir(alt_filename);
+      if (fr != FR_OK && fr != FR_EXIST)
+      {
+        fds_state = FDS_IDLE;
+        return fr;
+      }
+      // add save filename
+      strncat(alt_filename, "\\bram.srm", _MAX_LFN);
+    }
     // check if exists
-    fr = f_stat(backup_filename, &fno);
+    fr = f_stat(alt_filename, &fno);
     if (fr == FR_NO_FILE)
     {
-      // need to create backup
+      // need to copy original ROM to this file
       fr = f_open(&fp, fds_filename, FA_READ);
       if (fr != FR_OK)
       {
         fds_state = FDS_IDLE;
         return fr;
       }
-      fr = f_open(&fp_backup, backup_filename, FA_CREATE_NEW | FA_WRITE);
+      fr = f_open(&fp_backup, alt_filename, FA_CREATE_NEW | FA_WRITE);
       if (fr != FR_OK)
       {
         f_close(&fp);
         fds_state = FDS_IDLE;
         return fr;
       }
+      if ((fno.fsize % FDS_ROM_SIDE_SIZE == FDS_ROM_HEADER_SIZE) && (fdskey_settings.backup_original == SAVES_EVERDRIVE))
+      {
+        // skip header if any for everdrive save
+        fr = f_lseek(&fp, FDS_ROM_HEADER_SIZE);
+        if (fr != FR_OK)
+        {
+          f_close(&fp);
+          f_close(&fp_backup);
+          fds_state = FDS_IDLE;
+          return fr;
+        }
+      }
+      // copy file
       do
       {
         fr = f_read(&fp, buff, sizeof(buff), &br);
@@ -769,20 +850,27 @@ FRESULT fds_save()
     }
   }
 
-  // we need to set disk side offset
-  fr = f_stat(fds_filename, &fno);
+  // open file
+  if (fdskey_settings.backup_original != SAVES_EVERDRIVE)
+    fr = f_open(&fp, fds_filename, FA_WRITE);
+  else
+    fr = f_open(&fp, alt_filename, FA_WRITE);
+  if (fr != FR_OK)
+  {
+    fds_state = FDS_IDLE;
+    return fr;
+  }
+  // calculating size offset
+  if (fdskey_settings.backup_original != SAVES_EVERDRIVE)
+    fr = f_stat(fds_filename, &fno);
+  else
+    fr = f_stat(alt_filename, &fno);
   if (fr != FR_OK)
   {
     fds_state = FDS_IDLE;
     return fr;
   }
   int header_offset = fno.fsize % FDS_ROM_SIDE_SIZE;
-  fr = f_open(&fp, fds_filename, FA_READ | FA_WRITE);
-  if (fr != FR_OK)
-  {
-    fds_state = FDS_IDLE;
-    return fr;
-  }
   fr = f_lseek(&fp, header_offset + fds_side * FDS_ROM_SIDE_SIZE);
   if (fr != FR_OK)
   {

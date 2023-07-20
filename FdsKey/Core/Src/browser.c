@@ -299,7 +299,7 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
     }
     if (!fno.fname[0])
       break;
-    if (!fdskey_settings.hide_hidden || !(fno.fattrib & AM_HID))
+    if (!fdskey_settings.hide_hidden || (!(fno.fattrib & AM_HID) && strcmp(fno.fname, "EDN8")))
     {
       if (fno.fattrib & AM_DIR)
       {

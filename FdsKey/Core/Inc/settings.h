@@ -31,6 +31,13 @@ typedef enum
 
 typedef enum __attribute__ ((__packed__))
 {
+  SAVES_REWRITE = 0,
+  SAVES_REWRITE_BACKUP = 1,
+  SAVES_EVERDRIVE
+} SAVES_MODE;
+
+typedef enum __attribute__ ((__packed__))
+{
   REMEMBER_LAST_STATE_NONE = 0,
   REMEMBER_LAST_STATE_BROWSER,
   REMEMBER_LAST_STATE_ROM
@@ -65,7 +72,7 @@ typedef struct __attribute__((packed))
   uint8_t lefty_mode;
   uint8_t invert_screen;
   int16_t auto_off_screen_time;
-  uint8_t backup_original;
+  SAVES_MODE backup_original;
   char last_directory[1024];
   char last_file[_MAX_LFN + 1 /*256*/];
 } FDSKEY_SETTINGS;

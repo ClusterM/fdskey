@@ -145,8 +145,19 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
       value = "<->";
     break;
   case SETTING_BACKUP_ORIGINAL:
-    parameter_name = "Backup original ROM";
-    value = fdskey_settings.backup_original ? on : off;
+    parameter_name = "Saves";
+    switch (fdskey_settings.backup_original)
+    {
+    default:
+      value = "<rewrite>";
+      break;
+    case SAVES_REWRITE_BACKUP:
+      value = "<backup+rewrite>";
+      break;
+    case SAVES_EVERDRIVE:
+      value = "<like everdrive>";
+      break;
+    }
     break;
   default:
     parameter_name = "[ Save and return ]";
@@ -284,7 +295,14 @@ void settings_menu()
         }
         break;
       case SETTING_BACKUP_ORIGINAL:
-        fdskey_settings.backup_original = !fdskey_settings.backup_original;
+        if (button_left_holding())
+        {
+          if (fdskey_settings.backup_original > 0)
+            fdskey_settings.backup_original--;
+        } else {
+          if (fdskey_settings.backup_original < SAVES_EVERDRIVE)
+            fdskey_settings.backup_original++;
+        }
         break;
       default:
         settings_save();
