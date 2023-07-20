@@ -212,6 +212,7 @@ FRESULT fds_gui_load_side(char *filename, char *game_name, uint8_t *side, uint8_
     cmd = 0;
     if (button_left_newpress())
         break;
+    button_right_newpress(); // to reset
     if (button_up_newpress() && *side > 0)
       cmd = 1;
     if (button_down_newpress() && *side + 1 < side_count)
