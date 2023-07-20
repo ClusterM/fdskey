@@ -5,7 +5,7 @@
 
 #define SD_SPI_PORT      hspi3
 
-#define SD_TIMEOUT       100 // milliseconds
+#define SD_TIMEOUT       500 // milliseconds
 #define SD_INIT_TRIES    512
 #define SD_BLOCK_LENGTH  512
 
