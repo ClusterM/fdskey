@@ -1,5 +1,6 @@
 #include "standard_6_font.h"
 #include "verdana_12_bold_font.h"
+#include "gamegirl_classic_6_font.h"
 #include "../fonts.h"
 
 const DotMatrixFont FONT_STANDARD_6 = {
@@ -22,4 +23,15 @@ const DotMatrixFont FONT_VERDANA_12_BOLD = {
   .spacing = 1,
   .space_length = 0,
   .font_data = font_verdana_12_bold
+};
+
+const DotMatrixFont FONT_GAMEGIRL_CLASSIC_6 = {
+  .font_type = FONT_GAMEGIRL_CLASSIC_6_FONT_TYPE,
+  .start_char = FONT_GAMEGIRL_CLASSIC_6_START_CHAR,
+  .font_length = FONT_GAMEGIRL_CLASSIC_6_LENGTH,
+  .char_width = FONT_GAMEGIRL_CLASSIC_6_CHAR_WIDTH,
+  .char_height = FONT_GAMEGIRL_CLASSIC_6_CHAR_HEIGHT,
+  .spacing = 0,
+  .space_length = 0,
+  .font_data = font_gamegirl_classic_6
 };

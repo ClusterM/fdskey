@@ -28,6 +28,7 @@
 #include "buttons.h"
 #include "settings.h"
 #include "servicemenu.h"
+#include "confirm.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -191,8 +192,27 @@ int main(void)
     /* USER CODE BEGIN 3 */
   }
   HAL_FLASH_Lock();
+  f_close(&fp);
   show_message("Firmware updated", 0);
   HAL_Delay(1500);
+
+  if (confirm("Delete " FIRMWARE_FILE "?"))
+  {
+    // clear screen
+    oled_draw_rectangle(0, oled_get_line() + OLED_HEIGHT, OLED_WIDTH - 1, oled_get_line() + OLED_HEIGHT + OLED_HEIGHT - 1, 1, 0);
+    oled_update_invisible();
+    oled_switch_to_invisible();
+    // delete file
+    fr = f_unlink(FIRMWARE_FILE);
+    show_error_screen_fr(fr, 1);
+  }
+
+  // unmount
+  f_mount(0, "", 1);
+
+  show_message("Done!", 0);
+  HAL_Delay(1500);
+
   start_app();
   while (1);
   /* USER CODE END 3 */
