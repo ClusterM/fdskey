@@ -95,13 +95,6 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
     parameter_name = "FW build time";
     value = BUILD_TIME;
     break;
-  case SERVICE_SETTING_HW_VERSION:
-    parameter_name = "HW version";
-    if (!fdskey_hw_version.suffix)
-      sprintf(value_v, "v%d.%d", fdskey_hw_version.major, fdskey_hw_version.minor);
-    else
-      sprintf(value_v, "v%d.%d%c", fdskey_hw_version.major, fdskey_hw_version.minor, fdskey_hw_version.suffix);
-    break;
   case SERVICE_SETTING_BL_COMMIT:
     parameter_name = "BL commit";
     value = fdskey_hw_version.bootloader_commit;
@@ -171,7 +164,6 @@ void service_menu()
       case SERVICE_SETTING_COMMIT:
       case SERVICE_SETTING_BUILD_DATE:
       case SERVICE_SETTING_BUILD_TIME:
-      case SERVICE_SETTING_HW_VERSION:
       case SERVICE_SETTING_BL_COMMIT:
         break;
       default:

@@ -30,15 +30,15 @@ HAL_StatusTypeDef write_hardware_version()
   uint64_t buffer[sizeof(hw) / sizeof(uint64_t) + 1];
 
   memcpy(&hw, (void*)HARDWARE_VERSION_FLASH_OFFSET, sizeof(hw));
-  if (hw.major == HARDWARE_VERSION_MAJOR
-      && hw.minor == HARDWARE_VERSION_MINOR
-      && hw.suffix == HARDWARE_VERSION_SUFFIX
+  if (hw.major == 0
+      && hw.minor == 0
+      && hw.suffix == 0
       && strcmp(hw.bootloader_commit, COMMIT) == 0)
     return HAL_OK;
 
-  hw.major = HARDWARE_VERSION_MAJOR;
-  hw.minor = HARDWARE_VERSION_MINOR;
-  hw.suffix = HARDWARE_VERSION_SUFFIX;
+  hw.major = 0;
+  hw.minor = 0;
+  hw.suffix = 0;
   strcpy(hw.bootloader_commit, COMMIT);
 
   // unlock flash

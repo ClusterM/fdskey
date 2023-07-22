@@ -48,9 +48,6 @@ extern "C" {
 #define APP_ADDRESS 0x08020000
 #define FIRMWARE_FILE "fdskey.bin"
 #define FIRMWARE_MAX_SIZE (384 * 1024 - FLASH_PAGE_SIZE * 4)
-#define HARDWARE_VERSION_MAJOR 1
-#define HARDWARE_VERSION_MINOR 2
-#define HARDWARE_VERSION_SUFFIX 0
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
