@@ -135,7 +135,7 @@ static HAL_StatusTypeDef SD_send_acmd(uint8_t command, uint32_t arg)
   r = SD_read_r1(&r1);
   if (r != HAL_OK)
     return r;
-  if (r1 != SD_R1_IDLE)
+  if (r1 != 0 && r1 != SD_R1_IDLE)
     return HAL_ERROR;
   return SD_send_cmd(command, arg, 0xFF);
 }
