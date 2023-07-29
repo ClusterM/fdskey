@@ -6,6 +6,7 @@
 #include "confirm.h"
 #include "fdsemu.h"
 #include "md5.h"
+#include "servicemenu.h"
 
 void update_bootloader()
 {
@@ -115,8 +116,9 @@ void update_bootloader()
     }
   }
   f_close(&fp);
+  // unmount
+  f_mount(0, "", 1);
 
-  //show_updating_screen();
   show_message("Updating...\nKEEP POWER ON!", 0);
 
   r = HAL_FLASH_Unlock();
@@ -177,17 +179,8 @@ void update_bootloader()
       show_error_screen_fr(fr, 0);
   }
 
-  // unmount
-  f_mount(0, "", 1);
-
   show_message("Done!", 0);
   HAL_Delay(1500);
 
-  // enable watchdog
-  // simple way to reset the device
-  IWDG->KR = 0xCCCC;
-  IWDG->KR = 0x5555;
-  IWDG->PR = 0;
-  IWDG->RLR = 1;
-  while (1);
+  reset();
 }

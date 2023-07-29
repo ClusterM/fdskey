@@ -131,7 +131,7 @@ DRESULT USER_read (
     while (count) {
       r = SD_read_data(buff);
       if (r != HAL_OK) return RES_ERROR;
-      buff += 512;
+      buff += _MIN_SS;
       count--;
     }
     r = SD_read_end();
@@ -170,7 +170,7 @@ DRESULT USER_write (
     while (count) {
       r = SD_write_data(buff);
       if (r != HAL_OK) return RES_ERROR;
-      buff += 512;
+      buff += _MIN_SS;
       count--;
     }
     r = SD_write_end();
@@ -196,7 +196,15 @@ DRESULT USER_ioctl (
 )
 {
   /* USER CODE BEGIN IOCTL */
+  switch (cmd)
+  {
+  case GET_SECTOR_COUNT:
+    *((DWORD*)buff) = SD_read_capacity() / _MIN_SS;
     return RES_OK;
+  case CTRL_SYNC:
+    return RES_OK;
+  }
+  return RES_ERROR;
   /* USER CODE END IOCTL */
 }
 #endif /* _USE_IOCTL == 1 */

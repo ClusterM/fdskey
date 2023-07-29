@@ -10,7 +10,9 @@
 #define SERVICE_SETTINGS_FLASH_OFFSET (0x08080000 - FLASH_PAGE_SIZE * 3)
 #define HARDWARE_VERSION_FLASH_OFFSET (0x08080000 - FLASH_PAGE_SIZE * 4)
 
-#define SERVICE_SETTINGS_ITEM_COUNT 18
+#define DISK_LABEL "FDS"
+
+#define SERVICE_SETTINGS_ITEM_COUNT 19
 
 typedef enum
 {
@@ -31,6 +33,7 @@ typedef enum
   SERVICE_SETTING_SD_PROD_SN,
   SERVICE_SETTING_SD_PROD_MANUFACT_YEAR,
   SERVICE_SETTING_SD_PROD_MANUFACT_MONTH,
+  SERVICE_SETTING_SD_FORMAT,
   SERVICE_SETTING_BL_UPDATE
 } SERVICE_SETTING_ID;
 
@@ -55,5 +58,7 @@ extern FDSKEY_HARDWARE_VERSION fdskey_hw_version;
 void service_settings_load();
 HAL_StatusTypeDef service_settings_save();
 void service_menu();
+void sd_format();
+void reset();
 
 #endif /* INC_SERVICEMENU_H_ */

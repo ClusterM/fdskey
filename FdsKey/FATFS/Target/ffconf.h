@@ -56,7 +56,7 @@
 /* This option switches filtered directory read functions, f_findfirst() and
 /  f_findnext(). (0:Disable, 1:Enable 2:Enable with matching altname[] too) */
 
-#define _USE_MKFS            0
+#define _USE_MKFS            1
 /* This option switches f_mkfs() function. (0:Disable or 1:Enable) */
 
 #define _USE_FASTSEEK        1
@@ -69,7 +69,7 @@
 /* This option switches attribute manipulation functions, f_chmod() and f_utime().
 /  (0:Disable or 1:Enable) Also _FS_READONLY needs to be 0 to enable this option. */
 
-#define _USE_LABEL           0
+#define _USE_LABEL           1
 /* This option switches volume label functions, f_getlabel() and f_setlabel().
 /  (0:Disable or 1:Enable) */
 

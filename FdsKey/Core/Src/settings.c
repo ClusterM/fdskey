@@ -311,6 +311,7 @@ void settings_menu()
       if (selection == SETTING_LEFTY_MODE)
         while(button_left_holding() || button_right_holding())
           HAL_Delay(1);
+      draw_item(oled_get_line() / 8 + selection - line, selection, 1);
     }
     while (selection < line && line)
     {
@@ -328,7 +329,6 @@ void settings_menu()
         HAL_Delay(5);
       }
     }
-    draw_item(oled_get_line() / 8 + selection - line, selection, 1);
     button_check_screen_off();
     HAL_Delay(1);
   }

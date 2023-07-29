@@ -19,7 +19,7 @@ void oled_init(OLED_CONTROLLER oled_controller, uint8_t rotate_screen, uint8_t r
   uint8_t padding_top = rotate_screen ? 32 : 0;
 
 	oled_send_commands(11,
-	OLED_CMD_SET_OFF,
+	  OLED_CMD_SET_OFF,
     0x8D, 0x14, // enable charge pump (???)
     reverse ? OLED_CMD_SET_REVERSE_ON : OLED_CMD_SET_REVERSE_OFF,
     OLED_CMD_SET_START_LINE(current_line + padding_top),

@@ -91,7 +91,13 @@ void main_menu_loop()
 
   if (HAL_GPIO_ReadPin(SD_DTCT_GPIO_Port, SD_DTCT_Pin))
     show_error_screen("No SD card", 1);
+
   fr = f_mount(&fat_fs, "", 1);
+  if (fr == FR_NO_FILESYSTEM)
+  {
+    show_error_screen_fr(fr, 0);
+    sd_format();
+  }
   show_error_screen_fr(fr, 1);
 
   // failsafe

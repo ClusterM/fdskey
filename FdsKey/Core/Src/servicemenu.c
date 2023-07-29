@@ -7,6 +7,7 @@
 #include "buttons.h"
 #include "commit.h"
 #include "splash.h"
+#include "confirm.h"
 #include "sdcard.h"
 #include "blupdater.h"
 
@@ -193,12 +194,15 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
     sprintf(value_v, "%08X", (unsigned int)cid.ProdSN);
     break;
   case SERVICE_SETTING_SD_PROD_MANUFACT_YEAR:
-    parameter_name = "SD manufacturing year";
+    parameter_name = "SD manuf. year";
     sprintf(value_v, "%d", cid.ManufactYear);
     break;
   case SERVICE_SETTING_SD_PROD_MANUFACT_MONTH:
-    parameter_name = "SD manufacturing month";
+    parameter_name = "SD manuf. month";
     sprintf(value_v, "%d", cid.ManufactMonth);
+    break;
+  case SERVICE_SETTING_SD_FORMAT:
+    parameter_name = "[ Format SD card ]";
     break;
   case SERVICE_SETTING_BL_UPDATE:
     parameter_name = "[ Update bootloader ]";
@@ -221,6 +225,14 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
   oled_update(line, line);
 }
 
+static void draw_all(int line, int selection)
+{
+  int i;
+  for (i = 0; i < 4; i++)
+    draw_item((oled_get_line() + OLED_HEIGHT) / 8 + i, line + i, line + i == selection);
+  oled_switch_to_invisible();
+}
+
 void service_menu()
 {
   int line = 0;
@@ -238,13 +250,11 @@ void service_menu()
   {
     fat_total = fat_free = 0;
   } else {
-    fat_total = (uint64_t)(fs->n_fatent - 2) * fs->csize * 512;
-    fat_free = (uint64_t)fat_free_clust * fs->csize * 512;
+    fat_total = (uint64_t)(fs->n_fatent - 2) * fs->csize * _MIN_SS;
+    fat_free = (uint64_t)fat_free_clust * fs->csize * _MIN_SS;
   }
 
-  for (i = 0; i < 4; i++)
-    draw_item((oled_get_line() + OLED_HEIGHT) / 8 + i, line + i, line + i == selection);
-  oled_switch_to_invisible();
+  draw_all(line, selection);
 
   while (1)
   {
@@ -272,9 +282,7 @@ void service_menu()
           fdskey_service_settings.oled_controller = OLED_CONTROLLER_SSD1306;
         // reinit display
         oled_init(fdskey_service_settings.oled_controller, fdskey_settings.lefty_mode ? 0 : 1, fdskey_settings.invert_screen, 0xFF * fdskey_settings.brightness / SETTINGS_BRIGHTNESS_MAX);
-        for (i = 0; i < 4; i++)
-          draw_item((oled_get_line() + OLED_HEIGHT) / 8 + i, line + i, line + i == selection);
-        oled_switch_to_invisible();
+        draw_all(line, selection);
         break;
       case SERVICE_SETTING_VERSION:
       case SERVICE_SETTING_COMMIT:
@@ -293,16 +301,19 @@ void service_menu()
       case SERVICE_SETTING_FAT_SIZE:
       case SERVICE_SETTING_FAT_FREE:
         break;
+      case SERVICE_SETTING_SD_FORMAT:
+        sd_format();
+        draw_all(line, selection);
+        break;
       case SERVICE_SETTING_BL_UPDATE:
         update_bootloader();
-        for (i = 0; i < 4; i++)
-          draw_item((oled_get_line() + OLED_HEIGHT) / 8 + i, line + i, line + i == selection);
-        oled_switch_to_invisible();
+        draw_all(line, selection);
         break;
       default:
         service_settings_save();
         return;
       }
+      draw_item(oled_get_line() / 8 + selection - line, selection, 1);
     }
     while (selection < line && line)
     {
@@ -320,8 +331,45 @@ void service_menu()
         HAL_Delay(5);
       }
     }
-    //draw_item(oled_get_line() / 8 + selection - line, selection, 1);
     button_check_screen_off();
     HAL_Delay(1);
   }
+}
+
+void sd_format()
+{
+  FRESULT fr;
+  uint8_t work[32 * 1024];
+
+  if (!confirm("Format SD card?"))
+    return;
+  // unmount
+  f_mount(0, "", 1);
+  show_message("Formatting...", 0);
+  fr = f_mkfs("", FM_ANY | FM_SFD, 0, work, sizeof(work));
+  if (fr != FR_OK)
+  {
+    show_error_screen_fr(fr, 0);
+  } else {
+    // set label.. not working, actually
+    f_setlabel(DISK_LABEL);
+    // show message
+    show_message("Done!", 0);
+    HAL_Delay(1500);
+  }
+  // reset the device
+  reset();
+}
+
+void reset()
+{
+  // turn off the OLED
+  oled_send_command(OLED_CMD_SET_OFF);
+  // enable watchdog
+  // simple way to reset the device
+  IWDG->KR = 0xCCCC;
+  IWDG->KR = 0x5555;
+  IWDG->PR = 0;
+  IWDG->RLR = 1;
+  while (1);
 }
