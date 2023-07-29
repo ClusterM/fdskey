@@ -555,10 +555,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(FDS_MEDIA_SET_GPIO_Port, FDS_MEDIA_SET_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(FDS_MOTOR_ON_GPIO_Port, FDS_MOTOR_ON_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, FDS_MOTOR_ON_Pin|SD_CS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : FDS_STOP_MOTOR_Pin BUTTON_DOWN_Pin BUTTON_RIGHT_Pin */
   GPIO_InitStruct.Pin = FDS_STOP_MOTOR_Pin|BUTTON_DOWN_Pin|BUTTON_RIGHT_Pin;
