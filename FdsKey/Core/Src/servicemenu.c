@@ -12,7 +12,8 @@
 
 FDSKEY_SERVICE_SETTINGS fdskey_service_settings;
 FDSKEY_HARDWARE_VERSION fdskey_hw_version;
-//static SD_CID cid;
+static uint64_t fat_free;
+static uint64_t fat_total;
 
 void service_settings_load()
 {
@@ -73,7 +74,7 @@ static void uint64_to_str(uint64_t d, char* str)
   {
     if (p % 4 == 0)
     {
-      str[len - 1] = '.';
+      str[len - 1] = '\'';
       len--;
       p++;
     }
@@ -100,6 +101,7 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
   case SERVICE_SETTING_SD_PROD_MANUFACT_MONTH:
     memset(&cid, 0, sizeof(cid));
     SD_read_cid(&cid);
+    break;
   default:
     break;
   }
@@ -137,6 +139,18 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
     parameter_name = "BL commit";
     value = fdskey_hw_version.bootloader_commit;
     break;
+  case SERVICE_SETTING_SD_CAPACITY:
+    parameter_name = "SD size";
+    uint64_to_str(SD_read_capacity(), value_v);
+    break;
+  case SERVICE_SETTING_FAT_SIZE:
+    parameter_name = "FAT size";
+    uint64_to_str(fat_total, value_v);
+    break;
+  case SERVICE_SETTING_FAT_FREE:
+    parameter_name = "FAT free";
+    uint64_to_str(fat_free, value_v);
+    break;
   case SERVICE_SETTING_SD_SPI_SPEED:
     parameter_name = "SD SPI speed";
     switch (SD_get_spi_speed())
@@ -157,10 +171,6 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
       value = "unknown";
       break;
     }
-    break;
-  case SERVICE_SETTING_SD_CAPACITY:
-    parameter_name = "SD size";
-    uint64_to_str(SD_read_capacity(), value_v);
     break;
   case SERVICE_SETTING_SD_MANUFACTURER_ID:
     parameter_name = "SD manufacturer ID";
@@ -216,9 +226,21 @@ void service_menu()
   int line = 0;
   int selection = 0;
   int i;
+  FATFS *fs;
+  FRESULT fr;
+  DWORD fat_free_clust = 0;
 
   show_message("Entering into\nthe service menu", 0);
   HAL_Delay(1500);
+
+  fr = f_getfree("", &fat_free_clust, &fs);
+  if (fr != FR_OK)
+  {
+    fat_total = fat_free = 0;
+  } else {
+    fat_total = (uint64_t)(fs->n_fatent - 2) * fs->csize * 512;
+    fat_free = (uint64_t)fat_free_clust * fs->csize * 512;
+  }
 
   for (i = 0; i < 4; i++)
     draw_item((oled_get_line() + OLED_HEIGHT) / 8 + i, line + i, line + i == selection);
@@ -268,6 +290,8 @@ void service_menu()
       case SERVICE_SETTING_SD_PROD_SN:
       case SERVICE_SETTING_SD_PROD_MANUFACT_YEAR:
       case SERVICE_SETTING_SD_PROD_MANUFACT_MONTH:
+      case SERVICE_SETTING_FAT_SIZE:
+      case SERVICE_SETTING_FAT_FREE:
         break;
       case SERVICE_SETTING_BL_UPDATE:
         update_bootloader();
