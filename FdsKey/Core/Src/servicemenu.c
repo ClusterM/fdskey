@@ -101,7 +101,7 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
   case SERVICE_SETTING_SD_PROD_MANUFACT_YEAR:
   case SERVICE_SETTING_SD_PROD_MANUFACT_MONTH:
     memset(&cid, 0, sizeof(cid));
-    SD_read_cid(&cid);
+    SD_read_CID(&cid);
     break;
   default:
     break;

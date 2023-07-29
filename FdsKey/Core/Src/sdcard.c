@@ -45,22 +45,22 @@ static void SD_unselect_purge()
   SPI_transmit(&tx, 1);
 }
 
-static HAL_StatusTypeDef SD_wait_not_busy()
+static SD_RESULT SD_wait_not_busy()
 {
   uint32_t start_time = HAL_GetTick();
   uint8_t busy;
   do
   {
     if (HAL_GetTick() >= start_time + SD_TIMEOUT)
-      return HAL_TIMEOUT;
+      return SD_RES_BUSY_TIMEOUT;
     SD_unselect();
     SD_select();
     SD_read_bytes(&busy, sizeof(busy));
   } while (busy != 0xFF);
-  return HAL_OK;
+  return SD_RES_OK;
 }
 
-static HAL_StatusTypeDef SD_read_r1(uint8_t *r1)
+static SD_RESULT SD_read_r1(uint8_t *r1)
 {
   /*
    * R1: 0abcdefg
@@ -75,41 +75,37 @@ static HAL_StatusTypeDef SD_read_r1(uint8_t *r1)
    */
   uint8_t tx = 0xFF;
   int i = 0;
-  for (i = 0; i < SD_ANSWER_RETRY_COUNT; i++)
+  for (i = 0; i < SD_R1_ANSWER_RETRY_COUNT; i++)
   {
     SPI_transmit_receive(&tx, r1, sizeof(uint8_t));
     if (!(*r1 & (1 << 7)))
-      return HAL_OK;
+      return SD_RES_OK;
   }
-  return HAL_TIMEOUT;
+  return SD_R1_FAILED;
 }
 
-static HAL_StatusTypeDef SD_read_rx(uint8_t *rx, uint8_t x)
+static SD_RESULT SD_read_rx(uint8_t *rx, uint8_t x)
 {
-  HAL_StatusTypeDef r;
+  SD_RESULT r;
   int i;
   uint8_t tx = 0xFF;
-  uint32_t start_time = HAL_GetTick();
   r = SD_read_r1(rx);
-  if (r != HAL_OK)
-    return r;
+  if (r != SD_RES_OK)
+    return SD_R1_FAILED;
   rx++;
-  for (i = 0; i < x; i++)
+  for (i = 0; i < x; i++, rx++)
   {
     SPI_transmit_receive(&tx, rx, sizeof(uint8_t));
-    if (HAL_GetTick() >= start_time + SD_TIMEOUT)
-      return HAL_TIMEOUT;
-    rx++;
   }
-  return HAL_OK;
+  return SD_RES_OK;
 }
 
-static HAL_StatusTypeDef SD_read_r3(uint8_t *r3)
+static SD_RESULT SD_read_r3(uint8_t *r3)
 {
   return SD_read_rx(r3, 4);
 }
 
-static HAL_StatusTypeDef SD_read_r7(uint8_t *r7)
+static SD_RESULT SD_read_r7(uint8_t *r7)
 {
   return SD_read_rx(r7, 4);
 }
@@ -121,7 +117,7 @@ static void SD_send_cmd(uint8_t command, uint32_t arg, uint8_t crc)
   SPI_transmit((uint8_t*) cmd, sizeof(cmd));
 }
 
-static HAL_StatusTypeDef SD_wait_data_token()
+static SD_RESULT SD_wait_data_token()
 {
   uint8_t fb;
   uint8_t tx = 0xFF; // make sure FF is transmitted during receive
@@ -132,16 +128,16 @@ static HAL_StatusTypeDef SD_wait_data_token()
     if (fb == SD_DATA_TOKEN)
       break;
     if (fb != 0xFF)
-      return HAL_ERROR;
+      return SD_RES_DATA_TOKEN_WRONG;
     if (HAL_GetTick() >= start_time + SD_TIMEOUT)
-      return HAL_TIMEOUT;
+      return SD_RES_DATA_TOKEN_TIMEOUT;
   }
-  return HAL_OK;
+  return SD_RES_OK;
 }
 
-HAL_StatusTypeDef SD_init_app_op_cond(uint32_t arg)
+static SD_RESULT SD_init_app_op_cond(uint32_t arg)
 {
-  HAL_StatusTypeDef r;
+  SD_RESULT r;
   int i;
   uint8_t r1;
   for (i = 0; i < SD_IDLE_RETRY_COUNT; i++)
@@ -150,23 +146,23 @@ HAL_StatusTypeDef SD_init_app_op_cond(uint32_t arg)
     SD_send_cmd(55, 0, 0xFF);
     r = SD_read_r1(&r1);
     SD_unselect_purge();
-    if (r != HAL_OK)
-      return r;
+    if (r != SD_RES_OK)
+      return SD_RES_CMD55_R1_FAILED;
     // ACMD41 - send operating condition
     SD_send_cmd(41, arg, 0xFF);
     r = SD_read_r1(&r1);
     SD_unselect_purge();
-    if (r != HAL_OK)
-      return r;
+    if (r != SD_RES_OK)
+      return SD_RES_ACMD41_R1_FAILED;
     if (r1 == 0x00)
-      return HAL_OK; // initialization finished
+      return SD_RES_OK; // initialization finished
   }
-  return HAL_ERROR;
+  return SD_RES_ACMD41_COUNT_FAILED;
 }
 
-HAL_StatusTypeDef SD_init()
+SD_RESULT SD_init()
 {
-  HAL_StatusTypeDef r;
+  SD_RESULT r;
   uint8_t r1;
   uint8_t r3[5];
   uint8_t r7[5];
@@ -189,12 +185,12 @@ HAL_StatusTypeDef SD_init()
     SD_send_cmd(0, 0x00000000, 0x4A);
     r = SD_read_r1(&r1);
     SD_unselect_purge();
-    if (r != HAL_OK)
-      return r;
+    if (r != SD_RES_OK)
+      return SD_RES_CMD0_R1_FAILED;
     if (r1 == SD_R1_IDLE)
       break;
     if (i == SD_IDLE_RETRY_COUNT - 1)
-      return HAL_ERROR;
+      return SD_RES_CMD0_COUNT_FAILED;
   }
 
   /*
@@ -229,23 +225,23 @@ HAL_StatusTypeDef SD_init()
   SD_send_cmd(8, 0x000001AA, 0x43); // request 2.7-3.63v
   r = SD_read_r7(r7);
   SD_unselect_purge();
-  if (r != HAL_OK)
-    return r;
+  if (r != SD_RES_OK)
+    return SD_RES_CMD8_R7_FAILED;
   if (r7[0] & SD_R1_ILLEGAL_COMMAND)
   {
     // command not supported - old SD card version
     sd_high_capacity = 0;
     r = SD_init_app_op_cond(0);
-    if (r != HAL_OK)
+    if (r != SD_RES_OK)
       return r;
   } else if (r7[0] == SD_R1_IDLE)
   {
     // new version
     // check that voltage accepted and echo byte
     if (((r7[3] & 0x01) != 1) || (r7[4] != 0xAA))
-      return HAL_ERROR;
+      return SD_RES_CMD8_VOLTAGE_FAILED;
     r = SD_init_app_op_cond(0x40000000);
-    if (r != HAL_OK)
+    if (r != SD_RES_OK)
       return r;
     /*
      * CMD58 - Read OCR
@@ -288,67 +284,67 @@ HAL_StatusTypeDef SD_init()
     SD_send_cmd(58, 0x00000000, 0xFF);
     r = SD_read_r3(r3);
     SD_unselect_purge();
-    if (r != HAL_OK)
-      return r;
+    if (r != SD_RES_OK)
+      return SD_RES_CMD58_R3_FAILED;
     if (r3[0] != 0)
-      return HAL_ERROR;
+      return SD_RES_CMD58_GEN_FAILED;
     // another voltage check
     if (!(r3[2] & (0b00110000))) // 3.2-3.3V or 3.3-3.4V
-      return HAL_ERROR;
+      return SD_RES_CMD58_VOLTAGE_FAILED;
     sd_high_capacity = (r3[1] & 0x40) >> 6;
   } else {
-    return HAL_ERROR;
+    return SD_RES_CMD8_GEN_FAILED;
   }
 
   // set block length
   SD_send_cmd(16, SD_BLOCK_LENGTH, 0xFF);
   r = SD_read_r1(&r1);
   SD_unselect_purge();
-  if (r != HAL_OK)
+  if (r != SD_RES_CMD16_R1_FAILED)
     return r;
   if (r1 != 0x00)
-    return HAL_ERROR;
+    return SD_RES_CMD16_R1_NOT_NULL;
 
-  return HAL_OK;
+  return SD_RES_OK;
 }
 
 // multiple init tries
-HAL_StatusTypeDef SD_init_tries()
+SD_RESULT SD_init_tries()
 {
-  HAL_StatusTypeDef r;
+  SD_RESULT r;
   int i;
 
   for (i = 0; i < SD_INIT_TRIES; i++)
   {
     r = SD_init();
-    if (r == HAL_OK)
+    if (r == SD_RES_OK)
       break;
   }
   return r;
 }
 
 // reduce SPI speed until SD card init is ok
-HAL_StatusTypeDef SD_init_try_speed()
+SD_RESULT SD_init_try_speed()
 {
-  HAL_StatusTypeDef r;
+  SD_RESULT r;
 
   SD_SPI_PORT.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
   sd_spi_speed = SPI_BAUDRATEPRESCALER_2;
   HAL_SPI_Init(&SD_SPI_PORT);
   r = SD_init_tries();
-  if (r == HAL_OK)
+  if (r == SD_RES_OK)
     return r;
   SD_SPI_PORT.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
   sd_spi_speed = SPI_BAUDRATEPRESCALER_4;
   HAL_SPI_Init(&SD_SPI_PORT);
   r = SD_init_tries();
-  if (r == HAL_OK)
+  if (r == SD_RES_OK)
     return r;
   SD_SPI_PORT.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
   sd_spi_speed = SPI_BAUDRATEPRESCALER_8;
   HAL_SPI_Init(&SD_SPI_PORT);
   r = SD_init_tries();
-  if (r == HAL_OK)
+  if (r == SD_RES_OK)
     return r;
   SD_SPI_PORT.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   sd_spi_speed = SPI_BAUDRATEPRESCALER_16;
@@ -361,9 +357,9 @@ uint32_t SD_get_spi_speed()
   return sd_spi_speed;
 }
 
-HAL_StatusTypeDef SD_read_single_block(uint32_t blockNum, uint8_t *buff)
+SD_RESULT SD_read_single_block(uint32_t blockNum, uint8_t *buff)
 {
-  HAL_StatusTypeDef r;
+  SD_RESULT r;
   uint8_t crc[2];
   uint8_t r1;
 
@@ -373,23 +369,23 @@ HAL_StatusTypeDef SD_read_single_block(uint32_t blockNum, uint8_t *buff)
   // CMD17 - send block
   SD_send_cmd(17, blockNum, 0xFF);
   r = SD_read_r1(&r1);
-  if (r != HAL_OK)
-    return r;
+  if (r != SD_RES_OK)
+    return SD_RES_CMD17_R1_FAILED;
   if (r1 != 0x00)
-    return HAL_ERROR;
+    return SD_RES_CMD17_R1_NOT_NULL;
   r = SD_wait_data_token();
-  if (r != HAL_OK)
+  if (r != SD_RES_OK)
     return r;
   SD_read_bytes(buff, SD_BLOCK_LENGTH);
   SD_read_bytes(crc, 2);
 
   SD_unselect_purge();
-  return HAL_OK;
+  return SD_RES_OK;
 }
 
-HAL_StatusTypeDef SD_write_single_block(uint32_t blockNum, const uint8_t *buff)
+SD_RESULT SD_write_single_block(uint32_t blockNum, const uint8_t *buff)
 {
-  HAL_StatusTypeDef r;
+  SD_RESULT r;
   uint8_t r1;
 
   SD_select();
@@ -400,10 +396,10 @@ HAL_StatusTypeDef SD_write_single_block(uint32_t blockNum, const uint8_t *buff)
   // CMD24 - write block
   SD_send_cmd(24, blockNum, 0xFF);
   r = SD_read_r1(&r1);
-  if (r != HAL_OK)
-    return r;
+  if (r != SD_RES_OK)
+    return SD_RES_CMD24_R1_FAILED;
   if (r1 != 0x00)
-    return HAL_ERROR;
+    return SD_RES_CMD24_R1_NOT_NULL;
 
   // send dummy bytes for NWR timing
   uint8_t dummy = 0xFF;
@@ -427,19 +423,19 @@ HAL_StatusTypeDef SD_write_single_block(uint32_t blockNum, const uint8_t *buff)
   uint8_t dataResp;
   SD_read_bytes(&dataResp, sizeof(dataResp));
   if ((dataResp & 0x1F) != 0x05)
-    return HAL_ERROR;
+    return SD_RES_CMD24_DATA_REJECTED;
 
   r = SD_wait_not_busy();
-  if (r != HAL_OK)
-    return r;
+  if (r != SD_RES_OK)
+    return SD_RES_CMD24_BUSY_TIMEOUT;
 
   SD_unselect_purge();
-  return HAL_OK;
+  return SD_RES_OK;
 }
 
-HAL_StatusTypeDef SD_read_begin(uint32_t blockNum)
+SD_RESULT SD_read_begin(uint32_t blockNum)
 {
-  HAL_StatusTypeDef r;
+  SD_RESULT r;
   uint8_t r1;
 
   SD_select();
@@ -450,24 +446,24 @@ HAL_StatusTypeDef SD_read_begin(uint32_t blockNum)
   /* CMD18 (READ_MULTIPLE_BLOCK) command */
   SD_send_cmd(18, blockNum, 0xFF);
   r = SD_read_r1(&r1);
-  if (r != HAL_OK)
-    return r;
+  if (r != SD_RES_OK)
+    return SD_RES_CMD18_R1_FAILED;
   if (r1 != 0x00)
-    return HAL_ERROR;
+    return SD_RES_CMD18_R1_NOT_NULL;
 
   SD_unselect_purge();
-  return HAL_OK;
+  return SD_RES_OK;
 }
 
-HAL_StatusTypeDef SD_read_data(uint8_t *buff)
+SD_RESULT SD_read_data(uint8_t *buff)
 {
-  HAL_StatusTypeDef r;
+  SD_RESULT r;
   uint8_t crc[2];
 
   SD_select();
 
   r = SD_wait_data_token();
-  if (r != HAL_OK)
+  if (r != SD_RES_OK)
     return r;
   SD_read_bytes(buff, SD_BLOCK_LENGTH);
   SD_read_bytes(crc, 2);
@@ -476,9 +472,9 @@ HAL_StatusTypeDef SD_read_data(uint8_t *buff)
   return HAL_OK;
 }
 
-HAL_StatusTypeDef SD_read_end()
+SD_RESULT SD_read_end()
 {
-  HAL_StatusTypeDef r;
+  SD_RESULT r;
   uint8_t r1;
 
   SD_select();
@@ -494,16 +490,18 @@ HAL_StatusTypeDef SD_read_end()
   SD_read_bytes(&stuffByte, sizeof(stuffByte));
 
   r = SD_read_r1(&r1);
-  if (r != HAL_OK)
-    return r;
+  if (r != SD_RES_OK)
+    return SD_RES_CMD12_R1_FAILED;
+  if (r1 != 0x00)
+    return SD_RES_CMD12_R1_NOT_NULL;
 
   SD_unselect_purge();
-  return HAL_OK;
+  return SD_RES_OK;
 }
 
-HAL_StatusTypeDef SD_write_begin(uint32_t blockNum)
+SD_RESULT SD_write_begin(uint32_t blockNum)
 {
-  HAL_StatusTypeDef r;
+  SD_RESULT r;
   uint8_t r1;
 
   SD_select();
@@ -514,18 +512,18 @@ HAL_StatusTypeDef SD_write_begin(uint32_t blockNum)
   // CMD25 - write multiple blocks
   SD_send_cmd(25, blockNum, 0xFF);
   r = SD_read_r1(&r1);
-  if (r != HAL_OK)
-    return r;
+  if (r != SD_RES_OK)
+    return SD_RES_CMD25_R1_FAILED;
   if (r1 != 0x00)
-    return HAL_ERROR;
+    return SD_RES_CMD25_R1_NOT_NULL;
 
   SD_unselect_purge();
-  return HAL_OK;
+  return SD_RES_OK;
 }
 
-HAL_StatusTypeDef SD_write_data(const uint8_t *buff)
+SD_RESULT SD_write_data(const uint8_t *buff)
 {
-  HAL_StatusTypeDef r;
+  SD_RESULT r;
 
   SD_select();
 
@@ -545,19 +543,19 @@ HAL_StatusTypeDef SD_write_data(const uint8_t *buff)
   uint8_t dataResp;
   SD_read_bytes(&dataResp, sizeof(dataResp));
   if ((dataResp & 0x1F) != 0x05)
-    return HAL_ERROR;
+    return SD_RES_WRITE_MULTI_DATA_REJECTED;
 
   r = SD_wait_not_busy();
-  if (r != HAL_OK)
-    return r;
+  if (r != SD_RES_OK)
+    return SD_RES_WRITE_MULTI_BUSY_TIMEOUT;
 
   SD_unselect_purge();
-  return HAL_OK;
+  return SD_RES_OK;
 }
 
-HAL_StatusTypeDef SD_write_end()
+SD_RESULT SD_write_end()
 {
-  HAL_StatusTypeDef r;
+  SD_RESULT r;
 
   SD_select();
 
@@ -570,17 +568,17 @@ HAL_StatusTypeDef SD_write_end()
   SD_read_bytes(&skipByte, sizeof(skipByte));
 
   r = SD_wait_not_busy();
-  if (r != HAL_OK)
-    return r;
+  if (r != SD_RES_OK)
+    return SD_RES_WRITE_MULTI_END_NOT_BUSY_TIMEOUT;
 
   SD_unselect_purge();
-  return HAL_OK;
+  return SD_RES_OK;
 }
 
 
-HAL_StatusTypeDef SD_read_csd(SD_CSD* csd)
+SD_RESULT SD_read_CSD(SD_CSD* csd)
 {
-  HAL_StatusTypeDef r;
+  SD_RESULT r;
   uint8_t r1;
   uint8_t csd_data[16];
   uint8_t crc[2];
@@ -588,12 +586,12 @@ HAL_StatusTypeDef SD_read_csd(SD_CSD* csd)
   // CMD9 - read CSD register and SD card capacity
   SD_send_cmd(9, 0x00000000, 0xFF);
   r = SD_read_r1(&r1);
-  if (r != HAL_OK)
-    return r;
+  if (r != SD_RES_OK)
+    return SD_RES_CMD9_R1_FAILED;
   if (r1 != 0x00)
-    return HAL_ERROR;
+    return SD_RES_CMD9_R1_NOT_NULL;
   r = SD_wait_data_token();
-  if (r != HAL_OK)
+  if (r != SD_RES_OK)
     return r;
   SD_read_bytes(csd_data, sizeof(csd_data));
   SD_read_bytes(crc, sizeof(crc));
@@ -633,7 +631,7 @@ HAL_StatusTypeDef SD_read_csd(SD_CSD* csd)
     csd->version.v2.Reserved2 = ((csd_data[10] & 0x80) >> 8);
     break;
   default:
-    return HAL_ERROR;
+    return SD_RES_INVALID_CSD_VERSION;
   }
   csd->EraseSingleBlockEnable = (csd_data[10] & 0x40) >> 6;
   csd->EraseSectorSize = ((csd_data[10] & 0x3F) << 1) | ((csd_data[11] & 0x80) >> 7);
@@ -653,12 +651,12 @@ HAL_StatusTypeDef SD_read_csd(SD_CSD* csd)
   csd->crc = (csd_data[15] & 0xFE) >> 1;
   csd->Reserved5 = (csd_data[15] & 0x01);
 
-  return HAL_OK;
+  return SD_RES_OK;
 }
 
-HAL_StatusTypeDef SD_read_cid(SD_CID* cid)
+SD_RESULT SD_read_CID(SD_CID* cid)
 {
-  HAL_StatusTypeDef r;
+  SD_RESULT r;
   uint8_t r1;
   uint8_t cid_data[16];
   uint8_t crc[2];
@@ -666,12 +664,12 @@ HAL_StatusTypeDef SD_read_cid(SD_CID* cid)
   // CMD9 - read CSD register and SD card capacity
   SD_send_cmd(10, 0x00000000, 0xFF);
   r = SD_read_r1(&r1);
-  if (r != HAL_OK)
-    return r;
+  if (r != SD_RES_OK)
+    return SD_RES_CMD10_R1_FAILED;
   if (r1 != 0x00)
-    return HAL_ERROR;
+    return SD_RES_CMD10_R1_NOT_NULL;
   r = SD_wait_data_token();
-  if (r != HAL_OK)
+  if (r != SD_RES_OK)
     return r;
   SD_read_bytes(cid_data, sizeof(cid_data));
   SD_read_bytes(crc, sizeof(crc));
@@ -695,15 +693,15 @@ HAL_StatusTypeDef SD_read_cid(SD_CID* cid)
   cid->CID_CRC = (cid_data[15] & 0xFE) >> 1;
   cid->Reserved2 = 1;
 
-  return HAL_OK;
+  return SD_RES_OK;
 }
 
 uint64_t SD_read_capacity()
 {
   SD_CSD csd;
-  HAL_StatusTypeDef r;
-  r = SD_read_csd(&csd);
-  if (r == HAL_OK)
+  SD_RESULT r;
+  r = SD_read_CSD(&csd);
+  if (r == SD_RES_OK)
   {
     if (sd_high_capacity)
       return (uint64_t)(csd.version.v2.DeviceSize + 1) * SD_BLOCK_LENGTH * 1024;
@@ -712,5 +710,4 @@ uint64_t SD_read_capacity()
   }
   return 0;
 }
-
 

@@ -57,7 +57,7 @@ void show_error_screen(char *text, uint8_t fatal)
 
   oled_draw_rectangle(0, oled_get_line() + OLED_HEIGHT, OLED_WIDTH - 1, oled_get_line() + OLED_HEIGHT * 2 - 1, 1, 0);
   oled_draw_text(&SPLASH_ERROR_TITLE_FONT, "Error :(", 4, oled_get_line() + OLED_HEIGHT, 0, 0);
-  oled_draw_text(&SPLASH_REGULAR_FONT, text, 4, oled_get_line() + OLED_HEIGHT + 20, 0, 0);
+  oled_draw_text(&SPLASH_ERROR_FONT, text, 4, oled_get_line() + OLED_HEIGHT + 20, 0, 0);
   oled_update_invisible();
   oled_switch_to_invisible();
 
@@ -101,3 +101,11 @@ void show_error_screen_fr(FRESULT fr, uint8_t fatal)
   }
   show_error_screen(text, fatal);
 }
+
+void show_error_screen_sd(SD_RESULT r, uint8_t fatal)
+{
+  char text[32];
+  sprintf(text, "SD card error %d", r);
+  show_error_screen(text, fatal);
+}
+

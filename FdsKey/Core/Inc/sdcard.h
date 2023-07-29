@@ -5,11 +5,10 @@
 
 #define SD_SPI_PORT      hspi3
 
-#define SD_INIT_TRIES           32
-#define SD_TIMEOUT              1000 // milliseconds
-#define SD_IDLE_RETRY_COUNT     100
-#define SD_ANSWER_RETRY_COUNT   32
-#define SD_BLOCK_LENGTH         512
+#define SD_INIT_TRIES             32
+#define SD_TIMEOUT                1000 // milliseconds
+#define SD_IDLE_RETRY_COUNT       100
+#define SD_R1_ANSWER_RETRY_COUNT  32
 
 #define SD_R1_IDLE (1 << 0)
 #define SD_R1_ERASE_CLEARED (1 << 1)
@@ -19,9 +18,52 @@
 #define SD_R1_MISALIGNED_ADDRESS (1 << 5)
 #define SD_R1_ARGUMENT_OUTSIDE_OF_RANGE (1 << 6)
 
-#define SD_DATA_TOKEN 0xFE
-#define SD_SEND_MULTIPLE_DATA_TOKEN 0xFC
-#define SD_STOP_DATA_TOKEN 0xFD
+#define SD_BLOCK_LENGTH               512
+#define SD_DATA_TOKEN                 0xFE
+#define SD_SEND_MULTIPLE_DATA_TOKEN   0xFC
+#define SD_STOP_DATA_TOKEN            0xFD
+
+typedef enum {
+  SD_RES_OK = 0,
+  SD_R1_FAILED = 1,
+  SD_RES_CMD0_R1_FAILED = 2,
+  SD_RES_CMD0_COUNT_FAILED = 3,
+  SD_RES_CMD8_R7_FAILED = 4,
+  SD_RES_CMD8_GEN_FAILED = 5,
+  SD_RES_ACMD41_R1_FAILED = 6,
+  SD_RES_ACMD41_COUNT_FAILED = 7,
+  SD_RES_CMD8_VOLTAGE_FAILED = 8,
+  SD_RES_CMD58_R3_FAILED = 9,
+  SD_RES_CMD58_GEN_FAILED = 10,
+  SD_RES_CMD58_VOLTAGE_FAILED = 11,
+  SD_RES_CMD16_R1_FAILED = 12,
+  SD_RES_CMD16_R1_NOT_NULL = 13,
+  SD_RES_DATA_TOKEN_WRONG = 14,
+  SD_RES_DATA_TOKEN_TIMEOUT = 15,
+  SD_RES_BUSY_TIMEOUT = 16,
+  SD_RES_CMD17_R1_FAILED = 17,
+  SD_RES_CMD17_R1_NOT_NULL = 18,
+  SD_RES_CMD55_R1_FAILED = 19,
+  SD_RES_CMD55_R1_NOT_NULL = 20,
+  SD_RES_CMD24_BUSY_TIMEOUT = 21,
+  SD_RES_CMD24_DATA_REJECTED = 22,
+  SD_RES_CMD18_R1_FAILED = 23,
+  SD_RES_CMD18_R1_NOT_NULL = 24,
+  SD_RES_CMD24_R1_FAILED = 25,
+  SD_RES_CMD24_R1_NOT_NULL = 26,
+  SD_RES_CMD12_R1_FAILED = 27,
+  SD_RES_CMD12_R1_NOT_NULL = 28,
+  SD_RES_CMD25_R1_FAILED = 29,
+  SD_RES_CMD25_R1_NOT_NULL = 30,
+  SD_RES_WRITE_MULTI_BUSY_TIMEOUT = 31,
+  SD_RES_WRITE_MULTI_DATA_REJECTED = 32,
+  SD_RES_WRITE_MULTI_END_NOT_BUSY_TIMEOUT = 33,
+  SD_RES_CMD9_R1_FAILED = 34,
+  SD_RES_CMD9_R1_NOT_NULL = 35,
+  SD_RES_CMD10_R1_FAILED = 36,
+  SD_RES_CMD10_R1_NOT_NULL = 37,
+  SD_RES_INVALID_CSD_VERSION = 38
+} SD_RESULT;
 
 typedef struct {
     /* Header part */
@@ -91,27 +133,27 @@ typedef struct {
 extern SPI_HandleTypeDef SD_SPI_PORT;
 
 // Initialization
-HAL_StatusTypeDef SD_init();
-HAL_StatusTypeDef SD_init_try_speed();
+SD_RESULT SD_init();
+SD_RESULT SD_init_try_speed();
 uint32_t SD_get_spi_speed();
 
 // Read/write single blocks
-HAL_StatusTypeDef SD_read_single_block(uint32_t blockNum, uint8_t* buff); // sizeof(buff) == 512!
-HAL_StatusTypeDef SD_write_single_block(uint32_t blockNum, const uint8_t* buff); // sizeof(buff) == 512!
+SD_RESULT SD_read_single_block(uint32_t blockNum, uint8_t* buff); // sizeof(buff) == 512!
+SD_RESULT SD_write_single_block(uint32_t blockNum, const uint8_t* buff); // sizeof(buff) == 512!
 
 // Read Multiple Blocks
-HAL_StatusTypeDef SD_read_begin(uint32_t blockNum);
-HAL_StatusTypeDef SD_read_data(uint8_t* buff); // sizeof(buff) == 512!
-HAL_StatusTypeDef SD_read_end();
+SD_RESULT SD_read_begin(uint32_t blockNum);
+SD_RESULT SD_read_data(uint8_t* buff); // sizeof(buff) == 512!
+SD_RESULT SD_read_end();
 
 // Write Multiple Blocks
-HAL_StatusTypeDef SD_write_begin(uint32_t blockNum);
-HAL_StatusTypeDef SD_write_data(const uint8_t* buff); // sizeof(buff) == 512!
-HAL_StatusTypeDef SD_write_end();
+SD_RESULT SD_write_begin(uint32_t blockNum);
+SD_RESULT SD_write_data(const uint8_t* buff); // sizeof(buff) == 512!
+SD_RESULT SD_write_end();
 
 // SD card info
-HAL_StatusTypeDef SD_read_csd(SD_CSD* csd);
-HAL_StatusTypeDef SD_read_cid(SD_CID* cid);
+SD_RESULT SD_read_CSD(SD_CSD* csd);
+SD_RESULT SD_read_CID(SD_CID* cid);
 uint64_t SD_read_capacity();
 
 // TODO: read lock flag? CMD13, SEND_STATUS

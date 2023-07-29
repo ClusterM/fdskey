@@ -36,6 +36,7 @@
 #include <string.h>
 #include "ff_gen_drv.h"
 #include "sdcard.h"
+#include "splash.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -82,11 +83,10 @@ DSTATUS USER_initialize (
 )
 {
   /* USER CODE BEGIN INIT */
-  HAL_StatusTypeDef r = SD_init_try_speed();
-  if (r == HAL_OK)
-    return 0;
-  else
-    return STA_NOINIT;
+  SD_RESULT r = SD_init_try_speed();
+  if (r != SD_RES_OK)
+    show_error_screen_sd(r, 1);
+  return RES_OK;
   /* USER CODE END INIT */
 }
 
@@ -120,22 +120,26 @@ DRESULT USER_read (
 )
 {
   /* USER CODE BEGIN READ */
-  HAL_StatusTypeDef r;
+  SD_RESULT r;
   if (count == 1)
   {
     r = SD_read_single_block(sector, buff);
-    if (r != HAL_OK) return RES_ERROR;
+    if (r != SD_RES_OK)
+      show_error_screen_sd(r, 1);
   } else {
     r = SD_read_begin(sector);
-    if (r != HAL_OK) return RES_ERROR;
+    if (r != SD_RES_OK)
+      show_error_screen_sd(r, 1);
     while (count) {
       r = SD_read_data(buff);
-      if (r != HAL_OK) return RES_ERROR;
+      if (r != SD_RES_OK)
+        show_error_screen_sd(r, 1);
       buff += _MIN_SS;
       count--;
     }
     r = SD_read_end();
-    if (r != HAL_OK) return RES_ERROR;
+    if (r != SD_RES_OK)
+      show_error_screen_sd(r, 1);
   }
   return RES_OK;
   /* USER CODE END READ */
@@ -159,22 +163,26 @@ DRESULT USER_write (
 {
   /* USER CODE BEGIN WRITE */
   /* USER CODE HERE */
-  HAL_StatusTypeDef r;
+  SD_RESULT r;
   if (count == 1)
   {
     r = SD_write_single_block(sector, buff);
-    if (r != HAL_OK) return RES_ERROR;
+    if (r != SD_RES_OK)
+      show_error_screen_sd(r, 1);
   } else {
     r = SD_write_begin(sector);
-    if (r != HAL_OK) return RES_ERROR;
+    if (r != SD_RES_OK)
+      show_error_screen_sd(r, 1);
     while (count) {
       r = SD_write_data(buff);
-      if (r != HAL_OK) return RES_ERROR;
+      if (r != SD_RES_OK)
+        show_error_screen_sd(r, 1);
       buff += _MIN_SS;
       count--;
     }
     r = SD_write_end();
-    if (r != HAL_OK) return RES_ERROR;
+    if (r != SD_RES_OK)
+      show_error_screen_sd(r, 1);
   }
   return RES_OK;
   /* USER CODE END WRITE */
