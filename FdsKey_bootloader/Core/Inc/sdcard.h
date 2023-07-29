@@ -5,7 +5,7 @@
 
 #define SD_SPI_PORT      hspi3
 
-#define SD_INIT_TRIES           16
+#define SD_INIT_TRIES           32
 #define SD_TIMEOUT              1000 // milliseconds
 #define SD_IDLE_RETRY_COUNT     100
 #define SD_ANSWER_RETRY_COUNT   32

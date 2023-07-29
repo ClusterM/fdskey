@@ -62,16 +62,21 @@ HAL_StatusTypeDef service_settings_save()
 
 static void uint64_to_str(uint64_t d, char* str)
 {
-  int len = 0;
+  int len = 0, p;
   uint64_t tmp;
   for (tmp = d; tmp; tmp /= 10)
-  {
     len++;
-  }
   if (!len) len++;
+  len += (len - 1) / 3;
   str[len] = 0;
-  for (; d; d/= 10, len--)
+  for (p = 1; len; d /= 10, len--, p++)
   {
+    if (p % 4 == 0)
+    {
+      str[len - 1] = '.';
+      len--;
+      p++;
+    }
     str[len - 1] = '0' + (d % 10);
   }
 }
@@ -154,7 +159,7 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
     }
     break;
   case SERVICE_SETTING_SD_CAPACITY:
-    parameter_name = "SD capacity";
+    parameter_name = "SD size";
     uint64_to_str(SD_read_capacity(), value_v);
     break;
   case SERVICE_SETTING_SD_MANUFACTURER_ID:
@@ -291,7 +296,7 @@ void service_menu()
         HAL_Delay(5);
       }
     }
-    draw_item(oled_get_line() / 8 + selection - line, selection, 1);
+    //draw_item(oled_get_line() / 8 + selection - line, selection, 1);
     button_check_screen_off();
     HAL_Delay(1);
   }
