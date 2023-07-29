@@ -7,10 +7,12 @@
 #include "buttons.h"
 #include "commit.h"
 #include "splash.h"
+#include "sdcard.h"
 #include "blupdater.h"
 
 FDSKEY_SERVICE_SETTINGS fdskey_service_settings;
 FDSKEY_HARDWARE_VERSION fdskey_hw_version;
+//static SD_CID cid;
 
 void service_settings_load()
 {
@@ -58,16 +60,46 @@ HAL_StatusTypeDef service_settings_save()
   return HAL_FLASH_Lock();
 }
 
+static void uint64_to_str(uint64_t d, char* str)
+{
+  int len = 0;
+  uint64_t tmp;
+  for (tmp = d; tmp; tmp /= 10)
+  {
+    len++;
+  }
+  if (!len) len++;
+  str[len] = 0;
+  for (; d; d/= 10, len--)
+  {
+    str[len - 1] = '0' + (d % 10);
+  }
+}
+
 static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
 {
   char *parameter_name;
   char value_v[32] = "";
   char *value = value_v;
-//  char* off = "\x86";
-//  char* on = "\x87";
   int l;
+  SD_CID cid;
 
-  switch (item)
+  switch((int)item)
+  {
+  case SERVICE_SETTING_SD_MANUFACTURER_ID:
+  case SERVICE_SETTING_SD_OEM_ID:
+  case SERVICE_SETTING_SD_PROD_NAME:
+  case SERVICE_SETTING_SD_PROD_REV:
+  case SERVICE_SETTING_SD_PROD_SN:
+  case SERVICE_SETTING_SD_PROD_MANUFACT_YEAR:
+  case SERVICE_SETTING_SD_PROD_MANUFACT_MONTH:
+    memset(&cid, 0, sizeof(cid));
+    SD_read_cid(&cid);
+  default:
+    break;
+  }
+
+  switch ((int)item)
   {
   case SERVICE_SETTING_OLED_CONTROLLER:
     parameter_name = "OLED controller";
@@ -99,6 +131,59 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
   case SERVICE_SETTING_BL_COMMIT:
     parameter_name = "BL commit";
     value = fdskey_hw_version.bootloader_commit;
+    break;
+  case SERVICE_SETTING_SD_SPI_SPEED:
+    parameter_name = "SD SPI speed";
+    switch (SD_get_spi_speed())
+    {
+    case SPI_BAUDRATEPRESCALER_2:
+      value = "/2";
+      break;
+    case SPI_BAUDRATEPRESCALER_4:
+      value = "/4";
+      break;
+    case SPI_BAUDRATEPRESCALER_8:
+      value = "/8";
+      break;
+    case SPI_BAUDRATEPRESCALER_16:
+      value = "/16";
+      break;
+    default:
+      value = "unknown";
+      break;
+    }
+    break;
+  case SERVICE_SETTING_SD_CAPACITY:
+    parameter_name = "SD capacity";
+    uint64_to_str(SD_read_capacity(), value_v);
+    break;
+  case SERVICE_SETTING_SD_MANUFACTURER_ID:
+    parameter_name = "SD manufacturer ID";
+    sprintf(value_v, "%02X", cid.ManufacturerID);
+    break;
+  case SERVICE_SETTING_SD_OEM_ID:
+    parameter_name = "SD OEM ID";
+    value = cid.OEM_AppliID;
+    break;
+  case SERVICE_SETTING_SD_PROD_NAME:
+    parameter_name = "SD product name";
+    value = cid.ProdName;
+    break;
+  case SERVICE_SETTING_SD_PROD_REV:
+    parameter_name = "SD product rev.";
+    sprintf(value_v, "%d", cid.ProdRev);
+    break;
+  case SERVICE_SETTING_SD_PROD_SN:
+    parameter_name = "SD product s/n";
+    sprintf(value_v, "%08X", (unsigned int)cid.ProdSN);
+    break;
+  case SERVICE_SETTING_SD_PROD_MANUFACT_YEAR:
+    parameter_name = "SD manufacturing year";
+    sprintf(value_v, "%d", cid.ManufactYear);
+    break;
+  case SERVICE_SETTING_SD_PROD_MANUFACT_MONTH:
+    parameter_name = "SD manufacturing month";
+    sprintf(value_v, "%d", cid.ManufactMonth);
     break;
   case SERVICE_SETTING_BL_UPDATE:
     parameter_name = "[ Update bootloader ]";
@@ -169,6 +254,15 @@ void service_menu()
       case SERVICE_SETTING_BUILD_DATE:
       case SERVICE_SETTING_BUILD_TIME:
       case SERVICE_SETTING_BL_COMMIT:
+      case SERVICE_SETTING_SD_SPI_SPEED:
+      case SERVICE_SETTING_SD_CAPACITY:
+      case SERVICE_SETTING_SD_MANUFACTURER_ID:
+      case SERVICE_SETTING_SD_OEM_ID:
+      case SERVICE_SETTING_SD_PROD_NAME:
+      case SERVICE_SETTING_SD_PROD_REV:
+      case SERVICE_SETTING_SD_PROD_SN:
+      case SERVICE_SETTING_SD_PROD_MANUFACT_YEAR:
+      case SERVICE_SETTING_SD_PROD_MANUFACT_MONTH:
         break;
       case SERVICE_SETTING_BL_UPDATE:
         update_bootloader();

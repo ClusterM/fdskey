@@ -75,12 +75,27 @@ typedef struct {
 
 } SD_CSD;
 
+typedef struct {
+    uint8_t ManufacturerID; /* ManufacturerID */
+    char OEM_AppliID[3]; /* OEM/Application ID */
+    char ProdName[6]; /* Product Name */
+    uint8_t ProdRev; /* Product Revision */
+    uint32_t ProdSN; /* Product Serial Number */
+    uint8_t Reserved1; /* Reserved1 */
+    uint8_t ManufactYear; /* Manufacturing Year */
+    uint8_t ManufactMonth; /* Manufacturing Month */
+    uint8_t CID_CRC; /* CID CRC */
+    uint8_t Reserved2; /* always 1 */
+} SD_CID;
+
 extern SPI_HandleTypeDef SD_SPI_PORT;
 
+// Initialization
 HAL_StatusTypeDef SD_init();
 HAL_StatusTypeDef SD_init_try_speed();
-HAL_StatusTypeDef SD_read_csd(SD_CSD* csd);
-uint64_t SD_get_capacity();
+uint32_t SD_get_spi_speed();
+
+// Read/write single blocks
 HAL_StatusTypeDef SD_read_single_block(uint32_t blockNum, uint8_t* buff); // sizeof(buff) == 512!
 HAL_StatusTypeDef SD_write_single_block(uint32_t blockNum, const uint8_t* buff); // sizeof(buff) == 512!
 
@@ -93,6 +108,11 @@ HAL_StatusTypeDef SD_read_end();
 HAL_StatusTypeDef SD_write_begin(uint32_t blockNum);
 HAL_StatusTypeDef SD_write_data(const uint8_t* buff); // sizeof(buff) == 512!
 HAL_StatusTypeDef SD_write_end();
+
+// SD card info
+HAL_StatusTypeDef SD_read_csd(SD_CSD* csd);
+HAL_StatusTypeDef SD_read_cid(SD_CID* cid);
+uint64_t SD_read_capacity();
 
 // TODO: read lock flag? CMD13, SEND_STATUS
 

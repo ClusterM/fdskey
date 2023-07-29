@@ -1,6 +1,8 @@
 #include "sdcard.h"
+#include "string.h"
 
 static uint8_t sd_high_capacity;
+static uint32_t sd_spi_speed;
 
 static void SPI_transmit_receive(uint8_t* tx, uint8_t* rx, size_t buff_size)
 {
@@ -331,114 +333,32 @@ HAL_StatusTypeDef SD_init_try_speed()
   HAL_StatusTypeDef r;
 
   SD_SPI_PORT.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  sd_spi_speed = SPI_BAUDRATEPRESCALER_2;
   HAL_SPI_Init(&SD_SPI_PORT);
   r = SD_init_tries();
   if (r == HAL_OK)
     return r;
   SD_SPI_PORT.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+  sd_spi_speed = SPI_BAUDRATEPRESCALER_4;
   HAL_SPI_Init(&SD_SPI_PORT);
   r = SD_init_tries();
   if (r == HAL_OK)
     return r;
   SD_SPI_PORT.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+  sd_spi_speed = SPI_BAUDRATEPRESCALER_8;
   HAL_SPI_Init(&SD_SPI_PORT);
   r = SD_init_tries();
   if (r == HAL_OK)
     return r;
   SD_SPI_PORT.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+  sd_spi_speed = SPI_BAUDRATEPRESCALER_16;
   HAL_SPI_Init(&SD_SPI_PORT);
   return SD_init_tries();
 }
 
-HAL_StatusTypeDef SD_read_csd(SD_CSD* csd)
+uint32_t SD_get_spi_speed()
 {
-  HAL_StatusTypeDef r;
-  uint8_t r1;
-  uint8_t csd_data[16];
-
-  // CMD9 - read CSD register and SD card capacity
-  SD_send_cmd(9, 0x00000000, 0xFF);
-  r = SD_read_r1(&r1);
-  if (r != HAL_OK)
-    return r;
-  if (r1 != 0x00)
-    return HAL_ERROR;
-  r = SD_wait_data_token();
-  if (r != HAL_OK)
-    return r;
-  SD_read_bytes(csd_data, sizeof(csd_data));
-
-  SD_unselect_purge();
-
-  csd->CSDStruct = (csd_data[0] & 0xC0) >> 6;
-  csd->Reserved1 = csd_data[0] & 0x3F;
-  csd->TAAC = csd_data[1];
-  csd->NSAC = csd_data[2];
-  csd->MaxBusClkFrec = csd_data[3];
-  csd->CardComdClasses = (csd_data[4] << 4) | ((csd_data[5] & 0xF0) >> 4);
-  csd->RdBlockLen = csd_data[5] & 0x0F;
-  csd->PartBlockRead = (csd_data[6] & 0x80) >> 7;
-  csd->WrBlockMisalign = (csd_data[6] & 0x40) >> 6;
-  csd->RdBlockMisalign = (csd_data[6] & 0x20) >> 5;
-  csd->DSRImpl = (csd_data[6] & 0x10) >> 4;
-  switch (csd->CSDStruct) {
-  case 0:
-    // CSD version 1
-    csd->version.v1.Reserved1 = ((csd_data[6] & 0x0C) >> 2);
-    csd->version.v1.DeviceSize = ((csd_data[6] & 0x03) << 10) | (csd_data[7] << 2) |
-                                 ((csd_data[8] & 0xC0) >> 6);
-    csd->version.v1.MaxRdCurrentVDDMin = (csd_data[8] & 0x38) >> 3;
-    csd->version.v1.MaxRdCurrentVDDMax = (csd_data[8] & 0x07);
-    csd->version.v1.MaxWrCurrentVDDMin = (csd_data[9] & 0xE0) >> 5;
-    csd->version.v1.MaxWrCurrentVDDMax = (csd_data[9] & 0x1C) >> 2;
-    csd->version.v1.DeviceSizeMul = ((csd_data[9] & 0x03) << 1) |
-                                    ((csd_data[10] & 0x80) >> 7);
-    break;
-  case 1:
-    // CSD version 2
-    csd->version.v2.Reserved1 = ((csd_data[6] & 0x0F) << 2) |
-                                ((csd_data[7] & 0xC0) >> 6);
-    csd->version.v2.DeviceSize = ((csd_data[7] & 0x3F) << 16) | (csd_data[8] << 8) |
-                                 csd_data[9];
-    csd->version.v2.Reserved2 = ((csd_data[10] & 0x80) >> 8);
-    break;
-  default:
-    return HAL_ERROR;
-  }
-  csd->EraseSingleBlockEnable = (csd_data[10] & 0x40) >> 6;
-  csd->EraseSectorSize = ((csd_data[10] & 0x3F) << 1) | ((csd_data[11] & 0x80) >> 7);
-  csd->WrProtectGrSize = (csd_data[11] & 0x7F);
-  csd->WrProtectGrEnable = (csd_data[12] & 0x80) >> 7;
-  csd->Reserved2 = (csd_data[12] & 0x60) >> 5;
-  csd->WrSpeedFact = (csd_data[12] & 0x1C) >> 2;
-  csd->MaxWrBlockLen = ((csd_data[12] & 0x03) << 2) | ((csd_data[13] & 0xC0) >> 6);
-  csd->WriteBlockPartial = (csd_data[13] & 0x20) >> 5;
-  csd->Reserved3 = (csd_data[13] & 0x1F);
-  csd->FileFormatGrouop = (csd_data[14] & 0x80) >> 7;
-  csd->CopyFlag = (csd_data[14] & 0x40) >> 6;
-  csd->PermWrProtect = (csd_data[14] & 0x20) >> 5;
-  csd->TempWrProtect = (csd_data[14] & 0x10) >> 4;
-  csd->FileFormat = (csd_data[14] & 0x0C) >> 2;
-  csd->Reserved4 = (csd_data[14] & 0x03);
-  csd->crc = (csd_data[15] & 0xFE) >> 1;
-  csd->Reserved5 = (csd_data[15] & 0x01);
-
-  return HAL_OK;
-}
-
-uint64_t SD_get_capacity()
-{
-  SD_CSD csd;
-  HAL_StatusTypeDef r;
-  r = SD_read_csd(&csd);
-  if (r == HAL_OK)
-  {
-    if (sd_high_capacity)
-      return (csd.version.v2.DeviceSize + 1) * SD_BLOCK_LENGTH * 1024;
-    else
-      return (csd.version.v1.DeviceSize + 1) * (1UL << (csd.version.v1.DeviceSizeMul + 2)) * (1UL << csd.RdBlockLen);
-  }
-  return 0;
+  return sd_spi_speed;
 }
 
 HAL_StatusTypeDef SD_read_single_block(uint32_t blockNum, uint8_t *buff)
@@ -656,3 +576,141 @@ HAL_StatusTypeDef SD_write_end()
   SD_unselect_purge();
   return HAL_OK;
 }
+
+
+HAL_StatusTypeDef SD_read_csd(SD_CSD* csd)
+{
+  HAL_StatusTypeDef r;
+  uint8_t r1;
+  uint8_t csd_data[16];
+  uint8_t crc[2];
+
+  // CMD9 - read CSD register and SD card capacity
+  SD_send_cmd(9, 0x00000000, 0xFF);
+  r = SD_read_r1(&r1);
+  if (r != HAL_OK)
+    return r;
+  if (r1 != 0x00)
+    return HAL_ERROR;
+  r = SD_wait_data_token();
+  if (r != HAL_OK)
+    return r;
+  SD_read_bytes(csd_data, sizeof(csd_data));
+  SD_read_bytes(crc, sizeof(crc));
+
+  SD_unselect_purge();
+
+  csd->CSDStruct = (csd_data[0] & 0xC0) >> 6;
+  csd->Reserved1 = csd_data[0] & 0x3F;
+  csd->TAAC = csd_data[1];
+  csd->NSAC = csd_data[2];
+  csd->MaxBusClkFrec = csd_data[3];
+  csd->CardComdClasses = (csd_data[4] << 4) | ((csd_data[5] & 0xF0) >> 4);
+  csd->RdBlockLen = csd_data[5] & 0x0F;
+  csd->PartBlockRead = (csd_data[6] & 0x80) >> 7;
+  csd->WrBlockMisalign = (csd_data[6] & 0x40) >> 6;
+  csd->RdBlockMisalign = (csd_data[6] & 0x20) >> 5;
+  csd->DSRImpl = (csd_data[6] & 0x10) >> 4;
+  switch (csd->CSDStruct) {
+  case 0:
+    // CSD version 1
+    csd->version.v1.Reserved1 = ((csd_data[6] & 0x0C) >> 2);
+    csd->version.v1.DeviceSize = ((csd_data[6] & 0x03) << 10) | (csd_data[7] << 2) |
+                                 ((csd_data[8] & 0xC0) >> 6);
+    csd->version.v1.MaxRdCurrentVDDMin = (csd_data[8] & 0x38) >> 3;
+    csd->version.v1.MaxRdCurrentVDDMax = (csd_data[8] & 0x07);
+    csd->version.v1.MaxWrCurrentVDDMin = (csd_data[9] & 0xE0) >> 5;
+    csd->version.v1.MaxWrCurrentVDDMax = (csd_data[9] & 0x1C) >> 2;
+    csd->version.v1.DeviceSizeMul = ((csd_data[9] & 0x03) << 1) |
+                                    ((csd_data[10] & 0x80) >> 7);
+    break;
+  case 1:
+    // CSD version 2
+    csd->version.v2.Reserved1 = ((csd_data[6] & 0x0F) << 2) |
+                                ((csd_data[7] & 0xC0) >> 6);
+    csd->version.v2.DeviceSize = ((csd_data[7] & 0x3F) << 16) | (csd_data[8] << 8) |
+                                 csd_data[9];
+    csd->version.v2.Reserved2 = ((csd_data[10] & 0x80) >> 8);
+    break;
+  default:
+    return HAL_ERROR;
+  }
+  csd->EraseSingleBlockEnable = (csd_data[10] & 0x40) >> 6;
+  csd->EraseSectorSize = ((csd_data[10] & 0x3F) << 1) | ((csd_data[11] & 0x80) >> 7);
+  csd->WrProtectGrSize = (csd_data[11] & 0x7F);
+  csd->WrProtectGrEnable = (csd_data[12] & 0x80) >> 7;
+  csd->Reserved2 = (csd_data[12] & 0x60) >> 5;
+  csd->WrSpeedFact = (csd_data[12] & 0x1C) >> 2;
+  csd->MaxWrBlockLen = ((csd_data[12] & 0x03) << 2) | ((csd_data[13] & 0xC0) >> 6);
+  csd->WriteBlockPartial = (csd_data[13] & 0x20) >> 5;
+  csd->Reserved3 = (csd_data[13] & 0x1F);
+  csd->FileFormatGrouop = (csd_data[14] & 0x80) >> 7;
+  csd->CopyFlag = (csd_data[14] & 0x40) >> 6;
+  csd->PermWrProtect = (csd_data[14] & 0x20) >> 5;
+  csd->TempWrProtect = (csd_data[14] & 0x10) >> 4;
+  csd->FileFormat = (csd_data[14] & 0x0C) >> 2;
+  csd->Reserved4 = (csd_data[14] & 0x03);
+  csd->crc = (csd_data[15] & 0xFE) >> 1;
+  csd->Reserved5 = (csd_data[15] & 0x01);
+
+  return HAL_OK;
+}
+
+HAL_StatusTypeDef SD_read_cid(SD_CID* cid)
+{
+  HAL_StatusTypeDef r;
+  uint8_t r1;
+  uint8_t cid_data[16];
+  uint8_t crc[2];
+
+  // CMD9 - read CSD register and SD card capacity
+  SD_send_cmd(10, 0x00000000, 0xFF);
+  r = SD_read_r1(&r1);
+  if (r != HAL_OK)
+    return r;
+  if (r1 != 0x00)
+    return HAL_ERROR;
+  r = SD_wait_data_token();
+  if (r != HAL_OK)
+    return r;
+  SD_read_bytes(cid_data, sizeof(cid_data));
+  SD_read_bytes(crc, sizeof(crc));
+
+  SD_unselect_purge();
+
+  cid->ManufacturerID = cid_data[0];
+  memcpy(cid->OEM_AppliID, cid_data + 1, 2);
+  cid->OEM_AppliID[2] = 0;
+  memcpy(cid->ProdName, cid_data + 3, 5);
+  cid->ProdName[5] = 0;
+  cid->ProdRev = cid_data[8];
+  cid->ProdSN = cid_data[9] << 24;
+  cid->ProdSN |= cid_data[10] << 16;
+  cid->ProdSN |= cid_data[11] << 8;
+  cid->ProdSN |= cid_data[12];
+  cid->Reserved1 = (cid_data[13] & 0xF0) >> 4;
+  cid->ManufactYear = (cid_data[13] & 0x0F) << 4;
+  cid->ManufactYear |= (cid_data[14] & 0xF0) >> 4;
+  cid->ManufactMonth = (cid_data[14] & 0x0F);
+  cid->CID_CRC = (cid_data[15] & 0xFE) >> 1;
+  cid->Reserved2 = 1;
+
+  return HAL_OK;
+}
+
+uint64_t SD_read_capacity()
+{
+  SD_CSD csd;
+  HAL_StatusTypeDef r;
+  r = SD_read_csd(&csd);
+  if (r == HAL_OK)
+  {
+    if (sd_high_capacity)
+      return (uint64_t)(csd.version.v2.DeviceSize + 1) * SD_BLOCK_LENGTH * 1024;
+    else
+      return (uint64_t)(csd.version.v1.DeviceSize + 1) * (1UL << (csd.version.v1.DeviceSizeMul + 2)) * (1UL << csd.RdBlockLen);
+  }
+  return 0;
+}
+
+
