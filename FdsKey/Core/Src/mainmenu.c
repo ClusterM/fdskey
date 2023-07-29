@@ -94,9 +94,13 @@ void main_menu_loop()
   fr = f_mount(&fat_fs, "", 1);
   show_error_screen_fr(fr, 1);
 
+  // failsafe
   // disable auto loading last state if holding left on power up
   if (button_left_holding())
+  {
     fdskey_settings.remember_last_state_mode = REMEMBER_LAST_STATE_NONE;
+    settings_save();
+  }
 
   if (fdskey_settings.remember_last_state_mode == REMEMBER_LAST_STATE_NONE)
   {
