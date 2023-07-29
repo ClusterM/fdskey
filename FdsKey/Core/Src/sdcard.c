@@ -22,7 +22,6 @@ static void SD_read_bytes(uint8_t *buff, size_t buff_size)
     buff++;
     buff_size--;
   }
-
 }
 
 static void SD_select()
@@ -73,14 +72,14 @@ static HAL_StatusTypeDef SD_read_r1(uint8_t *r1)
    *     +-------- 7th bit is always zero
    */
   uint8_t tx = 0xFF;
-  uint32_t start_time = HAL_GetTick();
-  do
+  int i = 0;
+  for (i = 0; i < SD_ANSWER_RETRY_COUNT; i++)
   {
     SPI_transmit_receive(&tx, r1, sizeof(uint8_t));
-    if (HAL_GetTick() >= start_time + SD_TIMEOUT)
-      return HAL_TIMEOUT;
-  } while (*r1 & (1 << 7));
-  return HAL_OK;
+    if (!(*r1 & (1 << 7)))
+      return HAL_OK;
+  }
+  return HAL_TIMEOUT;
 }
 
 static HAL_StatusTypeDef SD_read_rx(uint8_t *rx, uint8_t x)

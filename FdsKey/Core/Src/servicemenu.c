@@ -7,6 +7,7 @@
 #include "buttons.h"
 #include "commit.h"
 #include "splash.h"
+#include "blupdater.h"
 
 FDSKEY_SERVICE_SETTINGS fdskey_service_settings;
 FDSKEY_HARDWARE_VERSION fdskey_hw_version;
@@ -99,6 +100,9 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
     parameter_name = "BL commit";
     value = fdskey_hw_version.bootloader_commit;
     break;
+  case SERVICE_SETTING_BL_UPDATE:
+    parameter_name = "[ Update bootloader ]";
+    break;
   default:
     parameter_name = "[ Save and return ]";
     break;
@@ -165,6 +169,12 @@ void service_menu()
       case SERVICE_SETTING_BUILD_DATE:
       case SERVICE_SETTING_BUILD_TIME:
       case SERVICE_SETTING_BL_COMMIT:
+        break;
+      case SERVICE_SETTING_BL_UPDATE:
+        update_bootloader();
+        for (i = 0; i < 4; i++)
+          draw_item((oled_get_line() + OLED_HEIGHT) / 8 + i, line + i, line + i == selection);
+        oled_switch_to_invisible();
         break;
       default:
         service_settings_save();
