@@ -105,7 +105,7 @@ What does it look like when everything is assembled:
 ## Flashing the firmware
 There are five TH pads (actually 6 but 1 is unused) on the PCB to connect a ST-Link programmer (GND, VCC, SWD, SWCLK and NRST). First, you need to write the bootloader - **bootloader.bin** file. Then you can put the main firmware file - **fdskey.bin** on your SD card (FAT/FAT32/exFAT formatted) and hold all four buttons on power-on, e.g. connect FDSKey to RAM adaptor, hold buttons and turn a Famicom on. You can use the same method to update the main firmware in the future without additional hardware.
 
-After the first boot, press and hold the **left** button for 3 seconds to access the service menu. There, you can select the OLED display controller type (change it if the display shows a corrupted image) and check some system information.
+After the first boot, press and hold the **left** button on the main menu screen for 3 seconds to access the service menu. There, you can select the OLED display controller type (change it if the display shows a corrupted image) and check some system information.
 
 ## Device usage
 Format a microSD card to FAT/FAT32/exFAT and put some .fds files on it. Insert a microSD card into a FDSKey, insert a FDSKey into a RAM Adaptor's cable instead of a physical disk drive and turn on a Famicom. You can hot plug a FDSKey when Famicom is already on too, it's ok.
@@ -124,36 +124,43 @@ Much better.
 
 ### Settings menu
 Use **up**/**down** buttons to select a setting and **left**/**right** to change it. Setting descriptions:
-* Rewind speed: you can select a drive operation speed as either **original** (very slow, like on a physical FDS drive, for the nostalgic ones), **fast** (where the rewind time is reduced but the virtual head position is not altered), or **turbo** (the fastest possible mode, instant head rewind)
-* Remember state: you can select a power-on state between **none** (always start from the main menu), **browser** (open browser and select last file if browser was opened before power off) and **ROM** (start first side of the last started game emulation if ROM emulation was active before power off)
-* Hide non .fds files: hide files with non .fds extension in the file browser
-* Hide .fds extensions: hide .fds extension in the file browser
-* Hide hidden files: hide hidden files and directories in the file browser
-* Brightness: screen brightness from 0 to 10
-* Invert screen: draw black on white instead of white on black
-* Lefty mode: rotate screen image on 180 degrees and flip buttons
-* Screen off after: time before automatic screen off if there is no any action (button presses, drive activity), it's recommended to use this feature to prevent OLED screen burn-in
-* Backup original ROM: copy a .fds file to a .fds.bak file if a disk content was rewritten
-* [ Save and return ] - press **left** or **right** button on this item to return to the main menu
+* **Rewind speed**: you can select a drive operation speed as either **original** (very slow, like on a physical FDS drive, for the nostalgic ones), **fast** (where the rewind time is reduced but the virtual head position is not altered), or **turbo** (the fastest possible mode, instant head rewind).
+* **Remember state**: you can select a power-on state between **none** (always start from the main menu), **browser** (open browser and select last file if browser was opened before power off), and **ROM** (start first side of the last started game emulation if ROM emulation was active before power off).
+* **Saves** (since v1.1): you can select how to save game progress as either **overwrite** (just overwrite the original .fds file), **backup+overwrite** (just overwrite the original .fds file but make backup to .fds.bak file first), or **like EverDrive** (EverDrive-compatible saves format).
+* **Hide non .fds files**: hide files with non .fds extension in the file browser.
+* **Hide .fds extensions**: hide .fds extension in the file browser.
+* **Hide hidden files**: hide hidden files and directories in the file browser.
+* **Brightness**: screen brightness from 0 to 10.
+* **Invert screen**: draw black on white instead of white on black.
+* **Lefty mode**: rotate screen image on 180 degrees and flip buttons.
+* **Screen off after**: time before automatic screen off if there is no any action (button presses, drive activity), it's recommended to use this feature to prevent OLED screen burn-in.
+* **[ Save and return ]**: press **left** or **right** button on this item to return to the main menu.
+
+### Service menu ###
+You can access the service menu by holding the **left** button on the main menu screen for 3 seconds. This menu is mainly meant for developers or advanced users. There is a lot of system information and several options/functions:
+* **OLED controller**: try to change it in case if "lefty mode" is not working correctly.
+* **[ Format SD card ]**: use it if you want to make low-level format of your SD card. Use it with caution as you will lose all your data! Make sure to backup your data first.
+* **[ Update bootloader ]**: update bootloader firmware. You need to put both **bootloader.bin** and **bootloader.bin.md5** files in the root of your SD card. Use it with caution! In case of failure (power loss during update) you will brick the device.
+* **[ Save and return ]**: press **left** or **right** button on this item to return to the main menu.
 
 ### How to dump physical disks
 You can use a homebrew disk copier applications to copy a physical disk to a virtual one, simply create an empty ROM. There is **Create blank disk** item in the main menu for it.
-1. Put **Disk Hacker**/**Disk Keeper** or another homebrew disk copier ROM on SD card
-2. Select a disk copier software on your SD card like any other ROM and load it
-3. Return to the main menu and select **Create blank disk**
-4. Enter filename for the new ROM, trailing spaces will be trimmed
-5. When disk copier asks to insert game disk disconnect a FDSKey from a RAM adaptor and connect a physical FDS drive with a game disk inserted
-6. When disk copier asks to insert new/blank disk disconnect a physical drive, connect a FDSKey and select ROM created in steps 3-4
-7. Repeat steps 5-6 until the copy operation is completed
+1. Put **Disk Hacker**/**Disk Keeper** or another homebrew disk copier ROM on SD card.
+2. Select a disk copier software on your SD card like any other ROM and load it.
+3. Return to the main menu and select **Create blank disk**.
+4. Enter filename for the new ROM, trailing spaces will be trimmed.
+5. When disk copier asks to insert game disk disconnect a FDSKey from a RAM adaptor and connect a physical FDS drive with a game disk inserted.
+6. When disk copier asks to insert new/blank disk disconnect a physical drive, connect a FDSKey and select ROM created in steps 3-4.
+7. Repeat steps 5-6 until the copy operation is completed.
 
 ### How to write physical disks
 This is a reverse operation of dumping: you can use disk copiers homebrew applications to copy a virtual disk to a physical one.
-1. Put **Disk Hacker**/**Disk Keeper** or another homebrew disk copier ROM on SD card
-2. Select a disk copier software on your SD card like any other ROM and load it
-3. When disk copier asks to insert game disk select the source ROM/side
-4. When disk copier asks to insert new/blank disk disconnect a FDSKey from a RAM adaptor and connect a physical FDS drive with blank disk inserted
-5. Disconnect a physical FDS drive and connect FDSKey
-6. Repeat steps 3, 4, and 5 until the copy operation is completed
+1. Put **Disk Hacker**/**Disk Keeper** or another homebrew disk copier ROM on SD card.
+2. Select a disk copier software on your SD card like any other ROM and load it.
+3. When disk copier asks to insert game disk select the source ROM/side.
+4. When disk copier asks to insert new/blank disk disconnect a FDSKey from a RAM adaptor and connect a physical FDS drive with blank disk inserted.
+5. Disconnect a physical FDS drive and connect FDSKey.
+6. Repeat steps 3, 4, and 5 until the copy operation is completed.
 
 ## Firmware updates
 You can always download the latest version at https://github.com/ClusterM/fdskey/releases.
@@ -163,6 +170,7 @@ Also, you can download automatic interim builds at http://clusterm.github.io/fds
 Remember, you can update the firmware by putting **fdskey.bin** on your SD card and holding all four buttons on power-on.
 
 ## Donate
-* PayPal: cluster@cluster.wtf
 * [Donation Alerts](https://www.donationalerts.com/r/clustermeerkat)
 * [Boosty](https://boosty.to/cluster)
+* BTC: 1MBYsGczwCypXhMBocoDQWxx7KZT2iiwzJ
+* PayPal is not available in Armenia :(
