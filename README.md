@@ -103,7 +103,7 @@ What does it look like when everything is assembled:
 
 
 ## Flashing the firmware
-There are five TH pads (actually 6 but 1 is unused) on the PCB to connect a ST-Link programmer (GND, VCC, SWD, SWCLK and NRST). First, you need to write the bootloader - **bootloader.bin** file. Then you can put the main firmware file - **fdskey.bin** on your SD card (FAT/FAT32/exFAT formatted) and hold all four buttons on power-on, e.g. connect FDSKey to RAM adaptor, hold buttons and turn a Famicom on. You can use the same method to update the main firmware in the future without additional hardware.
+There are five TH pads (actually 6 but 1 is unused) on the PCB to connect a ST-Link programmer (GND, VCC, SWD, SWCLK and NRST). First, you need to write the bootloader - **bootloader.bin** file. Use a programmer and write it to the **0x08000000** address (start of the flash memory). Then you can put the main firmware file - **FdsKey.bin** on your SD card (FAT/FAT32/exFAT formatted) and hold all four buttons on power-on, e.g. connect FDSKey to RAM adaptor, hold buttons and turn a Famicom on. You can use the same method to update the main firmware in the future without additional hardware. You can also use a programmer and write it to the **0x08020000** address.
 
 After the first boot, press and hold the **left** button on the main menu screen for 3 seconds to access the service menu. There, you can select the OLED display controller type (change it if the display shows a corrupted image) and check some system information.
 
@@ -167,7 +167,7 @@ You can always download the latest version at https://github.com/ClusterM/fdskey
 
 Also, you can download automatic interim builds at http://clusterm.github.io/fdskey/.
 
-Remember, you can update the firmware by putting **fdskey.bin** on your SD card and holding all four buttons on power-on.
+Remember, you can update the firmware by putting **FdsKey.bin** on your SD card and holding all four buttons on power-on.
 
 ## Donate
 * [Donation Alerts](https://www.donationalerts.com/r/clustermeerkat)
