@@ -149,10 +149,10 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
     switch (fdskey_settings.backup_original)
     {
     default:
-      value = "<rewrite>";
+      value = "<overwrite>";
       break;
     case SAVES_REWRITE_BACKUP:
-      value = "<backup+rewrite>";
+      value = "<backup+overwrite>";
       break;
     case SAVES_EVERDRIVE:
       value = "<like everdrive>";
