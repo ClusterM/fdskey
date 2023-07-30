@@ -156,6 +156,9 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
     parameter_name = "File system";
     switch (USERFatFs.fs_type)
     {
+    case FS_FAT12:
+      value = "FAT12";
+      break;
     case FS_FAT16:
       value = "FAT16";
       break;
@@ -366,50 +369,40 @@ void sd_format()
   if (!confirm("Are you sure?"))
       return;
 
+  show_message("Formatting...", 0);
   // unmount
   f_mount(0, "", 1);
-  show_message("Formatting...", 0);
   fr = f_mkfs("", FM_ANY | FM_SFD, 0, work, sizeof(work));
   if (fr != FR_OK)
   {
     show_error_screen_fr(fr, 0);
-  } else {
-    // set label.. not working, actually
-    f_setlabel(DISK_LABEL);
-    // get new file system
     fr = f_mount(&USERFatFs, "", 1);
-    if (fr != FR_OK)
-      USERFatFs.fs_type = 0xFF;
-    switch (USERFatFs.fs_type)
-    {
-    case FS_FAT16:
-      show_message("Done!\nFormatted to FAT16", 1);
-      break;
-    case FS_FAT32:
-      show_message("Done!\nFormatted to FAT32", 1);
-      break;
-    case FS_EXFAT:
-      show_message("Done!\nFormatted to exFAT", 1);
-      break;
-    default:
-      show_message("Done!", 0);
-      break;
-    }
+    show_error_screen_fr(fr, 1);
+    return;
   }
-
-  // reset the device
-  reset();
+  // get new file system
+  fr = f_mount(&USERFatFs, "", 1);
+  if (fr != FR_OK)
+    show_error_screen_fr(fr, 1);
+  // show new file system
+  switch (USERFatFs.fs_type)
+  {
+  case FS_FAT12:
+    show_message("Done!\nFormatted to FAT12", 1);
+    break;
+  case FS_FAT16:
+    show_message("Done!\nFormatted to FAT16", 1);
+    break;
+  case FS_FAT32:
+    show_message("Done!\nFormatted to FAT32", 1);
+    break;
+  case FS_EXFAT:
+    show_message("Done!\nFormatted to exFAT", 1);
+    break;
+  default:
+    show_message("Done!", 1);
+    break;
+  }
+  f_setlabel(DISK_LABEL);
 }
 
-void reset()
-{
-  // turn off the OLED
-  oled_send_command(OLED_CMD_SET_OFF);
-  // enable watchdog
-  // simple way to reset the device
-  IWDG->KR = 0xCCCC;
-  IWDG->KR = 0x5555;
-  IWDG->PR = 0;
-  IWDG->RLR = 1;
-  while (1);
-}

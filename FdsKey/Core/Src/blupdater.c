@@ -8,6 +8,19 @@
 #include "md5.h"
 #include "servicemenu.h"
 
+void reset()
+{
+  // turn off the OLED
+  oled_send_command(OLED_CMD_SET_OFF);
+  // enable watchdog
+  // simple way to reset the device
+  IWDG->KR = 0x5555;
+  IWDG->PR = 0;
+  IWDG->RLR = 1;
+  IWDG->KR = 0xCCCC;
+  while (1);
+}
+
 void update_bootloader()
 {
   FRESULT fr;

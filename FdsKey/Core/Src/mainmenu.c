@@ -96,6 +96,7 @@ void main_menu_loop()
   {
     show_error_screen_fr(fr, 0);
     sd_format();
+    fr = f_mount(&USERFatFs, "", 1);
   }
   show_error_screen_fr(fr, 1);
 
