@@ -29,8 +29,8 @@ void update_bootloader()
   fr = f_stat(BOOTLOADER_FILE, &fno);
   if (fr == FR_NO_FILE)
   {
-      show_error_screen(BOOTLOADER_FILE " not found", 0);
-      return;
+    show_error_screen(BOOTLOADER_FILE " not found", 0);
+    return;
   } else if (fr != FR_OK)
   {
     show_error_screen_fr(fr, 0);
@@ -116,6 +116,20 @@ void update_bootloader()
     }
   }
   f_close(&fp);
+
+  // Confirm
+  if (!confirm("Update bootloader?"))
+  {
+    free(bootloader_data);
+    return;
+  }
+  show_message("In case of failure it\ncan brick the device!", 1);
+  if (!confirm("Are you sure?"))
+  {
+    free(bootloader_data);
+    return;
+  }
+
   // unmount
   f_mount(0, "", 1);
 
