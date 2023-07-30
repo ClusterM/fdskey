@@ -1,6 +1,8 @@
 #ifndef INC_MAINMENU_H_
 #define INC_MAINMENU_H_
 
+#include "app_fatfs.h"
+
 #define MAIN_MENU_FONT FONT_STANDARD_6
 #define MAIN_MENU_VERSION_FONT FONT_ULTRASLIMFONT_8
 

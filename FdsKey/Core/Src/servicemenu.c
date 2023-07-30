@@ -152,7 +152,24 @@ static void draw_item(uint8_t line, SETTING_ID item, uint8_t is_selected)
     parameter_name = "FAT free";
     uint64_to_str(fat_free, value_v);
     break;
-  case SERVICE_SETTING_SD_SPI_SPEED:
+  case SERVICE_SETTING_FILE_SYSTEM:
+    parameter_name = "File system";
+    switch (USERFatFs.fs_type)
+    {
+    case FS_FAT16:
+      value = "FAT16";
+      break;
+    case FS_FAT32:
+      value = "FAT32";
+      break;
+    case FS_EXFAT:
+      value = "exFAT";
+      break;
+    default:
+      value = "Unknown";
+      break;
+    }
+    break;  case SERVICE_SETTING_SD_SPI_SPEED:
     parameter_name = "SD SPI speed";
     switch (SD_get_spi_speed())
     {
@@ -291,6 +308,9 @@ void service_menu()
       case SERVICE_SETTING_BL_COMMIT:
       case SERVICE_SETTING_SD_SPI_SPEED:
       case SERVICE_SETTING_SD_CAPACITY:
+      case SERVICE_SETTING_FAT_SIZE:
+      case SERVICE_SETTING_FAT_FREE:
+      case SERVICE_SETTING_FILE_SYSTEM:
       case SERVICE_SETTING_SD_MANUFACTURER_ID:
       case SERVICE_SETTING_SD_OEM_ID:
       case SERVICE_SETTING_SD_PROD_NAME:
@@ -298,8 +318,6 @@ void service_menu()
       case SERVICE_SETTING_SD_PROD_SN:
       case SERVICE_SETTING_SD_PROD_MANUFACT_YEAR:
       case SERVICE_SETTING_SD_PROD_MANUFACT_MONTH:
-      case SERVICE_SETTING_FAT_SIZE:
-      case SERVICE_SETTING_FAT_FREE:
         break;
       case SERVICE_SETTING_SD_FORMAT:
         sd_format();
@@ -358,10 +376,27 @@ void sd_format()
   } else {
     // set label.. not working, actually
     f_setlabel(DISK_LABEL);
-    // show message
-    show_message("Done!", 0);
-    HAL_Delay(1500);
+    // get new file system
+    fr = f_mount(&USERFatFs, "", 1);
+    if (fr != FR_OK)
+      USERFatFs.fs_type = 0xFF;
+    switch (USERFatFs.fs_type)
+    {
+    case FS_FAT16:
+      show_message("Done!\nFormatted to FAT16", 1);
+      break;
+    case FS_FAT32:
+      show_message("Done!\nFormatted to FAT32", 1);
+      break;
+    case FS_EXFAT:
+      show_message("Done!\nFormatted to exFAT", 1);
+      break;
+    default:
+      show_message("Done!", 0);
+      break;
+    }
   }
+
   // reset the device
   reset();
 }
