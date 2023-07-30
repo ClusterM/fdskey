@@ -341,8 +341,13 @@ void sd_format()
   FRESULT fr;
   uint8_t work[32 * 1024];
 
+  // Confirm
   if (!confirm("Format SD card?"))
     return;
+  show_message("WARNING!\nAll data will be erased!", 1);
+  if (!confirm("Are you sure?"))
+      return;
+
   // unmount
   f_mount(0, "", 1);
   show_message("Formatting...", 0);
