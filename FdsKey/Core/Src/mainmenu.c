@@ -94,9 +94,10 @@ void main_menu_loop()
   fr = f_mount(&USERFatFs, "", 1);
   if (fr == FR_NO_FILESYSTEM)
   {
+    // format card if not FAT file system
     show_error_screen_fr(fr, 0);
-    sd_format();
-    fr = f_mount(&USERFatFs, "", 1);
+    if (sd_format())
+      fr = FR_OK;
   }
   show_error_screen_fr(fr, 1);
 
@@ -108,6 +109,7 @@ void main_menu_loop()
     settings_save();
   }
 
+  // check and restore last state
   if (fdskey_settings.remember_last_state_mode == REMEMBER_LAST_STATE_NONE)
   {
     // reset state

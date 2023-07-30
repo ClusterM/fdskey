@@ -357,17 +357,17 @@ void service_menu()
   }
 }
 
-void sd_format()
+uint8_t sd_format()
 {
   FRESULT fr;
   uint8_t work[32 * 1024];
 
   // Confirm
   if (!confirm("Format SD card?"))
-    return;
+    return 0;
   show_message("WARNING!\nAll data will be erased!", 1);
   if (!confirm("Are you sure?"))
-      return;
+    return 0;
 
   show_message("Formatting...", 0);
   // unmount
@@ -378,7 +378,6 @@ void sd_format()
     show_error_screen_fr(fr, 0);
     fr = f_mount(&USERFatFs, "", 1);
     show_error_screen_fr(fr, 1);
-    return;
   }
   // get new file system
   fr = f_mount(&USERFatFs, "", 1);
@@ -404,5 +403,6 @@ void sd_format()
     break;
   }
   f_setlabel(DISK_LABEL);
+  return 1;
 }
 

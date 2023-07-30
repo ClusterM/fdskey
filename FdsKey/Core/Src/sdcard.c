@@ -257,6 +257,7 @@ SD_RESULT SD_init()
      * |+-------- 6th (J) bits: Card Capacity Status (CCS).
      * +--------- 7th (I) bits: Card power up status bit (busy).
      *
+     *
      * 2nd byte: OCR register [23:16]
      * QRSTUVWX (7th bit to 0th bit)
      * ||||||||

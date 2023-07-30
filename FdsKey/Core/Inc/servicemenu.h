@@ -59,6 +59,6 @@ extern FDSKEY_HARDWARE_VERSION fdskey_hw_version;
 void service_settings_load();
 HAL_StatusTypeDef service_settings_save();
 void service_menu();
-void sd_format();
+uint8_t sd_format();
 
 #endif /* INC_SERVICEMENU_H_ */
