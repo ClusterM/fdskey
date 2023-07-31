@@ -493,8 +493,6 @@ SD_RESULT SD_read_end()
   r = SD_read_r1(&r1);
   if (r != SD_RES_OK)
     return SD_RES_CMD12_R1_FAILED;
-  if (r1 != 0x00)
-    return SD_RES_CMD12_R1_NOT_NULL;
 
   SD_unselect_purge();
   return SD_RES_OK;
