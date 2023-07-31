@@ -143,9 +143,6 @@ void update_bootloader()
     return;
   }
 
-  // unmount
-  f_mount(0, "", 1);
-
   show_message("Updating...\nKEEP POWER ON!", 0);
 
   r = HAL_FLASH_Unlock();
@@ -206,6 +203,8 @@ void update_bootloader()
       show_error_screen_fr(fr, 0);
   }
 
+  // unmount
+  f_mount(0, "", 1);
   show_message("Done!", 0);
   HAL_Delay(1500);
 
