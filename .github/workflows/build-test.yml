@@ -72,8 +72,8 @@ jobs:
         echo "<body>Updated: `date`<br/><br/>" >> index.html
         echo "Main firmware (.bin): <a href='fdskey.bin'>fdskey.bin</a><br/><small>(MD5: <a href='fdskey.bin.md5'>`cat fdskey.bin.md5`</a>)</small></br>Put the <b>fdskey.bin</b> file on a microSD card and hold all four buttons during power-on to update the firmware. Or use a programmer and write it to the 0x08020000 address.<br/><br/>" >> index.html
         echo "Main firmware (.elf): <a href='fdskey.elf'>fdskey.elf</a><br/><small>(MD5: <a href='fdskey.elf.md5'>`cat fdskey.elf.md5`</a>)</small></br>Use this file to write firmware using programmer.<br/><br/>" >> index.html
-        echo "Bootloader (.bin): <a href='bootloader.bin'>bootloader.bin</a><br/><small>(MD5: <a href='bootloader.bin.md5'>`cat bootloader.bin.md5`</a>)</small></br>You can use it to update bootloader via the service menu. Or use a programmer and write it to the 0x08000000 address.<br/><br/>" >> index.html
-        echo "Bootloader (.elf): <a href='bootloader.elf'>bootloader.elf</a><br/><small>(MD5: <a href='bootloader.elf.md5'>`cat bootloader.elf.md5`</a>)</small></br>Use this file to write bootloader using programmer.<br/><br/>" >> index.html
+        echo "Bootloader (.bin): <a href='bootloader.bin'>bootloader.bin</a><br/><small>(MD5: <a href='bootloader.bin.md5'>`cat bootloader.bin.md5`</a>)</small></br>You can use it to update the bootloader via the service menu. Or use a programmer and write it to the 0x08000000 address.<br/><br/>" >> index.html
+        echo "Bootloader (.elf): <a href='bootloader.elf'>bootloader.elf</a><br/><small>(MD5: <a href='bootloader.elf.md5'>`cat bootloader.elf.md5`</a>)</small></br>Use this file to write the bootloader using programmer.<br/><br/>" >> index.html
         echo "</body></html>" >> index.html
 
     - name: Upload artifact
