@@ -86,7 +86,7 @@ void show_error_screen_fr(FRESULT fr, uint8_t fatal)
   {
     case FR_OK: return;        /* (0) Succeeded */
     case FR_DISK_ERR: text = "SD card error"; break;      /* (1) A hard error occurred in the low level disk I/O layer */
-    case FR_INT_ERR: text = "Assertion failed"; break;       /* (2) Assertion failed */
+    case FR_INT_ERR: text = "Internal FAT error"; break;       /* (2) Assertion failed */
     case FR_NOT_READY: text = "SD card not ready"; break;     /* (3) The physical drive cannot work */
     case FR_NO_FILE: text = "File not found"; break;       /* (4) Could not find the file */
     case FR_NO_PATH: text = "Path not found"; break;       /* (5) Could not find the path */

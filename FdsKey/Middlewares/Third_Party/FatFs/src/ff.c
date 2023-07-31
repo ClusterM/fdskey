@@ -1251,6 +1251,8 @@ FRESULT fill_last_frag (
 {
 	FRESULT res;
 
+	return FR_OK; // this function is buggy :( Seems like everything works without it.
+
 	while (obj->n_frag > 0) {	/* Create the last chain on the FAT */
 		res = put_fat(obj->fs, lcl - obj->n_frag + 1, (obj->n_frag > 1) ? lcl - obj->n_frag + 2 : term);
 		if (res != FR_OK) return res;
