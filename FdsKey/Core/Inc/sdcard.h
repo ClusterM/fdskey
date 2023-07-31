@@ -7,8 +7,9 @@
 
 #define SD_INIT_TRIES             32
 #define SD_TIMEOUT                1000 // milliseconds
-#define SD_IDLE_RETRY_COUNT       100
 #define SD_R1_ANSWER_RETRY_COUNT  32
+#define SD_CMD0_RETRY_COUNT       100
+#define SD_ACMD41_RETRY_COUNT     256
 
 #define SD_R1_IDLE (1 << 0)
 #define SD_R1_ERASE_CLEARED (1 << 1)

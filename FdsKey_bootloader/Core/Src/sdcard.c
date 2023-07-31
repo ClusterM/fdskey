@@ -140,7 +140,7 @@ static SD_RESULT SD_init_app_op_cond(uint32_t arg)
   SD_RESULT r;
   int i;
   uint8_t r1;
-  for (i = 0; i < SD_IDLE_RETRY_COUNT; i++)
+  for (i = 0; i < SD_ACMD41_RETRY_COUNT; i++)
   {
     // CMD55 (APP_CMD) before any ACMD command
     SD_send_cmd(55, 0, 0xFF);
@@ -189,7 +189,7 @@ SD_RESULT SD_init()
       return SD_RES_CMD0_R1_FAILED;
     if (r1 == SD_R1_IDLE)
       break;
-    if (i == SD_IDLE_RETRY_COUNT - 1)
+    if (i == SD_CMD0_RETRY_COUNT - 1)
       return SD_RES_CMD0_COUNT_FAILED;
   }
 
