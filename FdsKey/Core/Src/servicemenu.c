@@ -372,7 +372,7 @@ uint8_t sd_format()
   show_message("Formatting...", 0);
   // unmount
   f_mount(0, "", 1);
-  fr = f_mkfs("", FM_FAT | FM_FAT32 | FM_SFD, 0, work, sizeof(work));
+  fr = f_mkfs("", FM_ANY | FM_SFD, 0, work, sizeof(work));
   if (fr != FR_OK)
   {
     show_error_screen_fr(fr, 0);
