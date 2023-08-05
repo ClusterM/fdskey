@@ -154,7 +154,7 @@ You can use a homebrew disk copier applications to copy a physical disk to a vir
 7. Repeat steps 5-6 until the copy operation is completed.
 
 ### How to write physical disks
-This is a reverse operation of dumping: you can use disk copiers homebrew applications to copy a virtual disk to a physical one.
+This is a reverse operation of dumping: you can use disk copiers homebrew applications to copy a virtual disk to a physical one. Please note that **you need to remove the copy protection on your physical drive** if it has any. In most cases, it's not such a difficult process.
 1. Put **Disk Hacker**/**Disk Keeper** or another homebrew disk copier ROM on SD card.
 2. Select a disk copier software on your SD card like any other ROM and load it.
 3. When disk copier asks to insert game disk select the source ROM/side.
