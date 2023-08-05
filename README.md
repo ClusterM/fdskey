@@ -145,7 +145,7 @@ You can access the service menu by holding the **left** button on the main menu 
 
 ### How to dump physical disks
 You can use a homebrew disk copier applications to copy a physical disk to a virtual one, simply create an empty ROM. There is **Create blank disk** item in the main menu for it.
-1. Put **Disk Hacker**/**Disk Keeper** or another homebrew disk copier ROM on SD card.
+1. Put **Disk Hacker**/**Disk Keeper** or another homebrew disk copier ROM on the SD card.
 2. Select a disk copier software on your SD card like any other ROM and load it.
 3. Return to the main menu and select **Create blank disk**.
 4. Enter filename for the new ROM, trailing spaces will be trimmed.
@@ -155,7 +155,7 @@ You can use a homebrew disk copier applications to copy a physical disk to a vir
 
 ### How to write physical disks
 This is a reverse operation of dumping: you can use disk copiers homebrew applications to copy a virtual disk to a physical one. Please note that **you need to remove the copy protection on your physical drive** if it has any. In most cases, it's not such a difficult process.
-1. Put **Disk Hacker**/**Disk Keeper** or another homebrew disk copier ROM on SD card.
+1. Put **Disk Hacker**/**Disk Keeper** or another homebrew disk copier ROM on the SD card.
 2. Select a disk copier software on your SD card like any other ROM and load it.
 3. When disk copier asks to insert game disk select the source ROM/side.
 4. When disk copier asks to insert new/blank disk disconnect a FDSKey from a RAM adaptor and connect a physical FDS drive with blank disk inserted.
