@@ -3,7 +3,7 @@
 #include "fdsemugui.h"
 #include "fdsemu.h"
 #include "oled.h"
-#include "app_fatfs.h"
+#include "ff.h"
 #include "buttons.h"
 #include "sideselect.h"
 #include "splash.h"

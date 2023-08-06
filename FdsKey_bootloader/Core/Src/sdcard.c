@@ -138,9 +138,9 @@ static SD_RESULT SD_wait_data_token()
 static SD_RESULT SD_init_app_op_cond(uint32_t arg)
 {
   SD_RESULT r;
-  int i;
   uint8_t r1;
-  for (i = 0; i < SD_ACMD41_RETRY_COUNT; i++)
+  uint32_t start_time = HAL_GetTick();
+  while (1)
   {
     // CMD55 (APP_CMD) before any ACMD command
     SD_send_cmd(55, 0, 0xFF);
@@ -156,8 +156,11 @@ static SD_RESULT SD_init_app_op_cond(uint32_t arg)
       return SD_RES_ACMD41_R1_FAILED;
     if (r1 == 0x00)
       return SD_RES_OK; // initialization finished
+    if (HAL_GetTick() >= start_time + SD_ACMD41_TIMEOUT)
+      return SD_RES_DATA_TOKEN_TIMEOUT;
+    HAL_Delay(1);
   }
-  return SD_RES_ACMD41_COUNT_FAILED;
+  return SD_RES_ACMD41_TIMEOUT;
 }
 
 SD_RESULT SD_init()
@@ -709,4 +712,3 @@ uint64_t SD_read_capacity()
   }
   return 0;
 }
-

@@ -1,7 +1,7 @@
 #ifndef INC_BROWSER_H_
 #define INC_BROWSER_H_
 
-#include "app_fatfs.h"
+#include "ff.h"
 
 #define BROWSER_FONT FONT_SLIMFONT_8
 #define BROWSER_HORIZONTAL_SCROLL_SPEED 6

@@ -1,7 +1,7 @@
 #include <string.h>
 #include "newdisk.h"
 #include "oled.h"
-#include "app_fatfs.h"
+#include "ff.h"
 #include "buttons.h"
 #include "fdsemu.h"
 #include "settings.h"

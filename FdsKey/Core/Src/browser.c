@@ -1,7 +1,8 @@
+#include <stdlib.h>
 #include <string.h>
 #include "main.h"
 #include "browser.h"
-#include "app_fatfs.h"
+#include "ff.h"
 #include "oled.h"
 #include "buttons.h"
 #include "splash.h"
@@ -55,8 +56,8 @@ static int strcasecmp_no_extension(char *a, char *b)
 {
   // TODO: optimize?
   int i;
-  char a_no_ext[_MAX_LFN + 1];
-  char b_no_ext[_MAX_LFN + 1];
+  char a_no_ext[FF_MAX_LFN + 1];
+  char b_no_ext[FF_MAX_LFN + 1];
   strcpy(a_no_ext, a);
   strcpy(b_no_ext, b);
   char *a_dot = strstr(a_no_ext, ".");
@@ -124,8 +125,8 @@ static void browser_draw_item(uint8_t line, int item, uint8_t is_selected, int t
     // hide extension if enabled and .fds file
     if (fdskey_settings.hide_extensions && !strcasecmp(text + strlen(text) - 4, ".fds"))
     {
-      char trimmed[_MAX_LFN + 1];
-      strncpy(trimmed, text, _MAX_LFN);
+      char trimmed[FF_MAX_LFN + 1];
+      strncpy(trimmed, text, FF_MAX_LFN);
       text = trimmed;
       for (i = strlen(text) - 1; i >= 0; i--)
       {

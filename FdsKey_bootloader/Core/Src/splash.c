@@ -2,7 +2,7 @@
 #include <string.h>
 #include "splash.h"
 #include "oled.h"
-#include "app_fatfs.h"
+#include "ff.h"
 #include "buttons.h"
 
 void show_message(char *text, uint8_t wait)

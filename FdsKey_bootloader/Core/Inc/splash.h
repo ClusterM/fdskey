@@ -1,7 +1,7 @@
 #ifndef INC_SPLASH_H_
 #define INC_SPLASH_H_
 
-#include "app_fatfs.h"
+#include "ff.h"
 #include "sdcard.h"
 
 #define SPLASH_UPDATING_IMAGE IMAGE_COGS

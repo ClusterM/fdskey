@@ -1,7 +1,8 @@
 #ifndef INC_FDSEMU_H_
 #define INC_FDSEMU_H_
 
-#include "app_fatfs.h"
+#include "main.h"
+#include "ff.h"
 
 #define FDS_USE_DYNAMIC_MEMORY
 

@@ -1,7 +1,7 @@
 #ifndef INC_FILEPROPERTIES_H_
 #define INC_FILEPROPERTIES_H_
 
-#include "app_fatfs.h"
+#include "ff.h"
 
 #define FILE_PROPERTIES_WRITE_PROTECT 0
 #define FILE_PROPERTIES_RESTORE_BACKUP 1

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include "main.h"
-#include "app_fatfs.h"
+#include "ff.h"
 
 #define SETTINGS_FLASH_OFFSET (0x08080000 - FLASH_PAGE_SIZE * 2) // reserved two pages
 #define SETTINGS_SIGNATURE "FDSKEY"
@@ -74,7 +74,7 @@ typedef struct __attribute__((packed))
   int16_t auto_off_screen_time;
   SAVES_MODE backup_original;
   char last_directory[1024];
-  char last_file[_MAX_LFN + 1 /*256*/];
+  char last_file[FF_MAX_LFN + 1 /*256*/];
 } FDSKEY_SETTINGS;
 
 void settings_load();

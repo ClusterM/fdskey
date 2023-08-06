@@ -270,8 +270,8 @@ void service_menu()
   {
     fat_total = fat_free = 0;
   } else {
-    fat_total = (uint64_t)(fs->n_fatent - 2) * fs->csize * _MIN_SS;
-    fat_free = (uint64_t)fat_free_clust * fs->csize * _MIN_SS;
+    fat_total = (uint64_t)(fs->n_fatent - 2) * fs->csize * FF_MIN_SS;
+    fat_free = (uint64_t)fat_free_clust * fs->csize * FF_MIN_SS;
   }
 
   draw_all(line, selection);
@@ -372,7 +372,7 @@ uint8_t sd_format()
   show_message("Formatting...", 0);
   // unmount
   f_mount(0, "", 1);
-  fr = f_mkfs("", FM_ANY | FM_SFD, 0, work, sizeof(work));
+  fr = f_mkfs("", 0, work, sizeof(work));
   if (fr != FR_OK)
   {
     show_error_screen_fr(fr, 0);

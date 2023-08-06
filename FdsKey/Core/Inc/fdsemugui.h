@@ -1,7 +1,7 @@
 #ifndef INC_FDSEMUGUI_H_
 #define INC_FDSEMUGUI_H_
 
-#include "app_fatfs.h"
+#include "ff.h"
 
 #define FDS_GUI_GAME_NAME_FONT FONT_SLIMFONT_8
 #define FDS_GUI_HORIZONTAL_SCROLL_SPEED 2

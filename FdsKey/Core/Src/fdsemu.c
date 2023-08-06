@@ -1,10 +1,11 @@
+#include <stdlib.h>
 #include <string.h>
 #include "main.h"
 #include "fdsemu.h"
 #include "settings.h"
-#include "app_fatfs.h"
+#include "ff.h"
 
-static char fds_filename[_MAX_LFN + 1];
+static char fds_filename[FF_MAX_LFN + 1];
 static uint8_t fds_side;
 // loaded FDS data
 #ifdef FDS_USE_DYNAMIC_MEMORY
@@ -525,7 +526,7 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
     fr = f_open(&fp, filename, FA_READ);
   } else {
     // everdrive-style saves
-    char alt_filename[_MAX_LFN + 1];
+    char alt_filename[FF_MAX_LFN + 1];
     FILINFO fno;
     char* filename_no_path = fds_filename + strlen(fds_filename);
     while (filename_no_path >= fds_filename)
@@ -729,7 +730,7 @@ FRESULT fds_save()
       return FDSR_WRONG_CRC;
   }
 
-  char alt_filename[_MAX_LFN + 1];
+  char alt_filename[FF_MAX_LFN + 1];
   if (fdskey_settings.backup_original == SAVES_REWRITE_BACKUP || fdskey_settings.backup_original == SAVES_EVERDRIVE)
   {
     // combine backup filename

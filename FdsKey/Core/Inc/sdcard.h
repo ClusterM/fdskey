@@ -9,7 +9,7 @@
 #define SD_TIMEOUT                1000 // milliseconds
 #define SD_R1_ANSWER_RETRY_COUNT  32
 #define SD_CMD0_RETRY_COUNT       100
-#define SD_ACMD41_RETRY_COUNT     256
+#define SD_ACMD41_TIMEOUT         500 // milliseconds
 
 #define SD_R1_IDLE (1 << 0)
 #define SD_R1_ERASE_CLEARED (1 << 1)
@@ -32,7 +32,7 @@ typedef enum {
   SD_RES_CMD8_R7_FAILED = 4,
   SD_RES_CMD8_GEN_FAILED = 5,
   SD_RES_ACMD41_R1_FAILED = 6,
-  SD_RES_ACMD41_COUNT_FAILED = 7,
+  SD_RES_ACMD41_TIMEOUT = 7,
   SD_RES_CMD8_VOLTAGE_FAILED = 8,
   SD_RES_CMD58_R3_FAILED = 9,
   SD_RES_CMD58_GEN_FAILED = 10,

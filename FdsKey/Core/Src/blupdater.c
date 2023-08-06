@@ -1,7 +1,7 @@
 #include "main.h"
 #include "blupdater.h"
 #include "oled.h"
-#include "app_fatfs.h"
+#include "ff.h"
 #include "splash.h"
 #include "confirm.h"
 #include "fdsemu.h"

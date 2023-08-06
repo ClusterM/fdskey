@@ -2,7 +2,7 @@
 #define INC_SIDESELECT_H_
 
 #include "oled.h"
-#include "app_fatfs.h"
+#include "ff.h"
 
 #define SIDE_SELECT_GAME_NAME_FONT FONT_SLIMFONT_8
 #define SIDE_SELECT_SIDE_NAME_FONT FONT_VERDANA_14_BOLD

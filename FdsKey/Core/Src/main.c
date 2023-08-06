@@ -18,7 +18,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "app_fatfs.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -153,9 +152,6 @@ int main(void)
   MX_I2C1_Init();
   MX_SPI3_Init();
   MX_TIM3_Init();
-  if (MX_FATFS_Init() != APP_OK) {
-    Error_Handler();
-  }
   MX_TIM17_Init();
   MX_TIM1_Init();
   MX_TIM4_Init();

@@ -4,7 +4,7 @@
 #include "sideselect.h"
 #include "fdsemu.h"
 #include "oled.h"
-#include "app_fatfs.h"
+#include "ff.h"
 #include "splash.h"
 #include "buttons.h"
 #include "settings.h"
