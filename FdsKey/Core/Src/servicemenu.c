@@ -253,17 +253,11 @@ static void draw_all(int line, int selection)
   oled_switch_to_invisible();
 }
 
-void service_menu()
+static void update_free_space()
 {
-  int line = 0;
-  int selection = 0;
-  int i;
-  FATFS *fs;
   FRESULT fr;
+  FATFS *fs;
   DWORD fat_free_clust = 0;
-
-  show_message("Entering into\nthe service menu", 0);
-  HAL_Delay(1500);
 
   fr = f_getfree("", &fat_free_clust, &fs);
   if (fr != FR_OK)
@@ -273,6 +267,18 @@ void service_menu()
     fat_total = (uint64_t)(fs->n_fatent - 2) * fs->csize * FF_MIN_SS;
     fat_free = (uint64_t)fat_free_clust * fs->csize * FF_MIN_SS;
   }
+}
+
+void service_menu()
+{
+  int line = 0;
+  int selection = 0;
+  int i;
+
+  show_message("Entering into\nthe service menu", 0);
+  HAL_Delay(1500);
+
+  update_free_space();
 
   draw_all(line, selection);
 
@@ -383,6 +389,8 @@ uint8_t sd_format()
   fr = f_mount(&USERFatFs, "", 1);
   if (fr != FR_OK)
     show_error_screen_fr(fr, 1);
+  // update free space info
+  update_free_space();
   // show new file system
   switch (USERFatFs.fs_type)
   {
