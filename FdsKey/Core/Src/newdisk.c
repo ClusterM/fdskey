@@ -166,7 +166,7 @@ static uint8_t is_forbidden_char(char c)
 FRESULT new_disk()
 {
   char filename[NEW_DISK_FILENAME_LENGTH + 1] = "NEW";
-  char filename_trimmed[NEW_DISK_FILENAME_LENGTH + 4 + 1];
+  char filename_trimmed[NEW_DISK_FILENAME_LENGTH + 4 /*.fds*/ + 1 /*zero terminator*/ ];
   int blink = 0;
   int i, l;
   FRESULT fr;

@@ -45,8 +45,8 @@ typedef struct __attribute__((packed))
   uint8_t invert_screen;
   int16_t auto_off_screen_time;
   uint8_t backup_original;
-  char last_directory[1024];
-  char last_file[FF_MAX_LFN + 1 /*256*/];
+  char last_directory[3584];
+  char last_file[FF_MAX_LFN + 1 /* 255 + 1 */];
 } FDSKEY_SETTINGS;
 
 void settings_load();

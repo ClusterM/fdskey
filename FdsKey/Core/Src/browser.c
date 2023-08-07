@@ -126,7 +126,7 @@ static void browser_draw_item(uint8_t line, int item, uint8_t is_selected, int t
     if (fdskey_settings.hide_extensions && !strcasecmp(text + strlen(text) - 4, ".fds"))
     {
       char trimmed[FF_MAX_LFN + 1];
-      strncpy(trimmed, text, FF_MAX_LFN);
+      strlcpy(trimmed, text, sizeof(trimmed));
       text = trimmed;
       for (i = strlen(text) - 1; i >= 0; i--)
       {
@@ -388,7 +388,7 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
   if (r < dir_count)
   {
     *result = BROWSER_DIRECTORY;
-    strncpy(output->fname, dir_list[r]->filename, sizeof(output->fname));
+    strlcpy(output->fname, dir_list[r]->filename, sizeof(output->fname));
     output->fname[sizeof(output->fname) - 1] = 0;
   } else {
     *result = BROWSER_FILE;
@@ -400,7 +400,7 @@ FRESULT browser(char *path, FILINFO *output, BROWSER_RESULT *result, char *selec
         break;
       }
     }
-    strncpy(output->fname, file_list[r - dir_count]->filename, sizeof(output->fname));
+    strlcpy(output->fname, file_list[r - dir_count]->filename, sizeof(output->fname));
     output->fname[sizeof(output->fname) - 1] = 0;
     output->fsize = file_list[r - dir_count]->fsize;
     output->fattrib = file_list[r - dir_count]->fattrib;
@@ -480,38 +480,40 @@ BROWSER_RESULT browser_tree(char *directory, int dir_max_len, FILINFO *fno)
       }
       for (i = strlen(directory) - 2; i >= 0; i--)
       {
-        // return to previous directory
+        // return to the previous directory
         if (i <= 0)
         {
           // root
-          strncpy(fno->fname, directory + (*directory == '\\' ? 1 : 0), sizeof(fno->fname));
-          fno->fname[sizeof(fno->fname) - 1] = 0;
+          strlcpy(fno->fname, directory + (*directory == '\\' ? 1 : 0), sizeof(fno->fname));
           directory[0] = 0;
         }
         if (directory[i] == '\\')
         {
           // extract parent directory and current directory names
           directory[i] = 0;
-          strncpy(fno->fname, &directory[i + 1], sizeof(fno->fname));
-          fno->fname[sizeof(fno->fname) - 1] = 0;
-          if (i < dir_max_len) directory[i + 1] = 0;
+          strlcpy(fno->fname, &directory[i + 1], sizeof(fno->fname));
           break;
         }
       }
       break;
     case BROWSER_DIRECTORY:
       // directory selected
-      strncat(directory, "\\", dir_max_len);
-      strncat(directory, fno->fname, dir_max_len);
-      directory[dir_max_len - 1] = 0;
+      strlcat(directory, "\\", dir_max_len);
+      strlcat(directory, fno->fname, dir_max_len);
       fno->fname[0] = 0;
+      if (strlen(directory) >= dir_max_len - 1)
+      {
+        show_error_screen("Path is too long", 0);
+        // return to the root
+        directory[0] = 0;
+      }
       break;
     case BROWSER_FILE:
       // file selected
     case BROWSER_FILE_LONGPRESS:
       // file selected using button longpress
     case BROWSER_BACK_LONGPRESS:
-      // back longpress - return to main menu
+      // back longpress - return to the main menu
       return br;
     }
   }

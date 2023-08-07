@@ -32,6 +32,12 @@ void settings_load()
     fdskey_settings.last_directory[0] = 0;
     fdskey_settings.last_file[0] = 0;
   }
+  if (fdskey_settings.version < 1)
+  {
+    fdskey_settings.last_directory[0] = 0;
+    fdskey_settings.last_file[0] = 0;
+    fdskey_settings.version = 1;
+  }
 }
 
 HAL_StatusTypeDef settings_save()

@@ -736,7 +736,7 @@ FRESULT fds_save()
     // combine backup filename
     if (fdskey_settings.backup_original == SAVES_REWRITE_BACKUP)
     {
-      // just add ".bak" to filename
+      // just add ".bak" to the filename
       strlcpy(alt_filename, fds_filename, sizeof(alt_filename));
       strlcat(alt_filename, ".bak", sizeof(alt_filename));
     } else {
