@@ -61,6 +61,12 @@ void show_error_screen(char *text, uint8_t fatal)
   if (fatal)
     __disable_irq();
 
+  // we need to re-init i2c in case of interrupt
+  // because it can be used and we need it to
+  // output error message
+  HAL_I2C_DeInit(&hi2c1);
+  HAL_I2C_Init(&hi2c1);
+
   oled_draw_rectangle(0, oled_get_line() + OLED_HEIGHT, OLED_WIDTH - 1, oled_get_line() + OLED_HEIGHT * 2 - 1, 1, 0);
   oled_draw_text(&SPLASH_ERROR_TITLE_FONT, "Error :(", 4, oled_get_line() + OLED_HEIGHT, 0, 0);
   oled_draw_text(&SPLASH_ERROR_FONT, text, 4, oled_get_line() + OLED_HEIGHT + 20, 0, 0);

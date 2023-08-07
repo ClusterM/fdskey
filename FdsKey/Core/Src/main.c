@@ -80,11 +80,6 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
     fds_check_pins();
     break;
   case SD_DTCT_Pin:
-    // we need to re-init i2c in case of interrupt
-    // because it can be used and we need it to
-    // output error message
-    HAL_I2C_DeInit(&hi2c1);
-    HAL_I2C_Init(&hi2c1);
     show_error_screen("The SD card is ejected", 1);
     break;
   }

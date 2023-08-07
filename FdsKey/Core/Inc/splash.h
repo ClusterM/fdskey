@@ -3,6 +3,7 @@
 
 #include "ff.h"
 #include "sdcard.h"
+#include "oled.h"
 
 #define SPLASH_LOADING_IMAGE IMAGE_MICROSD_HOR
 #define SPLASH_REGULAR_FONT FONT_STANDARD_6
@@ -15,5 +16,7 @@ void show_saving_screen();
 void show_error_screen(char *text, uint8_t fatal);
 void show_error_screen_fr(FRESULT fr, uint8_t fatal);
 void show_error_screen_sd(SD_RESULT r, uint8_t fatal);
+
+extern I2C_HandleTypeDef OLED_I2C;
 
 #endif /* INC_SPLASH_H_ */
