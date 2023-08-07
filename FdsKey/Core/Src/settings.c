@@ -56,7 +56,7 @@ HAL_StatusTypeDef settings_save()
   erase_init_struct.TypeErase = FLASH_TYPEERASE_PAGES;
   erase_init_struct.Banks = ((SETTINGS_FLASH_OFFSET - 0x08000000) / FLASH_BANK_SIZE == 0) ? FLASH_BANK_1 : FLASH_BANK_2;
   erase_init_struct.Page = ((SETTINGS_FLASH_OFFSET - 0x08000000) / FLASH_PAGE_SIZE) % FLASH_PAGE_NB;
-  erase_init_struct.NbPages = 1;
+  erase_init_struct.NbPages = 2;
   r = HAL_FLASHEx_Erase(&erase_init_struct, &sector_error);
   if (r != HAL_OK) return r;
 
