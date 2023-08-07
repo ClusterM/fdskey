@@ -573,17 +573,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : FDS_SCAN_MEDIA_Pin */
-  GPIO_InitStruct.Pin = FDS_SCAN_MEDIA_Pin;
+  /*Configure GPIO pins : FDS_SCAN_MEDIA_Pin FDS_WRITE_Pin */
+  GPIO_InitStruct.Pin = FDS_SCAN_MEDIA_Pin|FDS_WRITE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(FDS_SCAN_MEDIA_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : FDS_WRITE_Pin */
-  GPIO_InitStruct.Pin = FDS_WRITE_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  HAL_GPIO_Init(FDS_WRITE_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : BUTTON_LEFT_Pin BUTTON_UP_Pin */
   GPIO_InitStruct.Pin = BUTTON_LEFT_Pin|BUTTON_UP_Pin;
