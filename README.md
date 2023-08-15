@@ -170,6 +170,7 @@ Also, you can download automatic interim builds at http://clusterm.github.io/fds
 Remember, you can update the firmware by putting **FdsKey.bin** on your SD card and holding all four buttons on power-on.
 
 ## Donate
+* [Buy Me A Coffee](https://www.buymeacoffee.com/cluster)
 * [Donation Alerts](https://www.donationalerts.com/r/clustermeerkat)
 * [Boosty](https://boosty.to/cluster)
 * BTC: 1MBYsGczwCypXhMBocoDQWxx7KZT2iiwzJ
