@@ -540,10 +540,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, FDS_READY_Pin|FDS_WRITABLE_MEDIA_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(FDS_MEDIA_SET_GPIO_Port, FDS_MEDIA_SET_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOA, FDS_READY_Pin|FDS_MEDIA_SET_Pin|FDS_WRITABLE_MEDIA_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, FDS_MOTOR_ON_Pin|SD_CS_Pin, GPIO_PIN_SET);
@@ -556,7 +553,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pins : FDS_READY_Pin FDS_MEDIA_SET_Pin FDS_WRITABLE_MEDIA_Pin */
   GPIO_InitStruct.Pin = FDS_READY_Pin|FDS_MEDIA_SET_Pin|FDS_WRITABLE_MEDIA_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
