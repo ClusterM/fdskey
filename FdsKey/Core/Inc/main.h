@@ -46,7 +46,7 @@ extern "C" {
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
 #define FDSKEY_VERION_MAJOR 1
-#define FDSKEY_VERION_MINOR 2
+#define FDSKEY_VERION_MINOR 3
 #define FDSKEY_VERION_SUFFIX 0
 /* USER CODE END EM */
 
