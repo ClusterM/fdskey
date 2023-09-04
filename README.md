@@ -103,9 +103,17 @@ What does it look like when everything is assembled:
 
 
 ## Flashing the firmware
-There are five TH pads (actually 6 but 1 is unused) on the PCB to connect a ST-Link programmer (GND, VCC, SWD, SWCLK and NRST). First, you need to write the bootloader - **bootloader.bin** file. Use a programmer and write it to the **0x08000000** address (start of the flash memory). Then you can put the main firmware file - **FdsKey.bin** on your SD card (FAT/FAT32/exFAT formatted) and hold all four buttons on power-on, e.g. connect FDSKey to RAM adaptor, hold buttons and turn a Famicom on. You can use the same method to update the main firmware in the future without additional hardware. You can also use a programmer and write it to the **0x08020000** address.
+There are five TH pads (actually 6 but 1 is unused) on the PCB to connect a ST-Link (or clone) programmer: GND, VCC, SWD, SWCLK, and NRST. Use [**STM32CubeProg**](https://www.st.com/en/development-tools/stm32cubeprog.html) software (Win/Linux/Mac) to write the bootloader and the firmware. Old **STM32 ST-LINK Utility** will not work, it's deprecated.
 
-After the first boot, press and hold the **left** button on the main menu screen for 3 seconds to access the service menu. There, you can select the OLED display controller type (change it if the display shows a corrupted image) and check some system information.
+First, you need to write the bootloader - **bootloader.bin** file. Use a programmer and write it to the **0x08000000** address (start of the flash memory, default address).
+
+Then you can put the main firmware file - **FdsKey.bin** on your SD card (FAT/FAT32/exFAT formatted) and hold all four buttons on power-on, e.g. connect FDSKey to RAM adaptor, hold buttons and turn a Famicom on. You can use the same method to update the main firmware in the future without additional hardware. You can also use a programmer and write it to the **0x08020000** address.
+
+You can write the bootloader and the firmware at once using the STM32CubeProg CLI tool:
+
+`STM32_Programmer_CLI.exe -c port=SWD --erase all --download bootloader.bin 0x08000000 --download fdskey.bin 0x08020000`
+
+After the first boot, press and hold the **left** button on the main menu screen for 3 seconds to access the service menu. There, you can select the OLED display controller type (change it if the display shows a corrupted image in "lefty mode") and check some system information.
 
 ## Device usage
 Format a microSD card to FAT/FAT32/exFAT and put some .fds files on it. Insert a microSD card into a FDSKey, insert a FDSKey into a RAM Adaptor's cable instead of a physical disk drive and turn on a Famicom. You can hot plug a FDSKey when Famicom is already on too, it's ok.
