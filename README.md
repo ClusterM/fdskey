@@ -177,6 +177,51 @@ Also, you can download automatic interim builds at http://clusterm.github.io/fds
 
 Remember, you can update the firmware by putting **FdsKey.bin** on your SD card and holding all four buttons on power-on.
 
+
+## Twin Famicom compatibility
+You can use FDSKey with Twin Famicom too. But you need a special cable. It's easy to make one.
+
+![image](https://github.com/ClusterM/fdskey/assets/4236181/256291b7-1692-4cd1-9c2b-ba24c9a80ced)
+
+It has a simple 12x1 dupont connector on the one side, you need to connect it to Twin Famicom's **Port C** on the back-bottom side (instead of the original cable).
+
+Unfortunately, there is a non-standard connector on the other side of the cable. But you can use a SFC/SNES/N64/NGC AV connector:
+
+![image](https://github.com/ClusterM/fdskey/assets/4236181/633a3054-31e1-4f3c-8be1-a10fc0c81377)
+
+You can find it on [aliexpress.com](https://aliexpress.com). But you need to cut a "key" - piece of plastic on this connector, or just use the FDSKey without a case.
+
+Connection diagram:
+```
+           Twin Famicom Port C                   Connector for FDSKey
+       (looking at rear of console)          (looking from FDSKey's side)
+█████████████████████████████████████████  ████████████████████████████████
+█████████████████████████████████████████  ████████████████████████████████
+██                                     ██  ███  1   3   5   7   9   11  ███
+██ 8  6  2  4  1  3  5  7  9  11 12 10 ██  ███  2   4   6   8   10  12  ███
+█████████████████████████████████████████  \██████████████████████████████/
+█████████████████████████████████████████   \████████████████████████████/
+
+Pin meanings
++----+---+-----------------------+
+| 1  | O | /write                |
+| 2  | O | VCC (+5VDC)           |
+| 3  | O | /scan media           |
+| 4  | O | VEE (ground)          |
+| 5  | O | Write data            |
+| 6  | I | Motor on/battery good |
+| 7  | I | /writable media       |
+| 8  | - | ---                   |
+| 9  | I | Read data             |
+| 10 | I | /media set            |
+| 11 | I | /ready                |
+| 12 | O | /stop motor           |
++----+---------------------------+
+
+It's recommended to pull-up at least **/scan media** pin to **VCC** via resistor (5K-10K) if you want to hot plug the FDSKey, because Twin Famicom has no pull-up resistors inside it. Also, don't forget to upgrade the FDSKey firmware to at least **v1.3**.
+```
+
+
 ## Donate
 * [Buy Me A Coffee](https://www.buymeacoffee.com/cluster)
 * [Donation Alerts](https://www.donationalerts.com/r/clustermeerkat)
