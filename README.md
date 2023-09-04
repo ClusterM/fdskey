@@ -217,9 +217,8 @@ Pin meanings
 | 11 | I | /ready                |
 | 12 | O | /stop motor           |
 +----+---------------------------+
-
-It's recommended to pull-up at least **/scan media** pin to **VCC** via resistor (5K-10K) if you want to hot plug the FDSKey, because Twin Famicom has no pull-up resistors inside it. Also, don't forget to upgrade the FDSKey firmware to at least **v1.3**.
 ```
+It's recommended to pull-up at least **/scan media** pin to **VCC** via resistor (5K-10K) if you want to hot plug the FDSKey, because Twin Famicom has no pull-up resistors inside it. Also, don't forget to upgrade the FDSKey firmware to at least **v1.3**.
 
 
 ## Donate
