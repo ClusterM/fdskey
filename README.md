@@ -181,7 +181,7 @@ Remember, you can update the firmware by putting **FdsKey.bin** on your SD card 
 ## Twin Famicom compatibility
 You can use FDSKey with Twin Famicom too. But you need a special cable. It's easy to make one.
 
-![image](https://github.com/ClusterM/fdskey/assets/4236181/256291b7-1692-4cd1-9c2b-ba24c9a80ced)
+![image](https://github.com/ClusterM/fdskey/assets/4236181/ac4cf2db-8759-4c9c-b0d3-c9a8671d56e2)
 
 It has a simple 12x1 dupont connector on the one side, you need to connect it to Twin Famicom's **Port C** on the back-bottom side (instead of the original cable).
 
@@ -219,9 +219,11 @@ Pin meanings
 +----+---------------------------+
 ```
 
-You **must** pull-up **write data** line to **VCC** via resistor (5K-10K) if you want to save game progress, because Twin Famicom has no pull-up resistors inside it. Also, it's recommended to pull-up **/scan media** pin to **VCC** too if you want to hot plug the FDSKey.
+You **must** pull-up **write data** line to **VCC** via resistor (5K-20K) if you want to save game progress, because Twin Famicom has no pull-up resistors inside it.
 
-Also, don't forget to upgrade the FDSKey firmware to at least **v1.3**.
+![image](https://github.com/ClusterM/fdskey/assets/4236181/5db18827-8eb9-4a70-b908-9f6a848f32de)
+
+Also, it's recommended to pull-up **/media set** pin to **VCC** too if you want to hot plug the FDSKey. And don't forget to upgrade the FDSKey firmware to at least **v1.3**.
 
 
 ## Donate
