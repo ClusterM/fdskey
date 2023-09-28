@@ -103,9 +103,17 @@ What does it look like when everything is assembled:
 
 
 ## Flashing the firmware
-There are five TH pads (actually 6 but 1 is unused) on the PCB to connect a ST-Link programmer (GND, VCC, SWD, SWCLK and NRST). First, you need to write the bootloader - **bootloader.bin** file. Use a programmer and write it to the **0x08000000** address (start of the flash memory). Then you can put the main firmware file - **FdsKey.bin** on your SD card (FAT/FAT32/exFAT formatted) and hold all four buttons on power-on, e.g. connect FDSKey to RAM adaptor, hold buttons and turn a Famicom on. You can use the same method to update the main firmware in the future without additional hardware. You can also use a programmer and write it to the **0x08020000** address.
+There are five TH pads (actually 6 but 1 is unused) on the PCB to connect a ST-Link (or clone) programmer: GND, VCC, SWD, SWCLK, and NRST. Use [**STM32CubeProg**](https://www.st.com/en/development-tools/stm32cubeprog.html) software (Win/Linux/Mac) to write the bootloader and the firmware. Old **STM32 ST-LINK Utility** will not work, it's deprecated.
 
-After the first boot, press and hold the **left** button on the main menu screen for 3 seconds to access the service menu. There, you can select the OLED display controller type (change it if the display shows a corrupted image) and check some system information.
+First, you need to write the bootloader - **bootloader.bin** file. Use a programmer and write it to the **0x08000000** address (start of the flash memory, default address).
+
+Then you can put the main firmware file - **FdsKey.bin** on your SD card (FAT/FAT32/exFAT formatted) and hold all four buttons on power-on, e.g. connect FDSKey to RAM adaptor, hold buttons and turn a Famicom on. You can use the same method to update the main firmware in the future without additional hardware. You can also use a programmer and write it to the **0x08020000** address.
+
+You can write the bootloader and the firmware at once using the STM32CubeProg CLI tool:
+
+`STM32_Programmer_CLI.exe -c port=SWD --erase all --download bootloader.bin 0x08000000 --download fdskey.bin 0x08020000`
+
+After the first boot, press and hold the **left** button on the main menu screen for 3 seconds to access the service menu. There, you can select the OLED display controller type (change it if the display shows a corrupted image in "lefty mode") and check some system information.
 
 ## Device usage
 Format a microSD card to FAT/FAT32/exFAT and put some .fds files on it. Insert a microSD card into a FDSKey, insert a FDSKey into a RAM Adaptor's cable instead of a physical disk drive and turn on a Famicom. You can hot plug a FDSKey when Famicom is already on too, it's ok.
@@ -168,6 +176,55 @@ You can always download the latest version at https://github.com/ClusterM/fdskey
 Also, you can download automatic interim builds at http://clusterm.github.io/fdskey/.
 
 Remember, you can update the firmware by putting **FdsKey.bin** on your SD card and holding all four buttons on power-on.
+
+
+## Twin Famicom compatibility
+You can use FDSKey with Twin Famicom too. But you need a special cable. It's easy to make one.
+
+![image](https://github.com/ClusterM/fdskey/assets/4236181/ac4cf2db-8759-4c9c-b0d3-c9a8671d56e2)
+
+It has a simple 12x1 dupont connector on the one side, you need to connect it to Twin Famicom's **Port C** on the back-bottom side (instead of the original cable).
+
+Unfortunately, there is a non-standard connector on the other side of the cable. But you can use a SFC/SNES/N64/NGC AV connector:
+
+![image](https://github.com/ClusterM/fdskey/assets/4236181/633a3054-31e1-4f3c-8be1-a10fc0c81377)
+
+You can find it on [aliexpress.com](https://aliexpress.com). But you need to cut a "key" - piece of plastic on this connector, or just use the FDSKey without a case.
+
+Connection diagram:
+```
+           Twin Famicom Port C                   Connector for FDSKey
+       (looking at rear of console)          (looking from FDSKey's side)
+█████████████████████████████████████████  ████████████████████████████████
+█████████████████████████████████████████  ████████████████████████████████
+██                                     ██  ███  1   3   5   7   9   11  ███
+██ 8  6  2  4  1  3  5  7  9  11 12 10 ██  ███  2   4   6   8   10  12  ███
+█████████████████████████████████████████  \██████████████████████████████/
+█████████████████████████████████████████   \████████████████████████████/
+
+Pin meanings
++----+---+-----------------------+
+| 1  | O | /write                |
+| 2  | O | VCC (+5VDC)           |
+| 3  | O | /scan media           |
+| 4  | O | VEE (ground)          |
+| 5  | O | Write data            |
+| 6  | I | Motor on/battery good |
+| 7  | I | /writable media       |
+| 8  | - | ---                   |
+| 9  | I | Read data             |
+| 10 | I | /media set            |
+| 11 | I | /ready                |
+| 12 | O | /stop motor           |
++----+---------------------------+
+```
+
+You **must** pull-up **write data** line to **VCC** via resistor (5K-20K) if you want to save game progress, because Twin Famicom has no pull-up resistors inside it.
+
+![image](https://github.com/ClusterM/fdskey/assets/4236181/5db18827-8eb9-4a70-b908-9f6a848f32de)
+
+Also, it's recommended to pull-up **/media set** pin to **VCC** too if you want to hot plug the FDSKey. And don't forget to upgrade the FDSKey firmware to at least **v1.3**.
+
 
 ## Donate
 * [Buy Me A Coffee](https://www.buymeacoffee.com/cluster)
