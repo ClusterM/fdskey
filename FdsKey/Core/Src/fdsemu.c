@@ -659,13 +659,6 @@ FRESULT fds_load_side(char *filename, uint8_t side, uint8_t ro)
     }
     if (fds_raw_data[fds_used_space] != block_type)
     {
-      // invalid block?
-      if (fds_block_count + 1 < min_blocks)
-      {
-        f_close(&fp);
-        fds_close(0);
-        return FDSR_INVALID_ROM;
-      }
       fds_raw_data[fds_used_space - 1] = 0; // remove terminator
       fds_used_space -= gap_length; // rollback last gap
       break;
