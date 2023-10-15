@@ -115,6 +115,7 @@ You can write the bootloader and the firmware at once using the STM32CubeProg CL
 
 After the first boot, press and hold the **left** button on the main menu screen for 3 seconds to access the service menu. There, you can select the OLED display controller type (change it if the display shows a corrupted image in "lefty mode") and check some system information.
 
+
 ## Device usage
 Format a microSD card to FAT/FAT32/exFAT and put some .fds files on it. Insert a microSD card into a FDSKey, insert a FDSKey into a RAM Adaptor's cable instead of a physical disk drive and turn on a Famicom. You can hot plug a FDSKey when Famicom is already on too, it's ok.
 
@@ -151,24 +152,28 @@ You can access the service menu by holding the **left** button on the main menu 
 * **[ Update bootloader ]**: update bootloader firmware. You need to put both **bootloader.bin** and **bootloader.bin.md5** files in the root of your SD card. Use it with caution! In case of failure (power loss during update) you will brick the device.
 * **[ Save and return ]**: press **left** or **right** button on this item to return to the main menu.
 
-### How to dump physical disks
-You can use a homebrew disk copier applications to copy a physical disk to a virtual one, simply create an empty ROM. There is **Create blank disk** item in the main menu for it.
-1. Put **Disk Hacker**/**Disk Keeper** or another homebrew disk copier ROM on the SD card.
-2. Select a disk copier software on your SD card like any other ROM and load it.
+
+## Reading and writing disks
+
+### How to dump a physical disk to a file
+You can use [DupliFDS](https://github.com/ClusterM/duplifds) to copy a physical disk to a virtual one, simply create an empty ROM. There is **Create blank disk** item in the main menu for it.
+1. Put the DupliFDS ROM on the SD card.
+2. Select and load the DupliFDS ROM on your SD card just like you would do with any other ROM.
 3. Return to the main menu and select **Create blank disk**.
 4. Enter filename for the new ROM, trailing spaces will be trimmed.
-5. When disk copier asks to insert game disk disconnect a FDSKey from a RAM adaptor and connect a physical FDS drive with a game disk inserted.
-6. When disk copier asks to insert new/blank disk disconnect a physical drive, connect a FDSKey and select ROM created in steps 3-4.
+5. When DupliFDS requests a source disk, disconnect FDSKey from a RAM adaptor and connect a physical FDS drive with a game disk.
+6. When DupliFDS requests a target disk, disconnect a physical drive, connect a FDSKey and select the ROM created in steps 3-4.
 7. Repeat steps 5-6 until the copy operation is completed.
 
-### How to write physical disks
-This is a reverse operation of dumping: you can use disk copiers homebrew applications to copy a virtual disk to a physical one. Please note that **you need to remove the copy protection on your physical drive** if it has any. In most cases, it's not such a difficult process.
-1. Put **Disk Hacker**/**Disk Keeper** or another homebrew disk copier ROM on the SD card.
-2. Select a disk copier software on your SD card like any other ROM and load it.
-3. When disk copier asks to insert game disk select the source ROM/side.
-4. When disk copier asks to insert new/blank disk disconnect a FDSKey from a RAM adaptor and connect a physical FDS drive with blank disk inserted.
-5. Disconnect a physical FDS drive and connect FDSKey.
+### How to write to a physical disk from a file
+This is a reverse operation of dumping: you can use [DupliFDS](https://github.com/ClusterM/duplifds) to copy a virtual disk to a physical one. Please note that **you need to remove the copy protection from your physical drive** if it has any. In most cases, it's not such a difficult process.
+1. Put the DupliFDS ROM on the SD card.
+2. Select and load the DupliFDS ROM on your SD card just like you would do with any other ROM.
+3. When DupliFDS requests a source disk, select the source ROM/side.
+4. When DupliFDS requests a target disk, disconnect FDSKey from a RAM adaptor and connect a physical FDS drive with a blank disk.
+5. Disconnect a physical FDS drive and connect the FDSKey.
 6. Repeat steps 3, 4, and 5 until the copy operation is completed.
+
 
 ## Firmware updates
 You can always download the latest version at https://github.com/ClusterM/fdskey/releases.
