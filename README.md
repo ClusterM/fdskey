@@ -235,5 +235,3 @@ Also, it's recommended to pull-up **/media set** pin to **VCC** too if you want 
 * [Buy Me A Coffee](https://www.buymeacoffee.com/cluster)
 * [Donation Alerts](https://www.donationalerts.com/r/clustermeerkat)
 * [Boosty](https://boosty.to/cluster)
-* BTC: 1MBYsGczwCypXhMBocoDQWxx7KZT2iiwzJ
-* PayPal is not available in Armenia :(
